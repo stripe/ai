@@ -75,7 +75,7 @@ jobs:
           node-version: "18"
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Build
         run: pnpm run build
