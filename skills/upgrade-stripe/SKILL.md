@@ -1,6 +1,5 @@
 ---
 description: Guide for upgrading Stripe API versions and SDKs
-alwaysApply: false
 ---
 
 # Upgrading Stripe Versions
