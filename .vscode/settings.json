@@ -13,5 +13,8 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "ruff.lint.enable": false
+  "ruff.lint.enable": false,
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "main"
+  ]
 }
