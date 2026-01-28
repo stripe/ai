@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(NODENV_VERSION=24.9.0 npm install:*)",
+      "Bash(NODENV_VERSION=24.9.0 npm run build:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(unset GH_HOST)",
+      "Bash(npm test:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(python -m pytest:*)"
+    ]
+  }
+}

@@ -1,4 +1,11 @@
 import {defineConfig} from 'tsup';
+import pkg from './package.json';
+
+const sharedConfig = {
+  define: {
+    'process.env.PACKAGE_VERSION': JSON.stringify(pkg.version),
+  },
+};
 
 export default defineConfig([
   {
@@ -7,6 +14,7 @@ export default defineConfig([
     format: ['cjs', 'esm'],
     dts: true,
     sourcemap: true,
+    ...sharedConfig,
   },
   {
     entry: ['src/ai-sdk/index.ts'],
@@ -14,6 +22,7 @@ export default defineConfig([
     format: ['cjs', 'esm'],
     dts: true,
     sourcemap: true,
+    ...sharedConfig,
   },
   {
     entry: ['src/modelcontextprotocol/index.ts'],
@@ -21,6 +30,7 @@ export default defineConfig([
     format: ['cjs', 'esm'],
     dts: true,
     sourcemap: true,
+    ...sharedConfig,
   },
   {
     entry: ['src/openai/index.ts'],
@@ -28,6 +38,7 @@ export default defineConfig([
     format: ['cjs', 'esm'],
     dts: true,
     sourcemap: true,
+    ...sharedConfig,
   },
   {
     entry: ['src/cloudflare/index.ts'],
@@ -36,5 +47,6 @@ export default defineConfig([
     dts: true,
     sourcemap: true,
     external: ['cloudflare:workers'],
+    ...sharedConfig,
   },
 ]);
