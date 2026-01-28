@@ -1,3 +1,11 @@
-import StripeAgentToolkit from './toolkit';
+import StripeAgentToolkit, {
+  createStripeAgentToolkit,
+  McpToolkitConfig,
+} from './toolkit';
 import {registerPaidTool} from './register-paid-tool';
-export {StripeAgentToolkit, registerPaidTool};
+export {
+  StripeAgentToolkit,
+  createStripeAgentToolkit,
+  registerPaidTool,
+  McpToolkitConfig,
+};

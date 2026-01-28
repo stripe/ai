@@ -1,2 +1,2 @@
-import StripeAgentToolkit from './toolkit';
-export {StripeAgentToolkit};
+import StripeAgentToolkit, {createStripeAgentToolkit} from './toolkit';
+export {StripeAgentToolkit, createStripeAgentToolkit};

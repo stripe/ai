@@ -67,3 +67,75 @@ export const isToolAllowed = (
     });
   });
 };
+
+/**
+ * Map tool names to their required permissions for MCP tools.
+ * These match the method names returned by mcp.stripe.com.
+ *
+ * SECURITY NOTE: Tools not listed in this map are ALLOWED BY DEFAULT.
+ * This means if mcp.stripe.com adds new tools, they will bypass client-side
+ * permission filtering until this map is updated. This is intentional to
+ * avoid breaking new functionality, but means the server-side permissions
+ * (via restricted API keys) are the primary security boundary.
+ *
+ * To maintain security:
+ * 1. Always use restricted API keys (rk_*) with minimal permissions
+ * 2. Update this map when new tools are added to mcp.stripe.com
+ * 3. Consider the actions configuration as a convenience filter, not a security boundary
+ */
+const toolPermissionMap: Record<
+  string,
+  Array<{resource: Object; permission: Permission}>
+> = {
+  create_customer: [{resource: 'customers', permission: 'create'}],
+  list_customers: [{resource: 'customers', permission: 'read'}],
+  create_product: [{resource: 'products', permission: 'create'}],
+  list_products: [{resource: 'products', permission: 'read'}],
+  create_price: [{resource: 'prices', permission: 'create'}],
+  list_prices: [{resource: 'prices', permission: 'read'}],
+  create_payment_link: [{resource: 'paymentLinks', permission: 'create'}],
+  create_invoice: [{resource: 'invoices', permission: 'create'}],
+  list_invoices: [{resource: 'invoices', permission: 'read'}],
+  finalize_invoice: [{resource: 'invoices', permission: 'update'}],
+  create_invoice_item: [{resource: 'invoiceItems', permission: 'create'}],
+  retrieve_balance: [{resource: 'balance', permission: 'read'}],
+  create_refund: [{resource: 'refunds', permission: 'create'}],
+  list_payment_intents: [{resource: 'paymentIntents', permission: 'read'}],
+  list_subscriptions: [{resource: 'subscriptions', permission: 'read'}],
+  cancel_subscription: [{resource: 'subscriptions', permission: 'update'}],
+  update_subscription: [{resource: 'subscriptions', permission: 'update'}],
+  search_documentation: [{resource: 'documentation', permission: 'read'}],
+  list_coupons: [{resource: 'coupons', permission: 'read'}],
+  create_coupon: [{resource: 'coupons', permission: 'create'}],
+  list_disputes: [{resource: 'disputes', permission: 'read'}],
+  update_dispute: [{resource: 'disputes', permission: 'update'}],
+};
+
+/**
+ * Check if a tool is allowed by its method name.
+ * Used for filtering MCP tools that come from the remote server.
+ * @param toolName - The tool method name (e.g., 'create_customer')
+ * @param configuration - The configuration with actions permissions
+ * @returns true if the tool is allowed, false otherwise
+ */
+export const isToolAllowedByName = (
+  toolName: string,
+  configuration: Configuration
+): boolean => {
+  // If no actions are configured, all tools are allowed
+  if (!configuration.actions) {
+    return true;
+  }
+
+  const permissions = toolPermissionMap[toolName];
+
+  // Unknown tools are allowed by default (MCP server may have new tools)
+  if (!permissions) {
+    return true;
+  }
+
+  return permissions.every(({resource, permission}) => {
+    // @ts-ignore - dynamic access to actions
+    return configuration.actions?.[resource]?.[permission] === true;
+  });
+};
