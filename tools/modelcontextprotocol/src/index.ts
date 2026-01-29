@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {createStripeAgentToolkit} from '@stripe/agent-toolkit/modelcontextprotocol';
+import {StripeAgentToolkit} from '@stripe/agent-toolkit/modelcontextprotocol';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {green, red, yellow} from 'colors';
 
@@ -142,8 +142,7 @@ export async function main() {
     configuration.context.account = options.stripeAccount;
   }
 
-  // Initialize toolkit with async MCP connection
-  const server = await createStripeAgentToolkit({
+  const server = new StripeAgentToolkit({
     secretKey: options.apiKey!,
     configuration: configuration,
   });
