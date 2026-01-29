@@ -9,13 +9,14 @@ This guide covers migrating from the direct API-based toolkit (v0.8.x) to the MC
 Toolkit initialization now connects to `mcp.stripe.com` and must be awaited.
 
 ```typescript
-// OLD - synchronous (NO LONGER WORKS)
+// Before (v0.8.x)
 const toolkit = new StripeAgentToolkit({ secretKey, configuration });
-const tools = toolkit.getTools(); // Tools immediately available
+const tools = toolkit.getTools();
 
-// NEW - async required
+// After (v0.9.0+)
 const toolkit = await createStripeAgentToolkit({ secretKey, configuration });
 const tools = toolkit.getTools();
+await toolkit.close(); // Clean up when done
 ```
 
 **Impact:** Synchronous usage will throw: `"StripeAgentToolkit not initialized. Call await toolkit.initialize() first."`
@@ -24,15 +25,7 @@ const tools = toolkit.getTools();
 
 Tools are fetched from `mcp.stripe.com`. If the server is unreachable, initialization fails with no fallback.
 
-```typescript
-try {
-  const toolkit = await createStripeAgentToolkit({ secretKey, configuration });
-} catch (error) {
-  // "Failed to connect to Stripe MCP server at https://mcp.stripe.com..."
-}
-```
-
-**Impact:** Ensure network access to `mcp.stripe.com` in all environments.
+**Impact:** Ensure network access to `mcp.stripe.com` (HTTPS port 443) in all environments.
 
 ### 3. Tool Names Changed to snake_case
 
@@ -46,7 +39,7 @@ try {
 
 ### 4. `@modelcontextprotocol/sdk` Now a Direct Dependency
 
-The MCP SDK moved from a peer dependency to a direct dependency. This ensures version compatibility but means you can no longer override the version. If you were previously managing the SDK version yourself, note that the toolkit now bundles a specific version.
+The MCP SDK moved from a peer dependency to a direct dependency. You can no longer override the version—the toolkit bundles a specific version.
 
 ---
 
@@ -93,15 +86,18 @@ const toolkit = await createStripeAgentToolkit({
 
 ### Restricted Keys Recommended
 
-`sk_*` keys now trigger a deprecation warning. Use restricted keys (`rk_*`) for better security.
+`sk_*` keys trigger a deprecation warning. Use restricted keys (`rk_*`) for better security.
+
+### Unknown Tools Allowed by Default
+
+New tools from `mcp.stripe.com` bypass client-side permission filtering until the permission map is updated. The server-side permissions (via restricted API keys) are the primary security boundary.
 
 ### Schema Conversion Limitations
 
-The toolkit converts JSON Schema to Zod for validation. Not all schema features are supported:
+The toolkit converts JSON Schema to Zod for validation. Some schema features are not supported:
 
-**Not Supported:** `oneOf`, `anyOf`, `allOf`, `$ref`, conditional schemas, complex nested objects
-
-**Supported:** Primitives, arrays, simple objects, enums, required/optional fields
+- **Not Supported:** `oneOf`, `anyOf`, `allOf`, `$ref`, conditional schemas
+- **Supported:** Primitives, arrays, simple objects, enums, required/optional fields
 
 ---
 
@@ -110,51 +106,19 @@ The toolkit converts JSON Schema to Zod for validation. Not all schema features 
 ### Edge Runtimes
 
 Edge environments (Cloudflare Workers, Vercel Edge) may have limited support:
-- MCP uses HTTP/2 streaming which some runtimes don't support
+- MCP uses HTTP streaming which some runtimes don't fully support
 - Long-lived connections may be terminated
 - Cold starts add connection overhead
 
 **Workaround:** Use traditional Node.js serverless functions for agent operations.
 
-### Network Requirements
-
-Allow outbound HTTPS (port 443) to `mcp.stripe.com` in firewalls, CI/CD, and private networks.
-
 ---
 
 ## Migration Checklist
 
-- [ ] Add `await` to toolkit initialization
-- [ ] Use `createStripeAgentToolkit()` factory function
+- [ ] Use `createStripeAgentToolkit()` factory function with `await`
 - [ ] Add error handling for MCP connection failures
 - [ ] Ensure `mcp.stripe.com` is accessible in all environments
 - [ ] Update tool name filters to snake_case
 - [ ] Add `toolkit.close()` for cleanup
 - [ ] Consider switching to restricted keys (`rk_*`)
-
----
-
-## Quick Example
-
-**Before (v0.8.x):**
-```typescript
-import { StripeAgentToolkit } from '@stripe/agent-toolkit/langchain';
-
-const toolkit = new StripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: { actions: { customers: { create: true } } }
-});
-const tools = toolkit.getTools();
-```
-
-**After (v0.9.0+):**
-```typescript
-import { createStripeAgentToolkit } from '@stripe/agent-toolkit/langchain';
-
-const toolkit = await createStripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: { actions: { customers: { create: true } } }
-});
-const tools = toolkit.getTools();
-await toolkit.close();
-```
