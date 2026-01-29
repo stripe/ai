@@ -16,7 +16,17 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-export default [...compat.extends("plugin:prettier/recommended"), {
+export default [{
+    // Ignore build output directories
+    ignores: [
+        "ai-sdk/**",
+        "langchain/**",
+        "modelcontextprotocol/**",
+        "openai/**",
+        "cloudflare/**",
+        "node_modules/**",
+    ],
+}, ...compat.extends("plugin:prettier/recommended"), {
     plugins: {
         prettier,
         import: fixupPluginRules(_import),
