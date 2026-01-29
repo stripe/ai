@@ -5,11 +5,6 @@ import {StripeMcpClient, McpTool} from './mcp-client';
 import {AsyncInitializer} from './async-initializer';
 import {VERSION, TOOLKIT_HEADER, MCP_HEADER} from './constants';
 
-export interface StripeClientOptions {
-  /** Optional timeout in milliseconds for MCP connection. No timeout by default. */
-  timeout?: number;
-}
-
 /**
  * Unified client for Stripe operations.
  *
@@ -17,7 +12,7 @@ export interface StripeClientOptions {
  * - Billing: Uses direct Stripe SDK for meter events (middleware billing)
  *
  * @example
- * const client = new StripeClient('rk_test_...', context, { timeout: 30000 });
+ * const client = new StripeClient('rk_test_...', context);
  * await client.initialize();
  * const tools = client.getRemoteTools();
  * const result = await client.run('create_customer', { email: 'test@example.com' });
@@ -36,11 +31,7 @@ class StripeClient {
   private mcpClient: StripeMcpClient;
   private initializer = new AsyncInitializer();
 
-  constructor(
-    secretKey: string,
-    context?: Context,
-    options?: StripeClientOptions
-  ) {
+  constructor(secretKey: string, context?: Context) {
     // Stripe SDK only used for createMeterEvent (billing middleware)
     const stripeClient = new Stripe(secretKey, {
       appInfo: {
@@ -63,7 +54,6 @@ class StripeClient {
         customer: context?.customer,
       },
       mode: context?.mode,
-      timeout: options?.timeout,
     });
   }
 

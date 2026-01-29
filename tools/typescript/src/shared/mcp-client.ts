@@ -10,8 +10,6 @@ export interface McpClientConfig {
     customer?: string;
   };
   mode?: 'modelcontextprotocol' | 'toolkit';
-  /** Optional request timeout in milliseconds. No timeout by default (allows long-running MCP connections). */
-  timeout?: number;
 }
 
 export interface McpTool {
@@ -43,7 +41,6 @@ export class StripeMcpClient {
 
   /**
    * Create transport and client fresh for each connection attempt.
-   * This ensures timeout signals are created at connect time, not construction time.
    */
   private createTransportAndClient(): {
     transport: StreamableHTTPClientTransport;
@@ -64,16 +61,9 @@ export class StripeMcpClient {
       headers['Stripe-Account'] = this.config.context.account;
     }
 
-    // Create timeout signal fresh at connect time (not construction time)
-    // This ensures the timeout starts counting from when connect() is called
-    const requestInit: RequestInit = {headers};
-    if (this.config.timeout !== undefined) {
-      requestInit.signal = AbortSignal.timeout(this.config.timeout);
-    }
-
     const transport = new StreamableHTTPClientTransport(
       new URL(MCP_SERVER_URL),
-      {requestInit}
+      {requestInit: {headers}}
     );
 
     const client = new Client(

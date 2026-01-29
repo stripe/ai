@@ -10,8 +10,6 @@ import Stripe from 'stripe';
 export interface McpToolkitConfig {
   secretKey: string;
   configuration: Configuration;
-  /** Optional timeout in milliseconds for MCP connection. No timeout by default. */
-  timeout?: number;
 }
 
 class StripeAgentToolkit extends McpServer {
@@ -20,7 +18,7 @@ class StripeAgentToolkit extends McpServer {
   private _configuration: Configuration;
   private _initializer = new AsyncInitializer();
 
-  constructor({secretKey, configuration, timeout}: McpToolkitConfig) {
+  constructor({secretKey, configuration}: McpToolkitConfig) {
     super({
       name: 'Stripe',
       version: VERSION,
@@ -36,7 +34,6 @@ class StripeAgentToolkit extends McpServer {
         customer: configuration.context?.customer,
       },
       mode: configuration.context?.mode,
-      timeout,
     });
 
     // Keep Stripe SDK for registerPaidTool billing operations

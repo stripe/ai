@@ -56,7 +56,6 @@ import { createStripeAgentToolkit } from '@stripe/agent-toolkit/ai-sdk';
 const toolkit = await createStripeAgentToolkit({
   secretKey: 'rk_test_...',
   configuration: { actions: { customers: { create: true } } },
-  timeout: 30000, // Optional: connection timeout in ms
 });
 ```
 
@@ -66,18 +65,6 @@ Close the MCP connection when done:
 
 ```typescript
 await toolkit.close();
-```
-
-### Timeout Configuration
-
-By default, there is no timeout. Set one to fail fast on slow networks:
-
-```typescript
-const toolkit = await createStripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: { /* ... */ },
-  timeout: 60000, // 60 seconds
-});
 ```
 
 ---

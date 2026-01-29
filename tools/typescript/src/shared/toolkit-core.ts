@@ -11,8 +11,6 @@ export type {McpTool};
 export interface ToolkitConfig {
   secretKey: string;
   configuration: Configuration;
-  /** Optional timeout in milliseconds for MCP connection. No timeout by default. */
-  timeout?: number;
 }
 
 /**
@@ -30,10 +28,7 @@ export class ToolkitCore<T = McpTool[]> {
   constructor(config: ToolkitConfig, emptyTools: T) {
     this.stripe = new StripeClient(
       config.secretKey,
-      config.configuration.context,
-      {
-        timeout: config.timeout,
-      }
+      config.configuration.context
     );
     this.configuration = config.configuration;
     this._tools = emptyTools;
