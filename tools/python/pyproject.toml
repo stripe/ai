@@ -1,17 +1,42 @@
 [project]
 name = "stripe-agent-toolkit"
-version = "0.6.2"
+version = "0.7.0"
 description = "Stripe Agent Toolkit"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
   {name = "Stripe", email = "support@stripe.com"}
 ]
-keywords = ["stripe", "api", "payments"]
+keywords = ["stripe", "api", "payments", "mcp", "agents"]
+requires-python = ">=3.11"
+dependencies = [
+    "stripe>=6.0.0",
+    "pydantic>=2.0.0",
+    "mcp>=1.0.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0", "agents>=0.0.84"]
+langchain = ["langchain>=0.1.0"]
+crewai = ["crewai>=0.1.0"]
+strands = ["strands>=0.1.0"]
+all = [
+    "stripe-agent-toolkit[openai]",
+    "stripe-agent-toolkit[langchain]",
+    "stripe-agent-toolkit[crewai]",
+    "stripe-agent-toolkit[strands]",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.1.0",
+    "pyright>=1.1.0",
+]
 
 [project.urls]
 "Bug Tracker" = "https://github.com/stripe/ai/issues"
 "Source Code" = "https://github.com/stripe/ai"
+"Documentation" = "https://docs.stripe.com/mcp"
 
 [tool.setuptools.packages.find]
 include = ["stripe_agent_toolkit*"]
@@ -38,3 +63,7 @@ reportUnnecessaryContains = true
 reportUnnecessaryIsInstance = true
 reportPrivateImportUsage = true
 reportUnnecessaryTypeIgnoreComment = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

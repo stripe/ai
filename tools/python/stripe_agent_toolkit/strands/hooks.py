@@ -1,5 +1,5 @@
 from typing import Any, Optional, Dict
-from ..api import StripeAPI
+from ..shared.stripe_client import StripeClient
 
 
 class BillingHooks:
@@ -7,9 +7,9 @@ class BillingHooks:
 
     def __init__(
         self,
-        stripe: StripeAPI,
-        type: str,
-        customer: str,
+        stripe: StripeClient,
+        type: Optional[str] = None,
+        customer: Optional[str] = None,
         meter: Optional[str] = None,
         meters: Optional[Dict[str, str]] = None
     ):
@@ -17,9 +17,9 @@ class BillingHooks:
         Initialize billing hooks.
 
         Args:
-            stripe: StripeAPI instance
+            stripe: StripeClient instance for creating meter events
             type: Type of billing - "outcome" or "token"
-            customer: Customer ID for billing
+            customer: Stripe customer ID for billing
             meter: Single meter ID for outcome-based billing
             meters: Dictionary of meter IDs for token-based billing (input/output)
         """
@@ -42,6 +42,9 @@ class BillingHooks:
             output: Agent output
             usage: Usage information (tokens, etc.)
         """
+        if not self.customer:
+            return
+
         if self.type == "outcome":
             # Create a single meter event for outcome-based billing
             if self.meter:
@@ -68,7 +71,11 @@ class BillingHooks:
                         str(output_tokens)
                     )
 
-    def on_error(self, context: Any = None, error: Exception = None) -> None:
+    def on_error(
+        self,
+        context: Any = None,
+        error: Optional[Exception] = None
+    ) -> None:
         """Called when agent execution encounters an error."""
         pass
 
