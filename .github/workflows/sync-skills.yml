@@ -27,21 +27,28 @@ jobs:
         env:
           MCP_STRIPE_API_KEY: ${{ secrets.MCP_STRIPE_API_KEY }}
         run: node skills/sync.js
-      
+
       # This action will only create a PR if there are actual changes to the file
       # If the content is identical, no PR will be created
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: 'sync mcp.stripe.comp prompts to skills'
-          title: '[automated] sync mcp.stripe.comp prompts to skills'
+          commit-message: 'sync mcp.stripe.com prompts to skills and provider plugins'
+          title: '[automated] sync mcp.stripe.com prompts to skills and provider plugins'
           body: |
             This is an automated PR created by the sync-skills workflow.
+
+            Updates skills in:
+            - skills/ (source)
+            - providers/claude/plugin/skills/
+            - providers/cursor/plugin/skills/
           branch: sync-skills-update
           delete-branch: true
           add-paths: |
-            skills/stripe-best-practices.md
+            skills/**/*.md
+            providers/claude/plugin/skills/
+            providers/cursor/plugin/skills/
       
       - name: Check outputs
         if: steps.cpr.outputs.pull-request-number
