@@ -2,28 +2,28 @@ import {z} from 'zod';
 import {BaseToolkit, StructuredTool} from '@langchain/core/tools';
 import {CallbackManagerForToolRun} from '@langchain/core/callbacks/manager';
 import {RunnableConfig} from '@langchain/core/runnables';
-import StripeClient from '../shared/stripe-client';
 import {jsonSchemaToZod} from '../shared/schema-utils';
 import {ToolkitCore, ToolkitConfig, McpTool} from '../shared/toolkit-core';
+import type {StripeMcpClient} from '../shared/mcp-client';
 
 /**
  * A LangChain StructuredTool that executes Stripe operations via MCP.
  */
 class StripeTool extends StructuredTool {
-  private stripeClient: StripeClient;
+  private mcpClient: StripeMcpClient;
   method: string;
   name: string;
   description: string;
   schema: z.ZodObject<any, any, any, any>;
 
   constructor(
-    stripeClient: StripeClient,
+    mcpClient: StripeMcpClient,
     method: string,
     description: string,
     schema: z.ZodObject<any, any, any, any>
   ) {
     super();
-    this.stripeClient = stripeClient;
+    this.mcpClient = mcpClient;
     this.method = method;
     this.name = method;
     this.description = description;
@@ -35,7 +35,7 @@ class StripeTool extends StructuredTool {
     _runManager?: CallbackManagerForToolRun,
     _parentConfig?: RunnableConfig
   ): Promise<any> {
-    return this.stripeClient.run(this.method, arg);
+    return this.mcpClient.callTool(this.method, arg);
   }
 }
 
@@ -61,7 +61,7 @@ class StripeAgentToolkit
     return mcpTools.map((tool) => {
       const zodSchema = jsonSchemaToZod(tool.inputSchema);
       return new StripeTool(
-        this.stripeClient,
+        this.mcpClient,
         tool.name,
         tool.description || tool.name,
         zodSchema

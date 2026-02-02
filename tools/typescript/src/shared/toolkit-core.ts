@@ -1,7 +1,6 @@
-import StripeClient from './stripe-client';
+import {StripeMcpClient, type McpTool} from './mcp-client';
 import {AsyncInitializer} from './async-initializer';
 import {isToolAllowedByName, type Configuration} from './configuration';
-import type {McpTool} from './mcp-client';
 
 export type {McpTool};
 
@@ -21,19 +20,22 @@ export interface ToolkitConfig {
  */
 export class ToolkitCore<T = McpTool[]> {
   /**
-   * The unified Stripe client that handles MCP connections and tool execution.
-   * This is NOT the raw Stripe SDK - it wraps MCP operations.
+   * The MCP client that handles connections to mcp.stripe.com and tool execution.
    */
-  readonly stripeClient: StripeClient;
+  readonly mcpClient: StripeMcpClient;
   readonly configuration: Configuration;
   private _initializer = new AsyncInitializer();
   private _tools: T;
 
   constructor(config: ToolkitConfig, emptyTools: T) {
-    this.stripeClient = new StripeClient(
-      config.secretKey,
-      config.configuration.context
-    );
+    this.mcpClient = new StripeMcpClient({
+      secretKey: config.secretKey,
+      context: {
+        account: config.configuration.context?.account,
+        customer: config.configuration.context?.customer,
+      },
+      mode: config.configuration.context?.mode,
+    });
     this.configuration = config.configuration;
     this._tools = emptyTools;
   }
@@ -52,9 +54,9 @@ export class ToolkitCore<T = McpTool[]> {
    */
   async initialize(): Promise<void> {
     await this._initializer.initialize(async () => {
-      await this.stripeClient.initialize();
+      await this.mcpClient.connect();
 
-      const remoteTools = this.stripeClient.getRemoteTools();
+      const remoteTools = this.mcpClient.getTools();
       const filteredTools = remoteTools.filter((t) =>
         isToolAllowedByName(t.name, this.configuration)
       );
@@ -95,7 +97,7 @@ export class ToolkitCore<T = McpTool[]> {
       return;
     }
 
-    await this.stripeClient.close();
+    await this.mcpClient.disconnect();
     this._initializer.reset();
     this._tools = emptyTools;
   }

@@ -28,7 +28,7 @@ class StripeAgentToolkit extends ToolkitCore<Record<string, ProviderTool>> {
         description: remoteTool.description || remoteTool.name,
         inputSchema: zodSchema,
         execute: (args: z.infer<typeof zodSchema>) => {
-          return this.stripeClient.run(remoteTool.name, args);
+          return this.mcpClient.callTool(remoteTool.name, args);
         },
       });
     }
