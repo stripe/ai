@@ -1,6 +1,6 @@
 import {StripeAgentToolkit} from '@stripe/agent-toolkit/ai-sdk';
 import {openai} from '@ai-sdk/openai';
-import {generateText, wrapLanguageModel, stepCountIs} from 'ai';
+import {generateText, stepCountIs} from 'ai';
 
 require('dotenv').config();
 
@@ -21,22 +21,9 @@ const stripeAgentToolkit = new StripeAgentToolkit({
   },
 });
 
-const model = wrapLanguageModel({
-  model: openai('gpt-5'),
-  middleware: stripeAgentToolkit.middleware({
-    billing: {
-      customer: process.env.STRIPE_CUSTOMER_ID!,
-      meters: {
-        input: process.env.STRIPE_METER_INPUT!,
-        output: process.env.STRIPE_METER_OUTPUT!,
-      },
-    },
-  }),
-});
-
 (async () => {
   const result = await generateText({
-    model: model,
+    model: openai('gpt-4o'),
 
     tools: {
       ...stripeAgentToolkit.getTools(),

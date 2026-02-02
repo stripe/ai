@@ -61,7 +61,7 @@ class StripeAgentToolkit
     return mcpTools.map((tool) => {
       const zodSchema = jsonSchemaToZod(tool.inputSchema);
       return new StripeTool(
-        this.stripe,
+        this.stripeClient,
         tool.name,
         tool.description || tool.name,
         zodSchema

@@ -1,6 +1,6 @@
 # Stripe Agent Toolkit - TypeScript
 
-The Stripe Agent Toolkit enables popular agent frameworks including LangChain and Vercel's AI SDK to integrate with Stripe APIs through function calling. It also provides tooling to quickly integrate metered billing for prompt and completion token usage.
+The Stripe Agent Toolkit enables popular agent frameworks including LangChain and Vercel's AI SDK to integrate with Stripe APIs through function calling.
 
 ## Installation
 
@@ -69,45 +69,6 @@ const stripeAgentToolkit = new StripeAgentToolkit({
   },
 });
 ```
-
-### Metered billing
-
-For Vercel's AI SDK, you can use middleware to submit billing events for usage. All that is required is the customer ID and the input/output meters to bill.
-
-```typescript
-import {StripeAgentToolkit} from '@stripe/agent-toolkit/ai-sdk';
-import {openai} from '@ai-sdk/openai';
-import {
-  generateText,
-  experimental_wrapLanguageModel as wrapLanguageModel,
-} from 'ai';
-
-const stripeAgentToolkit = new StripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-    },
-  },
-});
-
-const model = wrapLanguageModel({
-  model: openai('gpt-4o'),
-  middleware: stripeAgentToolkit.middleware({
-    billing: {
-      customer: 'cus_123',
-      meters: {
-        input: 'input_tokens',
-        output: 'output_tokens',
-      },
-    },
-  }),
-});
-```
-
-This works with both `generateText` and `generateStream` from the Vercel AI SDK.
 
 ## Model Context Protocol
 

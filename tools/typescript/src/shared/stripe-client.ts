@@ -1,15 +1,11 @@
-import Stripe from 'stripe';
-
 import type {Context} from './configuration';
 import {StripeMcpClient, McpTool} from './mcp-client';
 import {AsyncInitializer} from './async-initializer';
-import {VERSION, TOOLKIT_HEADER, MCP_HEADER} from './constants';
 
 /**
- * Unified client for Stripe operations.
+ * Unified client for Stripe operations via MCP.
  *
- * - Tool execution: All tools are executed via MCP (mcp.stripe.com)
- * - Billing: Uses direct Stripe SDK for meter events (middleware billing)
+ * All tool operations are executed via MCP (mcp.stripe.com).
  *
  * @example
  * const client = new StripeClient('rk_test_...', context);
@@ -19,31 +15,12 @@ import {VERSION, TOOLKIT_HEADER, MCP_HEADER} from './constants';
  * await client.close();
  */
 class StripeClient {
-  /**
-   * Direct Stripe SDK instance.
-   * Used ONLY for billing middleware (createMeterEvent).
-   * All tool operations go through MCP.
-   */
-  stripe: Stripe;
-
   context: Context;
 
   private mcpClient: StripeMcpClient;
   private initializer = new AsyncInitializer();
 
   constructor(secretKey: string, context?: Context) {
-    // Stripe SDK only used for createMeterEvent (billing middleware)
-    const stripeClient = new Stripe(secretKey, {
-      appInfo: {
-        name:
-          context?.mode === 'modelcontextprotocol'
-            ? MCP_HEADER
-            : TOOLKIT_HEADER,
-        version: VERSION,
-        url: 'https://github.com/stripe/ai',
-      },
-    });
-    this.stripe = stripeClient;
     this.context = context || {};
 
     // MCP client for all tool operations
@@ -83,31 +60,6 @@ class StripeClient {
       );
     }
     return this.mcpClient.getTools();
-  }
-
-  /**
-   * Create a billing meter event.
-   * Uses direct Stripe SDK (not MCP) for billing middleware.
-   */
-  async createMeterEvent({
-    event,
-    customer,
-    value,
-  }: {
-    event: string;
-    customer: string;
-    value: string;
-  }) {
-    await this.stripe.billing.meterEvents.create(
-      {
-        event_name: event,
-        payload: {
-          stripe_customer_id: customer,
-          value: value,
-        },
-      },
-      this.context.account ? {stripeAccount: this.context.account} : undefined
-    );
   }
 
   /**

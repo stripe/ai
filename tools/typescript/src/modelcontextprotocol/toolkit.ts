@@ -5,7 +5,6 @@ import {StripeMcpClient, McpTool} from '../shared/mcp-client';
 import {jsonSchemaToZodShape} from '../shared/schema-utils';
 import {AsyncInitializer} from '../shared/async-initializer';
 import {VERSION} from '../shared/constants';
-import Stripe from 'stripe';
 
 export interface McpToolkitConfig {
   secretKey: string;
@@ -14,7 +13,6 @@ export interface McpToolkitConfig {
 
 class StripeAgentToolkit extends McpServer {
   private _mcpClient: StripeMcpClient;
-  private _stripe: Stripe;
   private _configuration: Configuration;
   private _initializer = new AsyncInitializer();
 
@@ -34,15 +32,6 @@ class StripeAgentToolkit extends McpServer {
         customer: configuration.context?.customer,
       },
       mode: configuration.context?.mode,
-    });
-
-    // Keep Stripe SDK for registerPaidTool billing operations
-    this._stripe = new Stripe(secretKey, {
-      appInfo: {
-        name: 'stripe-mcp',
-        version: VERSION,
-        url: 'https://github.com/stripe/ai',
-      },
     });
   }
 
@@ -121,14 +110,6 @@ class StripeAgentToolkit extends McpServer {
    */
   isInitialized(): boolean {
     return this._initializer.isInitialized;
-  }
-
-  /**
-   * Get the Stripe SDK instance for registerPaidTool billing operations.
-   * Note: This is only for billing operations, not for tool execution.
-   */
-  getStripeClient(): Stripe {
-    return this._stripe;
   }
 
   /**

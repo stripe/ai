@@ -20,13 +20,17 @@ export interface ToolkitConfig {
  * @template T - The type of tools returned by this toolkit (e.g., ChatCompletionTool[], StripeTool[])
  */
 export class ToolkitCore<T = McpTool[]> {
-  readonly stripe: StripeClient;
+  /**
+   * The unified Stripe client that handles MCP connections and tool execution.
+   * This is NOT the raw Stripe SDK - it wraps MCP operations.
+   */
+  readonly stripeClient: StripeClient;
   readonly configuration: Configuration;
   private _initializer = new AsyncInitializer();
   private _tools: T;
 
   constructor(config: ToolkitConfig, emptyTools: T) {
-    this.stripe = new StripeClient(
+    this.stripeClient = new StripeClient(
       config.secretKey,
       config.configuration.context
     );
@@ -48,9 +52,9 @@ export class ToolkitCore<T = McpTool[]> {
    */
   async initialize(): Promise<void> {
     await this._initializer.initialize(async () => {
-      await this.stripe.initialize();
+      await this.stripeClient.initialize();
 
-      const remoteTools = this.stripe.getRemoteTools();
+      const remoteTools = this.stripeClient.getRemoteTools();
       const filteredTools = remoteTools.filter((t) =>
         isToolAllowedByName(t.name, this.configuration)
       );
@@ -91,7 +95,7 @@ export class ToolkitCore<T = McpTool[]> {
       return;
     }
 
-    await this.stripe.close();
+    await this.stripeClient.close();
     this._initializer.reset();
     this._tools = emptyTools;
   }
