@@ -10,11 +10,11 @@ Toolkit initialization now connects to `mcp.stripe.com` and must be awaited.
 
 ```typescript
 // Before (v0.8.x)
-const toolkit = new StripeAgentToolkit({ secretKey, configuration });
+const toolkit = new StripeAgentToolkit({secretKey, configuration});
 const tools = toolkit.getTools();
 
 // After (v0.9.0+)
-const toolkit = await createStripeAgentToolkit({ secretKey, configuration });
+const toolkit = await createStripeAgentToolkit({secretKey, configuration});
 const tools = toolkit.getTools();
 await toolkit.close(); // Clean up when done
 ```
@@ -29,10 +29,10 @@ Tools are fetched from `mcp.stripe.com`. If the server is unreachable, initializ
 
 ### 3. Tool Names Changed to snake_case
 
-| Old | New |
-|-----|-----|
-| `createCustomer` | `create_customer` |
-| `listCustomers` | `list_customers` |
+| Old                 | New                   |
+| ------------------- | --------------------- |
+| `createCustomer`    | `create_customer`     |
+| `listCustomers`     | `list_customers`      |
 | `createPaymentLink` | `create_payment_link` |
 
 **Impact:** Update any custom tool filtering logic to use snake_case.
@@ -50,12 +50,12 @@ The MCP SDK moved from a peer dependency to a direct dependency. You can no long
 All frameworks export `createStripeAgentToolkit()`:
 
 ```typescript
-import { createStripeAgentToolkit } from '@stripe/agent-toolkit/ai-sdk';
+import {createStripeAgentToolkit} from '@stripe/agent-toolkit/ai-sdk';
 // Also: /langchain, /openai, /modelcontextprotocol
 
 const toolkit = await createStripeAgentToolkit({
   secretKey: 'rk_test_...',
-  configuration: { actions: { customers: { create: true } } },
+  configuration: {actions: {customers: {create: true}}},
 });
 ```
 
@@ -93,6 +93,7 @@ The toolkit converts JSON Schema to Zod for validation. Some schema features are
 ### Edge Runtimes
 
 Edge environments (Cloudflare Workers, Vercel Edge) may have limited support:
+
 - MCP uses HTTP streaming which some runtimes don't fully support
 - Long-lived connections may be terminated
 - Cold starts add connection overhead

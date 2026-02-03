@@ -46,7 +46,10 @@ class StripeAgentToolkit extends ToolkitCore<ChatCompletionTool[]> {
     this.ensureInitialized();
 
     const args = JSON.parse(toolCall.function.arguments);
-    const response = await this.mcpClient.callTool(toolCall.function.name, args);
+    const response = await this.mcpClient.callTool(
+      toolCall.function.name,
+      args
+    );
     return {
       role: 'tool',
       tool_call_id: toolCall.id,
