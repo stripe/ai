@@ -13,7 +13,7 @@
     "@langchain/openai": "^0.3.5",
     "@stripe/agent-toolkit": "workspace:*",
     "dotenv": "^16.4.5",
-    "langchain": "^0.3.2"
+    "langchain": "^0.3.37"
   },
   "devDependencies": {
     "@types/node": "^22.7.4"
