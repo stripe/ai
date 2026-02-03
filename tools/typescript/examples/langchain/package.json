@@ -9,7 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@langchain/core": "^0.3.6",
+    "@langchain/core": "^0.3.80",
     "@langchain/openai": "^0.3.5",
     "@stripe/agent-toolkit": "workspace:*",
     "dotenv": "^16.4.5",
