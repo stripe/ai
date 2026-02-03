@@ -10,7 +10,6 @@ from ..shared.toolkit_core import ToolkitCore
 from ..shared.mcp_client import McpTool
 from ..shared.stripe_client import StripeClient
 from ..configuration import Configuration
-from .hooks import BillingHooks
 
 
 def create_strand_tool(
@@ -140,27 +139,6 @@ class StripeAgentToolkit(ToolkitCore[List[StrandTool]]):
             Access tools via get_tools() after calling initialize().
         """
         return self._get_tools_with_warning()
-
-    def billing_hook(
-        self,
-        type: Optional[str] = None,
-        customer: Optional[str] = None,
-        meter: Optional[str] = None,
-        meters: Optional[Dict[str, str]] = None
-    ) -> BillingHooks:
-        """
-        Create a billing hook for usage metering.
-
-        Args:
-            type: Type of billing - "outcome" or "token"
-            customer: Stripe customer ID
-            meter: Single meter event name for outcome-based billing
-            meters: Dict with 'input' and 'output' meter names for token billing
-
-        Returns:
-            BillingHooks instance for use with Strands agents
-        """
-        return BillingHooks(self._stripe, type, customer, meter, meters)
 
 
 async def create_stripe_agent_toolkit(

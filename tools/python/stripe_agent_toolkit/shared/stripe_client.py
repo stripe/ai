@@ -1,20 +1,17 @@
 """Unified client for Stripe operations via MCP."""
 
-import stripe
 from typing import Optional, Dict, Any, List
 
 from .mcp_client import StripeMcpClient, McpTool
 from .async_initializer import AsyncInitializer
-from .constants import VERSION, TOOLKIT_HEADER, MCP_HEADER
 from ..configuration import Context
 
 
 class StripeClient:
     """
-    Unified client for Stripe operations.
+    Unified client for Stripe operations via MCP.
 
-    - Tool execution: All tools are executed via MCP (mcp.stripe.com)
-    - Billing: Uses direct Stripe SDK for meter events (middleware billing)
+    All tool operations are executed via MCP (mcp.stripe.com).
 
     Example:
         client = StripeClient('rk_test_...', context)
@@ -31,21 +28,6 @@ class StripeClient:
     ):
         self._context = context or {}
         self._initializer = AsyncInitializer()
-
-        # Stripe SDK only used for create_meter_event (billing middleware)
-        stripe.api_key = secret_key
-
-        # Determine app info based on mode
-        app_name = (
-            MCP_HEADER
-            if self._context.get("mode") == "modelcontextprotocol"
-            else TOOLKIT_HEADER
-        )
-        stripe.set_app_info(
-            app_name,
-            version=VERSION,
-            url="https://github.com/stripe/ai",
-        )
 
         # MCP client for all tool operations
         self._mcp_client = StripeMcpClient({
@@ -72,37 +54,6 @@ class StripeClient:
                 "Call initialize() before accessing tools."
             )
         return self._mcp_client.get_tools()
-
-    def create_meter_event(
-        self,
-        event: str,
-        customer: str,
-        value: Optional[str] = None
-    ) -> None:
-        """
-        Create a billing meter event.
-        Uses direct Stripe SDK (not MCP) for billing middleware.
-
-        Args:
-            event: The meter event name
-            customer: Stripe customer ID
-            value: Optional value for the meter event
-        """
-        meter_event_data: Dict[str, Any] = {
-            "event_name": event,
-            "payload": {
-                "stripe_customer_id": customer,
-            },
-        }
-
-        if value is not None:
-            meter_event_data["payload"]["value"] = value
-
-        account = self._context.get("account")
-        if account:
-            meter_event_data["stripe_account"] = account
-
-        stripe.billing.MeterEvent.create(**meter_event_data)
 
     async def run(
         self,

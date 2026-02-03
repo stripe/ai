@@ -141,9 +141,9 @@ class ToolkitCore(ABC, Generic[T]):
             )
 
     @property
-    def stripe(self) -> StripeClient:
+    def stripe_client(self) -> StripeClient:
         """
-        Access to the underlying StripeClient.
-        Useful for billing operations like create_meter_event().
+        The unified Stripe client that handles MCP connections and tool execution.
+        This is NOT the raw Stripe SDK - it wraps MCP operations.
         """
         return self._stripe
