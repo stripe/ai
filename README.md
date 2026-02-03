@@ -107,6 +107,10 @@ npm install @stripe/agent-toolkit
 
 - Node 18+
 
+##### Migrating from v0.8.x
+
+If you're upgrading from v0.8.x, see the [Migration Guide](/tools/typescript/MIGRATION.md) for breaking changes.
+
 #### Usage
 
 The library needs to be configured with your account's secret key which is available in your [Stripe Dashboard][api-keys]. Additionally, `configuration` enables you to specify the types of actions that can be taken using the toolkit.
