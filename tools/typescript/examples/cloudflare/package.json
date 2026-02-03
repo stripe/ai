@@ -15,7 +15,7 @@
     "@cloudflare/workers-types": "^4.20250515.0",
     "typescript": "^5.8.3",
     "workers-mcp": "0.1.0-3",
-    "wrangler": "^4.15.2"
+    "wrangler": "^4.59.1"
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "^0.0.5",
