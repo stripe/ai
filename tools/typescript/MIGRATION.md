@@ -41,7 +41,34 @@ Tools are fetched from `mcp.stripe.com`. If the server is unreachable, initializ
 
 The MCP SDK moved from a peer dependency to a direct dependency. You can no longer override the version—the toolkit bundles a specific version.
 
-### 5. Metered Billing Middleware Removed
+### 5. `actions` Configuration Removed
+
+The `configuration.actions` option has been removed. Tool permissions are now controlled entirely by your Restricted API Key (RAK) on the server side.
+
+```typescript
+// Before (v0.8.x)
+const toolkit = new StripeAgentToolkit({
+  secretKey: 'rk_test_...',
+  configuration: {
+    actions: {
+      customers: { create: true, read: true },
+      invoices: { create: true },
+    },
+  },
+});
+
+// After (v0.9.0+)
+const toolkit = await createStripeAgentToolkit({
+  secretKey: 'rk_test_...', // RAK permissions control which tools are available
+  configuration: {
+    context: { account: 'acct_123' }, // Only context options remain
+  },
+});
+```
+
+**Impact:** Remove any `actions` from your configuration. Configure permissions when creating your Restricted API Key in the Stripe Dashboard instead.
+
+### 6. Metered Billing Middleware Removed
 
 The `middleware()` method for AI SDK metered billing has been removed. If you were using token-based billing:
 
@@ -77,7 +104,7 @@ import {createStripeAgentToolkit} from '@stripe/agent-toolkit/ai-sdk';
 
 const toolkit = await createStripeAgentToolkit({
   secretKey: 'rk_test_...',
-  configuration: {actions: {customers: {create: true}}},
+  configuration: {},
 });
 ```
 
@@ -95,11 +122,7 @@ await toolkit.close();
 
 ### Restricted Keys Recommended
 
-`sk_*` keys trigger a deprecation warning. Use restricted keys (`rk_*`) for better security.
-
-### Unknown Tools Allowed by Default
-
-New tools from `mcp.stripe.com` bypass client-side permission filtering until the permission map is updated. The server-side permissions (via restricted API keys) are the primary security boundary.
+`sk_*` keys trigger a deprecation warning. Use restricted keys (`rk_*`) for better security. Tool availability is determined by your RAK's permissions on the server.
 
 ### Schema Conversion Limitations
 
@@ -131,4 +154,5 @@ Edge environments (Cloudflare Workers, Vercel Edge) may have limited support:
 - [ ] Ensure `mcp.stripe.com` is accessible in all environments
 - [ ] Update tool name filters to snake_case
 - [ ] Add `toolkit.close()` for cleanup
-- [ ] Consider switching to restricted keys (`rk_*`)
+- [ ] Remove `configuration.actions` and configure permissions via Restricted API Key instead
+- [ ] Switch to restricted keys (`rk_*`) for production use

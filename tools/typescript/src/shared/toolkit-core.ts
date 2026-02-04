@@ -1,6 +1,6 @@
 import {StripeMcpClient, type McpTool} from './mcp-client';
 import {AsyncInitializer} from './async-initializer';
-import {isToolAllowedByName, type Configuration} from './configuration';
+import {type Configuration} from './configuration';
 
 export type {McpTool};
 
@@ -51,17 +51,14 @@ export class ToolkitCore<T = McpTool[]> {
 
   /**
    * Initialize the toolkit by connecting to the MCP server and fetching tools.
+   * The server filters tools based on RAK permissions.
    */
   async initialize(): Promise<void> {
     await this._initializer.initialize(async () => {
       await this.mcpClient.connect();
 
       const remoteTools = this.mcpClient.getTools();
-      const filteredTools = remoteTools.filter((t) =>
-        isToolAllowedByName(t.name, this.configuration)
-      );
-
-      this._tools = this.convertTools(filteredTools);
+      this._tools = this.convertTools(remoteTools);
     });
   }
 

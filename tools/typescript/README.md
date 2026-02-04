@@ -17,20 +17,14 @@ npm install @stripe/agent-toolkit
 
 ## Usage
 
-The library needs to be configured with your account's secret key which is available in your [Stripe Dashboard][api-keys]. Additionally, `configuration` enables you to specify the types of actions that can be taken using the toolkit.
+The library needs to be configured with your account's secret key which is available in your [Stripe Dashboard][api-keys]. We recommend using a [Restricted API Key][restricted-keys] (`rk_*`) for better security—tool availability is determined by the permissions you configure on the key.
 
 ```typescript
 import {StripeAgentToolkit} from '@stripe/agent-toolkit/langchain';
 
 const stripeAgentToolkit = new StripeAgentToolkit({
   secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-    },
-  },
+  configuration: {},
 });
 ```
 
@@ -80,19 +74,7 @@ import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 
 const server = new StripeAgentToolkit({
   secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-      products: {
-        create: true,
-      },
-      prices: {
-        create: true,
-      },
-    },
-  },
+  configuration: {},
 });
 
 async function main() {
@@ -109,3 +91,4 @@ main().catch((error) => {
 
 [node-sdk]: https://github.com/stripe/stripe-node
 [api-keys]: https://dashboard.stripe.com/account/apikeys
+[restricted-keys]: https://docs.stripe.com/keys#create-restricted-api-keys

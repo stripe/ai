@@ -1,6 +1,6 @@
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {RequestHandlerExtra} from '@modelcontextprotocol/sdk/shared/protocol.js';
-import {Configuration, isToolAllowedByName} from '../shared/configuration';
+import {Configuration} from '../shared/configuration';
 import {StripeMcpClient, McpTool} from '../shared/mcp-client';
 import {jsonSchemaToZodShape} from '../shared/schema-utils';
 import {AsyncInitializer} from '../shared/async-initializer';
@@ -47,12 +47,10 @@ class StripeAgentToolkit extends McpServer {
     await this._mcpClient.connect();
 
     // Get tools from remote MCP and register as local proxies
+    // The server filters tools based on RAK permissions
     const remoteTools = this._mcpClient.getTools();
-    const filteredTools = remoteTools.filter((t) =>
-      isToolAllowedByName(t.name, this._configuration)
-    );
 
-    for (const remoteTool of filteredTools) {
+    for (const remoteTool of remoteTools) {
       this.registerProxyTool(remoteTool);
     }
   }
