@@ -51,8 +51,8 @@ const toolkit = new StripeAgentToolkit({
   secretKey: 'rk_test_...',
   configuration: {
     actions: {
-      customers: { create: true, read: true },
-      invoices: { create: true },
+      customers: {create: true, read: true},
+      invoices: {create: true},
     },
   },
 });
@@ -61,7 +61,7 @@ const toolkit = new StripeAgentToolkit({
 const toolkit = await createStripeAgentToolkit({
   secretKey: 'rk_test_...', // RAK permissions control which tools are available
   configuration: {
-    context: { account: 'acct_123' }, // Only context options remain
+    context: {account: 'acct_123'}, // Only context options remain
   },
 });
 ```
