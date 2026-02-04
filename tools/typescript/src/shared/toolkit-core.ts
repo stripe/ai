@@ -120,7 +120,7 @@ export class ToolkitCore<T = McpTool[]> {
     if (!this._initializer.isInitialized) {
       console.warn(
         '[StripeAgentToolkit] Accessing tools before initialization. ' +
-          'Call await toolkit.initialize() first, or use createStripeAgentToolkit() factory. ' +
+          'Use createStripeAgentToolkit() factory (recommended) or call await toolkit.initialize() first. ' +
           'Tools will be empty until initialized.'
       );
     }
