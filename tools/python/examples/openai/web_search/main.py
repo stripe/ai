@@ -19,12 +19,7 @@ async def main():
         research_agent = Agent(
             name="Research Agent",
             instructions="You are an expert at research.",
-            tools=[WebSearchTool()],
-            hooks=stripe_agent_toolkit.billing_hook(
-                type="outcome",
-                customer=os.getenv("STRIPE_CUSTOMER_ID"),
-                meter=os.getenv("STRIPE_METER"),
-            ),
+            tools=[WebSearchTool(), *stripe_agent_toolkit.get_tools()],
         )
 
         result = await Runner.run(

@@ -55,7 +55,7 @@ async def init():
 
 async def run(input: list[TResponseInputItem]) -> RunResult:
     if support_agent is None:
-        await init()
+        raise RuntimeError("support_agent not initialized. Call init() first.")
     return await Runner.run(support_agent, input)
 
 
