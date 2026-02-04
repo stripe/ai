@@ -41,6 +41,28 @@ Tools are fetched from `mcp.stripe.com`. If the server is unreachable, initializ
 
 The MCP SDK moved from a peer dependency to a direct dependency. You can no longer override the version—the toolkit bundles a specific version.
 
+### 5. Metered Billing Middleware Removed
+
+The `middleware()` method for AI SDK metered billing has been removed. If you were using token-based billing:
+
+```typescript
+// Before (v0.8.x) - No longer available
+const model = wrapLanguageModel({
+  model: openai('gpt-4o'),
+  middleware: stripeAgentToolkit.middleware({
+    billing: {
+      customer: 'cus_123',
+      meters: {
+        input: 'input_tokens',
+        output: 'output_tokens',
+      },
+    },
+  }),
+});
+```
+
+**Impact:** Implement metered billing separately using the Stripe SDK directly. To learn more, checkout the Stripe Docs on [Token Billing](https://docs.stripe.com/billing/token-billing).
+
 ---
 
 ## New API
