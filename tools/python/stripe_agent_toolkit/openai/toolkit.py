@@ -18,7 +18,6 @@ class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
     Example:
         toolkit = await create_stripe_agent_toolkit(
             secret_key='rk_test_...',
-            configuration={'actions': {'customers': {'create': True}}}
         )
         tools = toolkit.get_tools()
         agent = Agent(name="Stripe Agent", tools=tools)
@@ -48,7 +47,7 @@ class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
 
     def _create_function_tool(self, mcp_tool: McpTool) -> FunctionTool:
         """Create a FunctionTool from an MCP tool definition."""
-        stripe_client = self._stripe
+        toolkit = self
         tool_name = mcp_tool["name"]
 
         async def on_invoke_tool(
@@ -56,7 +55,7 @@ class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
             input_str: str
         ) -> str:
             args = json.loads(input_str)
-            return await stripe_client.run(tool_name, args)
+            return await toolkit.run_tool(tool_name, args)
 
         # Prepare parameters schema
         parameters = dict(mcp_tool.get("inputSchema", {}))
@@ -105,7 +104,6 @@ async def create_stripe_agent_toolkit(
     Example:
         toolkit = await create_stripe_agent_toolkit(
             secret_key='rk_test_...',
-            configuration={'actions': {'customers': {'create': True}}}
         )
         tools = toolkit.get_tools()
 
@@ -117,7 +115,7 @@ async def create_stripe_agent_toolkit(
 
     Args:
         secret_key: Stripe API key (rk_* recommended, sk_* deprecated)
-        configuration: Optional configuration for actions and context
+        configuration: Optional configuration for context
 
     Returns:
         Initialized StripeAgentToolkit ready to use

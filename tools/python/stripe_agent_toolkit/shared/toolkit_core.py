@@ -1,13 +1,12 @@
 """Base class for all Stripe Agent Toolkit implementations."""
 
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic, List, Optional
+from typing import TypeVar, Generic, List, Optional, Dict, Any
 import warnings
 
-from .stripe_client import StripeClient
-from .mcp_client import McpTool
+from .mcp_client import StripeMcpClient, McpTool
 from .async_initializer import AsyncInitializer
-from ..configuration import Configuration, is_tool_allowed_by_name
+from ..configuration import Configuration
 
 T = TypeVar("T")
 
@@ -27,7 +26,7 @@ class ToolkitCore(ABC, Generic[T]):
             def _convert_tools(self, mcp_tools: List[McpTool]) -> List[MyTool]:
                 return [MyTool(t) for t in mcp_tools]
 
-        toolkit = MyToolkit('rk_test_...', configuration)
+        toolkit = MyToolkit('rk_test_...')
         await toolkit.initialize()
         tools = toolkit.get_tools()
         await toolkit.close()
@@ -39,10 +38,13 @@ class ToolkitCore(ABC, Generic[T]):
         configuration: Optional[Configuration] = None
     ):
         self._configuration = configuration or {}
-        self._stripe = StripeClient(
-            secret_key,
-            self._configuration.get("context")
-        )
+        context = self._configuration.get("context") or {}
+        self._mcp_client = StripeMcpClient({
+            "secret_key": secret_key,
+            "account": context.get("account"),
+            "customer": context.get("customer"),
+            "mode": context.get("mode"),
+        })
         self._initializer = AsyncInitializer()
         self._tools: T = self._empty_tools()
 
@@ -77,15 +79,9 @@ class ToolkitCore(ABC, Generic[T]):
 
     async def _do_initialize(self) -> None:
         """Internal initialization logic."""
-        await self._stripe.initialize()
-
-        remote_tools = self._stripe.get_remote_tools()
-        filtered_tools = [
-            t for t in remote_tools
-            if is_tool_allowed_by_name(t.get("name", ""), self._configuration)
-        ]
-
-        self._tools = self._convert_tools(filtered_tools)
+        await self._mcp_client.connect()
+        mcp_tools = self._mcp_client.get_tools()
+        self._tools = self._convert_tools(mcp_tools)
 
     @property
     def is_initialized(self) -> bool:
@@ -118,7 +114,7 @@ class ToolkitCore(ABC, Generic[T]):
         if not self._initializer.is_initialized:
             return
 
-        await self._stripe.close()
+        await self._mcp_client.disconnect()
         self._initializer.reset()
         self._tools = self._empty_tools()
 
@@ -141,9 +137,28 @@ class ToolkitCore(ABC, Generic[T]):
             )
 
     @property
-    def stripe_client(self) -> StripeClient:
+    def mcp_client(self) -> StripeMcpClient:
         """
-        The unified Stripe client that handles MCP connections and tool execution.
-        This is NOT the raw Stripe SDK - it wraps MCP operations.
+        The MCP client that handles connections and tool execution.
         """
-        return self._stripe
+        return self._mcp_client
+
+    async def run_tool(
+        self,
+        method: str,
+        args: Dict[str, Any],
+        customer: Optional[str] = None
+    ) -> str:
+        """
+        Execute a tool via MCP.
+
+        Args:
+            method: Tool method name (e.g., 'create_customer')
+            args: Tool arguments
+            customer: Optional per-call customer override
+
+        Returns:
+            JSON string result
+        """
+        self._ensure_initialized()
+        return await self._mcp_client.call_tool(method, args, customer)

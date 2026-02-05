@@ -2,18 +2,17 @@
 
 import asyncio
 import json
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Callable, Awaitable
 
 from strands.tools.tools import PythonAgentTool as StrandTool
 
 from ..shared.toolkit_core import ToolkitCore
 from ..shared.mcp_client import McpTool
-from ..shared.stripe_client import StripeClient
 from ..configuration import Configuration
 
 
 def create_strand_tool(
-    stripe_client: StripeClient,
+    run_tool: Callable[..., Awaitable[str]],
     mcp_tool: McpTool
 ) -> "StrandTool":
     """Create a Strand tool from MCP tool definition."""
@@ -58,19 +57,19 @@ def create_strand_tool(
         elif isinstance(tool_input, dict):
             actual_params = tool_input.copy()
 
-        # Call the Stripe MCP client (need to run async in sync context)
+        # Call the MCP client (need to run async in sync context)
         loop = asyncio.get_event_loop()
         if loop.is_running():
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 future = pool.submit(
                     asyncio.run,
-                    stripe_client.run(tool_name, actual_params)
+                    run_tool(tool_name, actual_params)
                 )
                 result = future.result()
         else:
             result = loop.run_until_complete(
-                stripe_client.run(tool_name, actual_params)
+                run_tool(tool_name, actual_params)
             )
 
         # Return in the format expected by strands
@@ -103,7 +102,6 @@ class StripeAgentToolkit(ToolkitCore[List[StrandTool]]):
     Example:
         toolkit = await create_stripe_agent_toolkit(
             secret_key='rk_test_...',
-            configuration={'actions': {'customers': {'create': True}}}
         )
         tools = toolkit.get_tools()
         await toolkit.close()
@@ -126,7 +124,7 @@ class StripeAgentToolkit(ToolkitCore[List[StrandTool]]):
     ) -> List[StrandTool]:
         """Convert MCP tools to Strands StrandTool instances."""
         return [
-            create_strand_tool(self._stripe, t)
+            create_strand_tool(self.run_tool, t)
             for t in mcp_tools
         ]
 
@@ -154,14 +152,13 @@ async def create_stripe_agent_toolkit(
     Example:
         toolkit = await create_stripe_agent_toolkit(
             secret_key='rk_test_...',
-            configuration={'actions': {'customers': {'create': True}}}
         )
         tools = toolkit.get_tools()
         await toolkit.close()
 
     Args:
         secret_key: Stripe API key (rk_* recommended, sk_* deprecated)
-        configuration: Optional configuration for actions and context
+        configuration: Optional configuration for context
 
     Returns:
         Initialized StripeAgentToolkit ready to use

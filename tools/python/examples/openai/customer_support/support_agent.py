@@ -24,19 +24,6 @@ async def init():
 
     stripe_agent_toolkit = await create_stripe_agent_toolkit(
         secret_key=env.ensure("STRIPE_SECRET_KEY"),
-        configuration={
-            "actions": {
-                "customers": {
-                    "read": True,
-                },
-                "invoices": {
-                    "read": True,
-                },
-                "billing_portal_sessions": {
-                    "create": True,
-                },
-            }
-        },
     )
 
     support_agent = Agent(

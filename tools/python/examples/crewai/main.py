@@ -12,19 +12,6 @@ async def main():
     # Initialize the Stripe toolkit (connects to MCP server)
     stripe_agent_toolkit = await create_stripe_agent_toolkit(
         secret_key=os.getenv("STRIPE_SECRET_KEY"),
-        configuration={
-            "actions": {
-                "payment_links": {
-                    "create": True,
-                },
-                "products": {
-                    "create": True,
-                },
-                "prices": {
-                    "create": True,
-                },
-            }
-        },
     )
 
     try:

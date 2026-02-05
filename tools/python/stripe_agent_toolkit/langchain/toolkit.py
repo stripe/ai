@@ -1,7 +1,7 @@
 """Stripe Agent Toolkit for LangChain."""
 
 import asyncio
-from typing import List, Optional, Any, Type
+from typing import List, Optional, Any, Type, Callable, Awaitable
 
 from pydantic import BaseModel
 from langchain.tools import BaseTool
@@ -9,14 +9,13 @@ from langchain.tools import BaseTool
 from ..shared.toolkit_core import ToolkitCore
 from ..shared.mcp_client import McpTool
 from ..shared.schema_utils import json_schema_to_pydantic_model
-from ..shared.stripe_client import StripeClient
 from ..configuration import Configuration
 
 
 class StripeTool(BaseTool):
     """Tool for interacting with Stripe via MCP."""
 
-    stripe_client: StripeClient
+    run_tool: Callable[..., Awaitable[str]]
     method: str
     name: str = ""
     description: str = ""
@@ -31,17 +30,17 @@ class StripeTool(BaseTool):
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 future = pool.submit(
                     asyncio.run,
-                    self.stripe_client.run(self.method, kwargs)
+                    self.run_tool(self.method, kwargs)
                 )
                 return future.result()
         else:
             return loop.run_until_complete(
-                self.stripe_client.run(self.method, kwargs)
+                self.run_tool(self.method, kwargs)
             )
 
     async def _arun(self, **kwargs: Any) -> str:
         """Async execution via MCP."""
-        return await self.stripe_client.run(self.method, kwargs)
+        return await self.run_tool(self.method, kwargs)
 
 
 class StripeAgentToolkit(ToolkitCore[List[StripeTool]]):
@@ -51,7 +50,6 @@ class StripeAgentToolkit(ToolkitCore[List[StripeTool]]):
     Example:
         toolkit = await create_stripe_agent_toolkit(
             secret_key='rk_test_...',
-            configuration={'actions': {'customers': {'create': True}}}
         )
         tools = toolkit.get_tools()
         agent = create_react_agent(llm, tools, prompt)
@@ -83,7 +81,7 @@ class StripeAgentToolkit(ToolkitCore[List[StripeTool]]):
             )
 
             tools.append(StripeTool(
-                stripe_client=self._stripe,
+                run_tool=self.run_tool,
                 method=mcp_tool["name"],
                 name=mcp_tool["name"],
                 description=mcp_tool.get("description", mcp_tool["name"]),
@@ -115,7 +113,6 @@ async def create_stripe_agent_toolkit(
     Example:
         toolkit = await create_stripe_agent_toolkit(
             secret_key='rk_test_...',
-            configuration={'actions': {'customers': {'create': True}}}
         )
         tools = toolkit.get_tools()
 
@@ -127,7 +124,7 @@ async def create_stripe_agent_toolkit(
 
     Args:
         secret_key: Stripe API key (rk_* recommended, sk_* deprecated)
-        configuration: Optional configuration for actions and context
+        configuration: Optional configuration for context
 
     Returns:
         Initialized StripeAgentToolkit ready to use
