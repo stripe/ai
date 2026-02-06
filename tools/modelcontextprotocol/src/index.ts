@@ -69,15 +69,13 @@ export async function main(): Promise<void> {
     console.error(red('HTTP transport error:'), error);
   };
 
-  // Handle transport close
+  // Handle transport close - just close the other transport
   stdioTransport.onclose = () => {
     httpTransport.close();
-    process.exit(0);
   };
 
   httpTransport.onclose = () => {
     stdioTransport.close();
-    process.exit(0);
   };
 
   // Start both transports
@@ -91,7 +89,7 @@ export async function main(): Promise<void> {
 if (require.main === module) {
   main().catch((error) => {
     handleError(error);
-    process.exit(1);
+    throw error;
   });
 }
 
