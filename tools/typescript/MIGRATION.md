@@ -94,23 +94,51 @@ const model = wrapLanguageModel({
 
 ## New API
 
-### Factory Function (Recommended)
+There are two ways to initialize the toolkit. Both are valid—choose whichever fits your code structure better.
 
-All frameworks export `createStripeAgentToolkit()`:
+### Option 1: Factory Function (Recommended)
+
+The simplest approach. Creates and initializes the toolkit in one step:
 
 ```typescript
-import {createStripeAgentToolkit} from '@stripe/agent-toolkit/ai-sdk';
-// Also: /langchain, /openai, /modelcontextprotocol
+import {createStripeAgentToolkit} from '@stripe/agent-toolkit/openai';
+// Also available: /ai-sdk, /langchain, /modelcontextprotocol
 
 const toolkit = await createStripeAgentToolkit({
   secretKey: 'rk_test_...',
   configuration: {},
 });
+
+const tools = toolkit.getTools();
+// ... use tools ...
+
+await toolkit.close(); // Clean up when done
+```
+
+### Option 2: Constructor + initialize()
+
+If you need to create the toolkit instance separately from initialization (e.g., for dependency injection or delayed initialization):
+
+```typescript
+import StripeAgentToolkit from '@stripe/agent-toolkit/openai';
+
+const toolkit = new StripeAgentToolkit({
+  secretKey: 'rk_test_...',
+  configuration: {},
+});
+
+// Later, when ready to use:
+await toolkit.initialize();
+
+const tools = toolkit.getTools();
+// ... use tools ...
+
+await toolkit.close(); // Clean up when done
 ```
 
 ### Cleanup
 
-Close the MCP connection when done:
+Always close the MCP connection when done:
 
 ```typescript
 await toolkit.close();

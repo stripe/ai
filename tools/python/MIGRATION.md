@@ -80,30 +80,16 @@ toolkit = await create_stripe_agent_toolkit(
 
 ## New API
 
-### Factory Function (Recommended)
+There are two ways to initialize the toolkit. Both are valid—choose whichever fits your code structure better.
 
-All frameworks export `create_stripe_agent_toolkit()`:
+### Option 1: Factory Function (Recommended)
+
+The simplest approach. Creates and initializes the toolkit in one step:
 
 ```python
 from stripe_agent_toolkit.openai.toolkit import create_stripe_agent_toolkit
-# Also: .langchain.toolkit, .crewai.toolkit, .strands.toolkit
+# Also available: .langchain.toolkit, .crewai.toolkit, .strands.toolkit
 
-toolkit = await create_stripe_agent_toolkit(
-    secret_key="rk_test_...",
-)
-```
-
-### Cleanup
-
-Close the MCP connection when done:
-
-```python
-await toolkit.close()
-```
-
-### Using try/finally for Cleanup
-
-```python
 async def main():
     toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
     try:
@@ -111,6 +97,33 @@ async def main():
         # ... use tools ...
     finally:
         await toolkit.close()
+```
+
+### Option 2: Constructor + initialize()
+
+If you need to create the toolkit instance separately from initialization (e.g., for dependency injection or delayed initialization):
+
+```python
+from stripe_agent_toolkit.openai.toolkit import StripeAgentToolkit
+
+toolkit = StripeAgentToolkit(secret_key="rk_test_...")
+
+# Later, when ready to use:
+async def main():
+    await toolkit.initialize()
+    try:
+        tools = toolkit.get_tools()
+        # ... use tools ...
+    finally:
+        await toolkit.close()
+```
+
+### Cleanup
+
+Always close the MCP connection when done:
+
+```python
+await toolkit.close()
 ```
 
 ---
