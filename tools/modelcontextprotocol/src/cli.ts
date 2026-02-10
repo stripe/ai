@@ -3,10 +3,9 @@ import {yellow} from 'colors';
 export type Options = {
   apiKey: string;
   stripeAccount?: string;
-  tools?: string[];
 };
 
-export const ACCEPTED_ARGS = ['api-key', 'tools', 'stripe-account'];
+export const ACCEPTED_ARGS = ['api-key', 'stripe-account'];
 
 export function parseArgs(args: string[]): Options {
   const options: Partial<Options> = {};
@@ -16,7 +15,11 @@ export function parseArgs(args: string[]): Options {
       const [key, value] = arg.slice(2).split('=');
 
       if (key === 'tools') {
-        options.tools = value?.split(',');
+        throw new Error(
+          'The --tools flag has been removed. ' +
+            'Tool permissions are now controlled by your Restricted API Key (RAK). ' +
+            'Create a RAK with the desired permissions at https://dashboard.stripe.com/apikeys'
+        );
       } else if (key === 'api-key') {
         options.apiKey = value;
       } else if (key === 'stripe-account') {
@@ -51,7 +54,7 @@ export function validateApiKey(apiKey: string): void {
   if (apiKey.startsWith('sk_')) {
     console.error(
       yellow(
-        '[DEPRECATION WARNING] Using sk_* keys with Stripe MCP is deprecated.\n' +
+        '[DEPRECATION WARNING] Using sk_* keys with Stripe MCP is being deprecated.\n' +
           'Please switch to rk_* (restricted keys) for better security.\n' +
           'See: https://docs.stripe.com/keys#create-restricted-api-keys\n'
       )
@@ -62,18 +65,6 @@ export function validateApiKey(apiKey: string): void {
 export function validateStripeAccount(account: string): void {
   if (!account.startsWith('acct_')) {
     throw new Error('Stripe account must start with "acct_".');
-  }
-}
-
-export function warnIfToolsProvided(tools?: string[]): void {
-  if (tools && tools.length > 0) {
-    console.error(
-      yellow(
-        '[DEPRECATION WARNING] The --tools flag is deprecated and will be ignored.\n' +
-          'Tool permissions are now controlled by your Restricted API Key (RAK) configuration.\n' +
-          'See: https://docs.stripe.com/keys#create-restricted-api-keys\n'
-      )
-    );
   }
 }
 

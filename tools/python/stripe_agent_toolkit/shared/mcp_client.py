@@ -68,9 +68,8 @@ class StripeMcpClient:
 
         if key.startswith("sk_"):
             warnings.warn(
-                "[DEPRECATION WARNING] Using sk_* keys with agent-toolkit "
-                "is deprecated. Please switch to rk_* (restricted keys) for "
-                "better security. "
+                "[DEPRECATION WARNING] Using sk_* keys with Stripe MCP is being deprecated. "
+                "Please switch to rk_* (restricted keys) for better security. "
                 "See: https://docs.stripe.com/keys#create-restricted-api-keys",
                 DeprecationWarning,
                 stacklevel=3

@@ -7,7 +7,6 @@ import {
   parseArgs,
   validateApiKey,
   validateStripeAccount,
-  warnIfToolsProvided,
   buildHeaders,
 } from './cli';
 
@@ -29,7 +28,6 @@ export async function main(): Promise<void> {
   if (options.stripeAccount) {
     validateStripeAccount(options.stripeAccount);
   }
-  warnIfToolsProvided(options.tools);
 
   const headers = buildHeaders(options, USER_AGENT);
 

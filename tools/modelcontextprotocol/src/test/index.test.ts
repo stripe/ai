@@ -49,16 +49,6 @@ describe('parseArgs function', () => {
       expect(options.apiKey).toBe('sk_test_456');
     });
 
-    it('should parse deprecated tools argument without error (for backwards compatibility)', () => {
-      const args = [
-        '--api-key=sk_test_123',
-        '--tools=customers.create,products.read',
-      ];
-      const options = parseArgs(args);
-      expect(options.tools).toEqual(['customers.create', 'products.read']);
-      expect(options.apiKey).toBe('sk_test_123');
-    });
-
     it('ignore all arguments not prefixed with --', () => {
       const args = ['--api-key=sk_test_123', 'stripe-account=acct_123'];
       const options = parseArgs(args);
@@ -78,7 +68,14 @@ describe('parseArgs function', () => {
     it('should throw an error if an invalid argument is provided', () => {
       const args = ['--invalid-arg=value', '--api-key=sk_test_123'];
       expect(() => parseArgs(args)).toThrow(
-        'Invalid argument: invalid-arg. Accepted arguments are: api-key, tools, stripe-account'
+        'Invalid argument: invalid-arg. Accepted arguments are: api-key, stripe-account'
+      );
+    });
+
+    it('should throw an error if --tools flag is provided', () => {
+      const args = ['--api-key=sk_test_123', '--tools=customers.create'];
+      expect(() => parseArgs(args)).toThrow(
+        'The --tools flag has been removed. Tool permissions are now controlled by your Restricted API Key (RAK). Create a RAK with the desired permissions at https://dashboard.stripe.com/apikeys'
       );
     });
   });
