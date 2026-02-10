@@ -123,7 +123,8 @@ class ToolkitCore(ABC, Generic[T]):
         if not self._initializer.is_initialized:
             raise RuntimeError(
                 "StripeAgentToolkit not initialized. "
-                "Call await toolkit.initialize() first."
+                "Use `await create_stripe_agent_toolkit()` factory (recommended) or call `await toolkit.initialize()` first. "
+                "See migration guide: https://github.com/stripe/agent-toolkit/blob/main/tools/python/MIGRATION.md"
             )
 
     def _warn_if_not_initialized(self) -> None:
