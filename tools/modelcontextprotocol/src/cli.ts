@@ -15,10 +15,12 @@ export function parseArgs(args: string[]): Options {
       const [key, value] = arg.slice(2).split('=');
 
       if (key === 'tools') {
-        throw new Error(
-          'The --tools flag has been removed. ' +
-            'Tool permissions are now controlled by your Restricted API Key (RAK). ' +
-            'Create a RAK with the desired permissions at https://dashboard.stripe.com/apikeys'
+        console.warn(
+          yellow(
+            'The --tools flag has been removed. ' +
+              'Tool permissions are now controlled by your Restricted API Key (RAK). ' +
+              'Create a RAK with the desired permissions at https://dashboard.stripe.com/apikeys'
+          )
         );
       } else if (key === 'api-key') {
         options.apiKey = value;
@@ -52,7 +54,7 @@ export function validateApiKey(apiKey: string): void {
   }
 
   if (apiKey.startsWith('sk_')) {
-    console.error(
+    console.warn(
       yellow(
         '[DEPRECATION WARNING] Using sk_* keys with Stripe MCP is being deprecated.\n' +
           'Please switch to rk_* (restricted keys) for better security.\n' +
