@@ -105,7 +105,9 @@ export class ToolkitCore<T = McpTool[]> {
   ensureInitialized(): void {
     if (!this._initializer.isInitialized) {
       throw new Error(
-        'StripeAgentToolkit not initialized. Call await toolkit.initialize() first.'
+        'StripeAgentToolkit not initialized. ' +
+          'Use `await createStripeAgentToolkit()` factory (recommended) or call `await toolkit.initialize()` first. ' +
+          'See migration guide: https://github.com/stripe/agent-toolkit/blob/main/tools/typescript/MIGRATION.md'
       );
     }
   }
