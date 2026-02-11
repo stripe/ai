@@ -150,7 +150,7 @@ await toolkit.close();
 
 ### Restricted Keys Recommended
 
-`sk_*` keys trigger a deprecation warning. Use restricted keys (`rk_*`) for better security. Tool availability is determined by your RAK's permissions on the server.
+We strongly recommend using restricted keys (`rk_*`) instead of `sk_*` keys for better security and granular permissions. Tool availability is determined by your RAK's permissions on the server.
 
 ### Schema Conversion Limitations
 

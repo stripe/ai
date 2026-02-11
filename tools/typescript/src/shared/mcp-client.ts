@@ -92,8 +92,7 @@ export class StripeMcpClient {
 
     if (key.startsWith('sk_')) {
       console.warn(
-        '[DEPRECATION WARNING] Using sk_* keys with Stripe MCP is being deprecated. ' +
-          'Please switch to rk_* (restricted keys) for better security. ' +
+        '[WARNING] We strongly recommend using rk_* (restricted keys) instead of sk_* keys for better security and granular permissions. ' +
           'See: https://docs.stripe.com/keys#create-restricted-api-keys'
       );
     }

@@ -114,7 +114,7 @@ async def create_stripe_agent_toolkit(
         await toolkit.close()
 
     Args:
-        secret_key: Stripe API key (rk_* recommended, sk_* deprecated)
+        secret_key: Stripe API key (rk_* strongly recommended over sk_*)
         configuration: Optional configuration for context
 
     Returns:

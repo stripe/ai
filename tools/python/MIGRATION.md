@@ -226,7 +226,7 @@ asyncio.run(main())
 
 ### Restricted Keys Recommended
 
-`sk_*` keys trigger a deprecation warning. Use restricted keys (`rk_*`) for better security. Tool availability is determined by your RAK's permissions on the server.
+We strongly recommend using restricted keys (`rk_*`) instead of `sk_*` keys for better security and granular permissions. Tool availability is determined by your RAK's permissions on the server.
 
 Create restricted keys at: https://dashboard.stripe.com/apikeys
 
@@ -257,11 +257,11 @@ If you see `StripeAgentToolkit not initialized`:
 - Make sure you're using `await create_stripe_agent_toolkit()`
 - Or call `await toolkit.initialize()` after creating the toolkit
 
-### Deprecation Warnings
+### Key Recommendation Warnings
 
-If you see warnings about deprecated patterns:
+If you see warnings about API keys:
 - Switch from `StripeAgentToolkit()` to `create_stripe_agent_toolkit()`
-- Switch from `sk_*` keys to `rk_*` restricted keys
+- Switch from `sk_*` keys to `rk_*` restricted keys for better security
 
 ## Getting Help
 

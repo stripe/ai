@@ -31,11 +31,7 @@ Add the following to your `claude_desktop_config.json`. See [here](https://model
   "mcpServers": {
     "stripe": {
       "command": "npx",
-      "args": [
-          "-y",
-          "@stripe/mcp",
-          "--api-key=STRIPE_SECRET_KEY"
-      ]
+      "args": ["-y", "@stripe/mcp", "--api-key=STRIPE_SECRET_KEY"]
     }
   }
 }
@@ -45,18 +41,12 @@ or if you're using Docker
 
 ```json
 {
-    "mcpServers": {
-        "stripe": {
-            "command": "docker",
-            "args": [
-                "run",
-                "--rm",
-                "-i",
-                "mcp/stripe",
-                "--api-key=STRIPE_SECRET_KEY"
-            ]
-        }
+  "mcpServers": {
+    "stripe": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "mcp/stripe", "--api-key=STRIPE_SECRET_KEY"]
     }
+  }
 }
 ```
 

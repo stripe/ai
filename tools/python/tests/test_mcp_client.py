@@ -18,13 +18,13 @@ class TestStripeMcpClient:
             mock_warn.assert_not_called()
 
     def test_init_with_sk_key_warns(self):
-        """Should emit deprecation warning for sk_* API keys."""
+        """Should emit recommendation warning for sk_* API keys."""
         with patch("warnings.warn") as mock_warn:
             client = StripeMcpClient({
                 "secret_key": "sk_test_123"
             })
             mock_warn.assert_called_once()
-            assert "deprecated" in str(mock_warn.call_args).lower()
+            assert "strongly recommend" in str(mock_warn.call_args).lower()
 
     def test_init_invalid_key_raises(self):
         """Should raise error for invalid API key prefix."""

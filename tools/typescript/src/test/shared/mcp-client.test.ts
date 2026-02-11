@@ -64,11 +64,11 @@ describe('StripeMcpClient', () => {
       );
     });
 
-    it('should accept sk_* keys with deprecation warning', () => {
+    it('should accept sk_* keys with recommendation warning', () => {
       const client = new StripeMcpClient({secretKey: 'sk_test_123'});
       expect(client).toBeDefined();
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('DEPRECATION WARNING')
+        expect.stringContaining('strongly recommend')
       );
     });
 

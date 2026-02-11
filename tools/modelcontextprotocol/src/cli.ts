@@ -56,8 +56,7 @@ export function validateApiKey(apiKey: string): void {
   if (apiKey.startsWith('sk_')) {
     console.warn(
       yellow(
-        '[DEPRECATION WARNING] Using sk_* keys with Stripe MCP is being deprecated.\n' +
-          'Please switch to rk_* (restricted keys) for better security.\n' +
+        '[WARNING] We strongly recommend using rk_* (restricted keys) instead of sk_* keys for better security and granular permissions.\n' +
           'See: https://docs.stripe.com/keys#create-restricted-api-keys\n'
       )
     );
