@@ -11,23 +11,22 @@ Stripe hosts a remote MCP server at https://mcp.stripe.com. View the docs [here]
 To run the Stripe MCP server locally using npx, use the following command:
 
 ```bash
-# To set up all available tools
-npx -y @stripe/mcp --tools=all --api-key=YOUR_STRIPE_SECRET_KEY
-
-# To set up specific tools
-npx -y @stripe/mcp --tools=customers.create,customers.read,products.create --api-key=YOUR_STRIPE_SECRET_KEY
+# Basic usage
+npx -y @stripe/mcp --api-key=YOUR_STRIPE_SECRET_KEY
 
 # To configure a Stripe connected account
-npx -y @stripe/mcp --tools=all --api-key=YOUR_STRIPE_SECRET_KEY --stripe-account=CONNECTED_ACCOUNT_ID
+npx -y @stripe/mcp --api-key=YOUR_STRIPE_SECRET_KEY --stripe-account=CONNECTED_ACCOUNT_ID
 ```
 
 Make sure to replace `YOUR_STRIPE_SECRET_KEY` with your actual Stripe secret key. Alternatively, you could set the STRIPE_SECRET_KEY in your environment variables.
+
+**Note:** Tool permissions are controlled by your Restricted API Key (RAK). Create a RAK with the desired permissions at https://dashboard.stripe.com/apikeys
 
 ### Usage with Claude Desktop
 
 Add the following to your `claude_desktop_config.json`. See [here](https://modelcontextprotocol.io/quickstart/user) for more details.
 
-```
+```json
 {
   "mcpServers": {
     "stripe": {
@@ -35,7 +34,6 @@ Add the following to your `claude_desktop_config.json`. See [here](https://model
       "args": [
           "-y",
           "@stripe/mcp",
-          "--tools=all",
           "--api-key=STRIPE_SECRET_KEY"
       ]
     }
@@ -43,25 +41,23 @@ Add the following to your `claude_desktop_config.json`. See [here](https://model
 }
 ```
 
-of if you're using Docker
+or if you're using Docker
 
-```
+```json
 {
-    “mcpServers”: {
-        “stripe”: {
-            “command”: “docker",
-            “args”: [
-                “run”,
+    "mcpServers": {
+        "stripe": {
+            "command": "docker",
+            "args": [
+                "run",
                 "--rm",
                 "-i",
-                “mcp/stripe”,
-                “--tools=all”,
-                “--api-key=STRIPE_SECRET_KEY”
+                "mcp/stripe",
+                "--api-key=STRIPE_SECRET_KEY"
             ]
         }
     }
 }
-
 ```
 
 ### Usage with Gemini CLI
@@ -88,8 +84,8 @@ npm run build
 Run the following command in your terminal:
 
 ```bash
-# Start MCP Inspector and server with all tools
-npx @modelcontextprotocol/inspector node dist/index.js --tools=all --api-key=YOUR_STRIPE_SECRET_KEY
+# Start MCP Inspector and server
+npx @modelcontextprotocol/inspector node dist/index.js --api-key=YOUR_STRIPE_SECRET_KEY
 ```
 
 ### Build using Docker
@@ -103,8 +99,7 @@ docker build -t mcp/stripe .
 Run the following command in your terminal:
 
 ```bash
-docker run -p 3000:3000 -p 5173:5173 -v /var/run/docker.sock:/var/run/docker.sock mcp/inspector docker run --rm -i mcp/stripe --tools=all --api-key=YOUR_STRIPE_SECRET_KEY
-
+docker run -p 3000:3000 -p 5173:5173 -v /var/run/docker.sock:/var/run/docker.sock mcp/inspector docker run --rm -i mcp/stripe --api-key=YOUR_STRIPE_SECRET_KEY
 ```
 
 ### Instructions

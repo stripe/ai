@@ -20,8 +20,10 @@ Included below are basic instructions, but refer to [Python](/tools/python), [Ty
 The Stripe Agent Toolkit also exposes tools in the [Model Context Protocol (MCP)](https://modelcontextprotocol.com/) format. Or, to run a local Stripe MCP server using npx, use the following command:
 
 ```bash
-npx -y @stripe/mcp --tools=all --api-key=YOUR_STRIPE_SECRET_KEY
+npx -y @stripe/mcp --api-key=YOUR_STRIPE_SECRET_KEY
 ```
+
+Tool permissions are controlled by your Restricted API Key (RAK). Create a RAK with the desired permissions at https://dashboard.stripe.com/apikeys
 
 ## Python
 
@@ -41,21 +43,16 @@ pip install stripe-agent-toolkit
 ### Usage
 
 The library needs to be configured with your account's secret key which is
-available in your [Stripe Dashboard][api-keys].
+available in your [Stripe Dashboard][api-keys]. We strongly recommend using a [Restricted API Key][restricted-keys] (`rk_*`)—secret keys (`sk_*`) will show deprecation warnings and will be phased out in future versions. Tool availability is determined by the permissions you configure on the restricted key.
 
 ```python
-from stripe_agent_toolkit.openai.toolkit import StripeAgentToolkit
+from stripe_agent_toolkit.openai.toolkit import create_stripe_agent_toolkit
 
-stripe_agent_toolkit = StripeAgentToolkit(
-    secret_key="sk_test_...",
-    configuration={
-        "actions": {
-            "payment_links": {
-                "create": True,
-            },
-        }
-    },
-)
+async def main():
+    toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
+    tools = toolkit.get_tools()
+    # ... use tools ...
+    await toolkit.close()  # Clean up when done
 ```
 
 The toolkit works with OpenAI's Agent SDK, LangChain, and CrewAI and can be passed as a list of tools. For example:
@@ -63,11 +60,16 @@ The toolkit works with OpenAI's Agent SDK, LangChain, and CrewAI and can be pass
 ```python
 from agents import Agent
 
-stripe_agent = Agent(
-    name="Stripe Agent",
-    instructions="You are an expert at integrating with Stripe",
-    tools=stripe_agent_toolkit.get_tools()
-)
+async def main():
+    toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
+
+    stripe_agent = Agent(
+        name="Stripe Agent",
+        instructions="You are an expert at integrating with Stripe",
+        tools=toolkit.get_tools()
+    )
+    # ... use agent ...
+    await toolkit.close()
 ```
 
 Examples for OpenAI's Agent SDK,LangChain, and CrewAI are included in [/examples](/tools/python/examples).
@@ -77,8 +79,8 @@ Examples for OpenAI's Agent SDK,LangChain, and CrewAI are included in [/examples
 In some cases you will want to provide values that serve as defaults when making requests. Currently, the `account` context value enables you to make API calls for your [connected accounts](https://docs.stripe.com/connect/authentication).
 
 ```python
-stripe_agent_toolkit = StripeAgentToolkit(
-    secret_key="sk_test_...",
+toolkit = await create_stripe_agent_toolkit(
+    secret_key="rk_test_...",
     configuration={
         "context": {
             "account": "acct_123"
@@ -104,21 +106,20 @@ npm install @stripe/agent-toolkit
 
 ### Usage
 
-The library needs to be configured with your account's secret key which is available in your [Stripe Dashboard][api-keys]. Additionally, `configuration` enables you to specify the types of actions that can be taken using the toolkit.
+The library needs to be configured with your account's secret key which is available in your [Stripe Dashboard][api-keys]. We strongly recommend using a [Restricted API Key][restricted-keys] (`rk_*`)—secret keys (`sk_*`) will show deprecation warnings and will be phased out in future versions. Tool availability is determined by the permissions you configure on the restricted key.
 
 ```typescript
-import { StripeAgentToolkit } from "@stripe/agent-toolkit/langchain";
+import { createStripeAgentToolkit } from "@stripe/agent-toolkit/langchain";
 
-const stripeAgentToolkit = new StripeAgentToolkit({
+const toolkit = await createStripeAgentToolkit({
   secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-    },
-  },
+  configuration: {},
 });
+
+const tools = toolkit.getTools();
+// ... use tools ...
+
+await toolkit.close(); // Clean up when done
 ```
 
 #### Tools
@@ -127,8 +128,14 @@ The toolkit works with LangChain and Vercel's AI SDK and can be passed as a list
 
 ```typescript
 import { AgentExecutor, createStructuredChatAgent } from "langchain/agents";
+import { createStripeAgentToolkit } from "@stripe/agent-toolkit/langchain";
 
-const tools = stripeAgentToolkit.getTools();
+const toolkit = await createStripeAgentToolkit({
+  secretKey: process.env.STRIPE_SECRET_KEY!,
+  configuration: {},
+});
+
+const tools = toolkit.getTools();
 
 const agent = await createStructuredChatAgent({
   llm,
@@ -147,50 +154,13 @@ const agentExecutor = new AgentExecutor({
 In some cases you will want to provide values that serve as defaults when making requests. Currently, the `account` context value enables you to make API calls for your [connected accounts](https://docs.stripe.com/connect/authentication).
 
 ```typescript
-const stripeAgentToolkit = new StripeAgentToolkit({
+const toolkit = await createStripeAgentToolkit({
   secretKey: process.env.STRIPE_SECRET_KEY!,
   configuration: {
     context: {
       account: "acct_123",
     },
   },
-});
-```
-
-#### Metered billing
-
-For Vercel's AI SDK, you can use middleware to submit billing events for usage. All that is required is the customer ID and the input/output meters to bill.
-
-```typescript
-import { StripeAgentToolkit } from "@stripe/agent-toolkit/ai-sdk";
-import { openai } from "@ai-sdk/openai";
-import {
-  generateText,
-  experimental_wrapLanguageModel as wrapLanguageModel,
-} from "ai";
-
-const stripeAgentToolkit = new StripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-    },
-  },
-});
-
-const model = wrapLanguageModel({
-  model: openai("gpt-4o"),
-  middleware: stripeAgentToolkit.middleware({
-    billing: {
-      customer: "cus_123",
-      meters: {
-        input: "input_tokens",
-        output: "output_tokens",
-      },
-    },
-  }),
 });
 ```
 
@@ -201,3 +171,4 @@ See the [Stripe MCP](https://docs.stripe.com/mcp) docs for a list of supported m
 [python-sdk]: https://github.com/stripe/stripe-python
 [node-sdk]: https://github.com/stripe/stripe-node
 [api-keys]: https://dashboard.stripe.com/account/apikeys
+[restricted-keys]: https://docs.stripe.com/keys#create-restricted-api-keys

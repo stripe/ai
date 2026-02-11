@@ -23,7 +23,7 @@
     "entry_point": "dxt-dist/index.js",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/dxt-dist/index.js", "--tools=all"],
+      "args": ["${__dirname}/dxt-dist/index.js"],
       "env": {
         "STRIPE_SECRET_KEY": "${user_config.stripe_secret_key}"
       }

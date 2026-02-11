@@ -20,21 +20,16 @@ uv pip install stripe-agent-toolkit
 ## Usage
 
 The library needs to be configured with your account's secret key which is
-available in your [Stripe Dashboard][api-keys].
+available in your [Stripe Dashboard][api-keys]. We strongly recommend using a [Restricted API Key][restricted-keys] (`rk_*`)—secret keys (`sk_*`) will show deprecation warnings and will be phased out in future versions. Tool availability is determined by the permissions you configure on the restricted key.
 
 ```python
-from stripe_agent_toolkit.openai.toolkit import StripeAgentToolkit
+from stripe_agent_toolkit.openai.toolkit import create_stripe_agent_toolkit
 
-stripe_agent_toolkit = StripeAgentToolkit(
-    secret_key="sk_test_...",
-    configuration={
-        "actions": {
-            "payment_links": {
-                "create": True,
-            },
-        }
-    },
-)
+async def main():
+    toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
+    tools = toolkit.get_tools()
+    # ... use tools ...
+    await toolkit.close()  # Clean up when done
 ```
 
 The toolkit works with OpenAI's Agent SDK, LangChain, and CrewAI and can be passed as a list of tools. For example:
@@ -42,25 +37,31 @@ The toolkit works with OpenAI's Agent SDK, LangChain, and CrewAI and can be pass
 ```python
 from agents import Agent
 
-stripe_agent = Agent(
-    name="Stripe Agent",
-    instructions="You are an expert at integrating with Stripe",
-    tools=stripe_agent_toolkit.get_tools()
-)
+async def main():
+    toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
+
+    stripe_agent = Agent(
+        name="Stripe Agent",
+        instructions="You are an expert at integrating with Stripe",
+        tools=toolkit.get_tools()
+    )
+    # ... use agent ...
+    await toolkit.close()
 ```
 
-Examples for OpenAI's Agent SDK,LangChain, and CrewAI are included in [/examples](/examples).
+Examples for OpenAI's Agent SDK, LangChain, and CrewAI are included in [/examples](/examples).
 
 [python-sdk]: https://github.com/stripe/stripe-python
 [api-keys]: https://dashboard.stripe.com/account/apikeys
+[restricted-keys]: https://docs.stripe.com/keys#create-restricted-api-keys
 
-#### Context
+### Context
 
 In some cases you will want to provide values that serve as defaults when making requests. Currently, the `account` context value enables you to make API calls for your [connected accounts](https://docs.stripe.com/connect/authentication).
 
 ```python
-stripe_agent_toolkit = StripeAgentToolkit(
-    secret_key="sk_test_...",
+toolkit = await create_stripe_agent_toolkit(
+    secret_key="rk_test_...",
     configuration={
         "context": {
             "account": "acct_123"
