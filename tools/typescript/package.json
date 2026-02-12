@@ -42,6 +42,10 @@
   "engines": {
     "node": ">=18"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stripe/ai"
+  },
   "author": "Stripe <support@stripe.com> (https://stripe.com/)",
   "contributors": [
     "Steve Kaliski <stevekaliski@stripe.com>"

@@ -28,6 +28,10 @@
     "@modelcontextprotocol/sdk": "^1.17.1",
     "colors": "^1.4.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stripe/ai"
+  },
   "keywords": [
     "mcp",
     "modelcontextprotocol",
