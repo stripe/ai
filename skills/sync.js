@@ -63,6 +63,7 @@ const run = async () => {
     const content = await getMCPPrompt(prompt.name);
 
     const skillFileContent = `---
+name: ${prompt.name}
 description: ${prompt.description}
 alwaysApply: false
 ---
