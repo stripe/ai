@@ -19,7 +19,7 @@ const getMCPPrompt = async (promptName) => {
       jsonrpc: "2.0",
       method: "prompts/get",
       params: {
-        name: "stripe-best-practices",
+        name: promptName,
         arguments: {},
       },
       id: 1,
