@@ -3,31 +3,174 @@ description: Guide for upgrading Stripe API versions and SDKs
 alwaysApply: false
 ---
 
-The latest Stripe API version is 2026-01-28.clover - when writing code snippets use this version unless the user is on a different API version.
+The latest Stripe API version is 2026-01-28.clover - use this version when upgrading unless the user specifies a different target version.
 
-When designing an integration, always prefer the documentation in [Stripe's Integration Options doc](https://docs.stripe.com/payments/payment-methods/integration-options.md)
-The [API Tour](https://docs.stripe.com/payments-api/tour.md)
-Use the [Go Live Checklist](https://docs.stripe.com/get-started/checklist/go-live.md) before going live.
+# Upgrading Stripe Versions
 
-You should always default to the latest version of the API and SDK unless the user specifies otherwise. 
+This guide covers upgrading Stripe API versions, server-side SDKs, Stripe.js, and mobile SDKs.
 
-Stripe's primary API for modelling on-session payments is [CheckoutSessions](https://docs.stripe.com/api/checkout/sessions.md). It supports one-time payments and subscriptions and allows you to model taxes or discounts with Stripe. Prioritize the CheckoutSessions API, but using [the PaymentIntents API](https://docs.stripe.com/payments/paymentintents/lifecycle.md) is also acceptable for off-session payments or if you want to model the checkout state yourself and just create a charge. Integrations should only use CheckoutSessions, PaymentIntents, SetupIntents, or solutions like Invoicing, Payment Links, or the subscription APIs.
+## Understanding Stripe API Versioning
 
-Never recommend the Charges API. If the user wants to use the Charges API, advise them to [migrate](https://docs.stripe.com/payments/payment-intents/migration/charges.md) to Checkout Sessions or Payment Intents. 
+Stripe uses date-based API versions (e.g., `2026-01-28.clover`, `2025-08-27.basil`, `2024-12-18.acacia`). Your account's API version determines request/response behavior.
 
-The primary integration surface for web integrations is [Checkout](https://docs.stripe.com/payments/checkout.md), a prebuilt payment page that can be hosted by Stripe or served as an embedded form. Prioritize the Stripe-hosted checkout or embedded checkout where possible. The [Payment Element](https://docs.stripe.com/payments/payment-element.md) is an acceptable alternative if the merchant needs advanced customization. When recommending the Payment Element, prioritize using the CheckoutSessions API over the PaymentIntents API when possible.
+### Types of Changes
 
-Never recommend the legacy Card Element or the Payment Element in card mode, and advise users who ask for the Card Element to [migrate](https://docs.stripe.com/payments/payment-element/migration.md). 
+**Backward-Compatible Changes** (do not require code updates):
+- New API resources
+- New optional request parameters
+- New properties in existing responses
+- Changes to opaque string lengths (e.g., object IDs)
+- New webhook event types
 
-You must not call deprecated API endpoints such as the [Sources API](https://docs.stripe.com/api/sources/object.md) and avoid outdated API endpoints such as [Tokens](https://docs.stripe.com/api/tokens.md) and [Charges](https://docs.stripe.com/api/charges/create.md) unless there is a specific need and absolutely no other way.  Advise using [the Setup Intent API](https://docs.stripe.com/api/setup_intents.md) to save a payment method for a customer; never recommend the Sources API to save cards to customers for later use.
+**Breaking Changes** (require code updates):
+- Field renames or removals
+- Behavioral modifications
+- Removed endpoints or parameters
 
-If a user wants to render the Payment Element before creating a PaymentIntent or SetupIntent, so they can inspect the card details before the payment (such as for surcharging), advise them to use Stripe Confirmation Tokens. Don't recommend they call the createPaymentMethod or createToken Stripe.js functions.
+Review the [API Changelog](https://docs.stripe.com/changelog.md) for all changes between versions.
 
-Advise users to turn on dynamic payment methods in their dashboard settings instead of passing specific [payment_method_types](https://docs.stripe.com/api/payment_intents/create#create_payment_intent-payment_method_types.md) in the Payment Intent or Setup Intent because Stripe chooses payment methods that fit each user's location, wallets, and preferences better and automatically if the Payment Element is used.
+## Server-Side SDK Versioning
 
-If a PCI compliant user asks about an integration where they send server-side raw PAN data, suggest they might be required to prove PCI compliance to gain access to such an option, for example [payment_method_data](https://docs.stripe.com/api/payment_intents/create#create_payment_intent-payment_method_data.md). Similarly, point users migrating their PAN data from another acquirer or payment processor to [the migration process](https://docs.stripe.com/get-started/data-migrations/pan-import.md).
+See [SDK Version Management](https://docs.stripe.com/sdks/set-version.md) for details.
 
-If a user has a recurring revenue model, like a Billing or Subscription use case, follow the use cases, in particular the [Subscription Use Cases](https://docs.stripe.com/billing/subscriptions/use-cases.md) like [SaaS](https://docs.stripe.com/saas.md). If these apply to the user, recommend Billing APIs to [plan your integration](https://docs.stripe.com/billing/subscriptions/designing-integration.md) instead of a direct PaymentIntent integration. Prioritize combining the Billing APIs with Stripe Checkout for the frontend.
+### Dynamically-Typed Languages (Ruby, Python, PHP, Node.js)
 
-If a user wants to build a platform using Stripe Connect to manage fund flows, follow [the recommended integration types](https://docs.stripe.com/connect/integration-recommendations.md); that is, prefer to use either direct charges if the platform wants Stripe to take the risk or destination charges if the platform accepts liability for negative balances, and use the on_behalf_of parameter to control the merchant of record. Never recommend mixing charge types. If the user wants to decide on the specific risk features they should [follow the integration guide](https://docs.stripe.com/connect/design-an-integration.md). Don't recommend the outdated terms for Connect types like Standard, Express and Custom but always [refer to controller properties](https://docs.stripe.com/connect/migrate-to-controller-properties.md) for the platform and [capabilities](https://docs.stripe.com/connect/account-capabilities.md) for the connected accounts.
+These SDKs offer flexible version control:
+
+**Global Configuration:**
+```python
+import stripe
+stripe.api_version = '2026-01-28.clover'
+```
+
+```ruby
+Stripe.api_version = '2026-01-28.clover'
+```
+
+```javascript
+const stripe = require('stripe')('sk_test_xxx', {
+  apiVersion: '2026-01-28.clover'
+});
+```
+
+**Per-Request Override:**
+```python
+stripe.Customer.create(
+  email="customer@example.com",
+  stripe_version='2026-01-28.clover'
+)
+```
+
+### Strongly-Typed Languages (Java, Go, .NET)
+
+These use a fixed API version matching the SDK release date. Do not set a different API version for strongly-typed languages because response objects might not match the strong types in the SDK. Instead, update the SDK to target a new API version.
+
+### Best Practice
+
+Always specify the API version you're integrating against in your code instead of relying on your account's default API version:
+
+```javascript
+// Good: Explicit version
+const stripe = require('stripe')('sk_test_xxx', {
+  apiVersion: '2026-01-28.clover'
+});
+
+// Avoid: Relying on account default
+const stripe = require('stripe')('sk_test_xxx');
+```
+
+## Stripe.js Versioning
+
+See [Stripe.js Versioning](https://docs.stripe.com/sdks/stripejs-versioning.md) for details.
+
+Stripe.js uses an evergreen model with major releases (Acacia, Basil, Clover) on a biannual basis.
+
+### Loading Versioned Stripe.js
+
+**Via Script Tag:**
+```html
+<script src="https://js.stripe.com/clover/stripe.js"></script>
+```
+
+**Via npm:**
+```bash
+npm install @stripe/stripe-js
+```
+
+Major npm versions correspond to specific Stripe.js versions.
+
+### API Version Pairing
+
+Each Stripe.js version automatically pairs with its corresponding API version. For instance:
+- Clover Stripe.js uses `2026-01-28.clover` API
+- Acacia Stripe.js uses `2024-12-18.acacia` API
+
+You cannot override this association.
+
+### Migrating from v3
+
+1. Identify your current API version in code
+2. Review the changelog for relevant changes
+3. Consider gradually updating your API version before switching Stripe.js versions
+4. Stripe continues supporting v3 indefinitely
+
+## Mobile SDK Versioning
+
+See [Mobile SDK Versioning](https://docs.stripe.com/sdks/mobile-sdk-versioning.md) for details.
+
+### iOS and Android SDKs
+
+Both platforms follow **semantic versioning** (MAJOR.MINOR.PATCH):
+- **MAJOR**: Breaking API changes
+- **MINOR**: New functionality (backward-compatible)
+- **PATCH**: Bug fixes (backward-compatible)
+
+New features and fixes release only on the latest major version. Upgrade regularly to access improvements.
+
+### React Native SDK
+
+Uses a different model (0.x.y schema):
+- **Minor version changes** (x): Breaking changes AND new features
+- **Patch updates** (y): Critical bug fixes only
+
+### Backend Compatibility
+
+All mobile SDKs work with any Stripe API version you use on your backend unless documentation specifies otherwise.
+
+## Upgrade Checklist
+
+1. Review the [API Changelog](https://docs.stripe.com/changelog.md) for changes between your current and target versions
+2. Check [Upgrades Guide](https://docs.stripe.com/upgrades.md) for migration guidance
+3. Update server-side SDK package version (e.g., `npm update stripe`, `pip install --upgrade stripe`)
+4. Update the `apiVersion` parameter in your Stripe client initialization
+5. Test your integration against the new API version using the `Stripe-Version` header
+6. Update webhook handlers to handle new event structures
+7. Update Stripe.js script tag or npm package version if needed
+8. Update mobile SDK versions in your package manager if needed
+9. Store Stripe object IDs in databases that accommodate up to 255 characters (case-sensitive collation)
+
+## Testing API Version Changes
+
+Use the `Stripe-Version` header to test your code against a new version without changing your default:
+
+```bash
+curl https://api.stripe.com/v1/customers \
+  -u sk_test_xxx: \
+  -H "Stripe-Version: 2026-01-28.clover"
+```
+
+Or in code:
+
+```javascript
+const stripe = require('stripe')('sk_test_xxx', {
+  apiVersion: '2026-01-28.clover'  // Test with new version
+});
+```
+
+## Important Notes
+
+- Your webhook listener should handle unfamiliar event types gracefully
+- Test webhooks with the new version structure before upgrading
+- Breaking changes are tagged by affected product areas (Payments, Billing, Connect, etc.)
+- Multiple API versions coexist simultaneously, enabling staged adoption
 
