@@ -11,7 +11,7 @@ import {
 } from './cli';
 
 const MCP_SERVER_URL = 'https://mcp.stripe.com';
-const VERSION = '0.3.0';
+const VERSION = '0.3.1';
 const USER_AGENT = `stripe-mcp-local/${VERSION}`;
 
 function handleError(error: unknown): void {
