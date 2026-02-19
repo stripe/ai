@@ -1,0 +1,5 @@
+# Auto-request reviews for skill changes
+# Any PR that modifies skills will automatically request reviews from these users
+
+/skills/ @stevekaliski-stripe @matv-stripe @sgr-stripe @jleong-stripe @tomchen-stripe
+/providers/*/plugin/skills/ @stevekaliski-stripe @matv-stripe @sgr-stripe @jleong-stripe @tomchen-stripe

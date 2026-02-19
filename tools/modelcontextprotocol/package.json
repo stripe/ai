@@ -1,11 +1,12 @@
 {
   "name": "@stripe/mcp",
-  "version": "0.2.5",
+  "version": "0.3.1",
   "homepage": "https://github.com/stripe/ai/tree/main/tools/modelcontextprotocol",
   "description": "A command line tool for setting up Stripe MCP server",
   "bin": "dist/index.js",
   "files": [
     "dist/index.js",
+    "dist/cli.js",
     "LICENSE",
     "README.md",
     "VERSION",
@@ -26,8 +27,11 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.1",
-    "@stripe/agent-toolkit": "^0.7.11",
     "colors": "^1.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stripe/ai"
   },
   "keywords": [
     "mcp",

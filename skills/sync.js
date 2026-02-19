@@ -19,7 +19,7 @@ const getMCPPrompt = async (promptName) => {
       jsonrpc: "2.0",
       method: "prompts/get",
       params: {
-        name: "stripe-best-practices",
+        name: promptName,
         arguments: {},
       },
       id: 1,
@@ -51,9 +51,16 @@ const listMCPPrompts = async () => {
 const run = async () => {
   const prompts = await listMCPPrompts();
   console.log(`Found ${prompts.length} prompts`);
+
+  // Define all locations where skills should be written
+  const outputLocations = [
+    __dirname, // skills/ (source of truth)
+    path.join(__dirname, "../providers/claude/plugin/skills"),
+    path.join(__dirname, "../providers/cursor/plugin/skills"),
+  ];
+
   for (const prompt of prompts) {
     const content = await getMCPPrompt(prompt.name);
-    const outputPath = path.join(__dirname, `${prompt.name}.md`);
 
     const skillFileContent = `---
 description: ${prompt.description}
@@ -63,8 +70,17 @@ alwaysApply: false
 ${content}
 `;
 
-    await fs.writeFile(outputPath, skillFileContent, "utf8");
-    console.log(`Content written to ${outputPath}`);
+    // Write to all locations
+    for (const location of outputLocations) {
+      const outputDir = path.join(location, prompt.name);
+      const outputPath = path.join(outputDir, "SKILL.md");
+
+      // Ensure directory exists
+      await fs.mkdir(outputDir, { recursive: true });
+
+      await fs.writeFile(outputPath, skillFileContent, "utf8");
+      console.log(`Content written to ${outputPath}`);
+    }
   }
 };
 

@@ -1,63 +1,72 @@
-import StripeAPI from '../shared/api';
-import tools from '../shared/tools';
-import {isToolAllowed, type Configuration} from '../shared/configuration';
-import {zodToJsonSchema} from 'zod-to-json-schema';
+import {ToolkitCore, ToolkitConfig, McpTool} from '../shared/toolkit-core';
 import type {
   ChatCompletionTool,
   ChatCompletionMessageToolCall,
   ChatCompletionToolMessageParam,
 } from 'openai/resources';
+import type {FunctionParameters} from 'openai/resources/shared';
 
-class StripeAgentToolkit {
-  private _stripe: StripeAPI;
+class StripeAgentToolkit extends ToolkitCore<ChatCompletionTool[]> {
+  constructor(config: ToolkitConfig) {
+    super(config, []);
+  }
 
-  tools: ChatCompletionTool[];
+  /**
+   * The tools available in the toolkit.
+   * @deprecated Access tools via getTools() after calling initialize().
+   */
+  get tools(): ChatCompletionTool[] {
+    return this.getToolsWithWarning();
+  }
 
-  constructor({
-    secretKey,
-    configuration,
-  }: {
-    secretKey: string;
-    configuration: Configuration;
-  }) {
-    this._stripe = new StripeAPI(secretKey, configuration.context);
-
-    const context = configuration.context || {};
-    const filteredTools = tools(context).filter((tool) =>
-      isToolAllowed(tool, configuration)
-    );
-
-    this.tools = filteredTools.map((tool) => ({
-      type: 'function',
+  protected convertTools(mcpTools: McpTool[]): ChatCompletionTool[] {
+    return mcpTools.map((tool) => ({
+      type: 'function' as const,
       function: {
-        name: tool.method,
-        description: tool.description,
-        inputSchema: zodToJsonSchema(tool.inputSchema),
+        name: tool.name,
+        description: tool.description || tool.name,
+        parameters: (tool.inputSchema || {
+          type: 'object',
+          properties: {},
+        }) as FunctionParameters,
       },
     }));
   }
 
-  getTools(): ChatCompletionTool[] {
-    return this.tools;
+  close(): Promise<void> {
+    return super.close([]);
   }
 
   /**
    * Processes a single OpenAI tool call by executing the requested function.
-   *
-   * @param {ChatCompletionMessageToolCall} toolCall - The tool call object from OpenAI containing
-   *   function name, arguments, and ID.
-   * @returns {Promise<ChatCompletionToolMessageParam>} A promise that resolves to a tool message
-   *   object containing the result of the tool execution with the proper format for the OpenAI API.
    */
-  async handleToolCall(toolCall: ChatCompletionMessageToolCall) {
+  async handleToolCall(
+    toolCall: ChatCompletionMessageToolCall
+  ): Promise<ChatCompletionToolMessageParam> {
+    this.ensureInitialized();
+
     const args = JSON.parse(toolCall.function.arguments);
-    const response = await this._stripe.run(toolCall.function.name, args);
+    const response = await this.mcpClient.callTool(
+      toolCall.function.name,
+      args
+    );
     return {
       role: 'tool',
       tool_call_id: toolCall.id,
       content: response,
     } as ChatCompletionToolMessageParam;
   }
+}
+
+/**
+ * Factory function to create and initialize a StripeAgentToolkit.
+ */
+export async function createStripeAgentToolkit(
+  config: ToolkitConfig
+): Promise<StripeAgentToolkit> {
+  const toolkit = new StripeAgentToolkit(config);
+  await toolkit.initialize();
+  return toolkit;
 }
 
 export default StripeAgentToolkit;

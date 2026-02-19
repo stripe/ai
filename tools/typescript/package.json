@@ -1,6 +1,6 @@
 {
   "name": "@stripe/agent-toolkit",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "homepage": "https://github.com/stripe/ai",
   "scripts": {
     "build": "tsup",
@@ -42,6 +42,10 @@
   "engines": {
     "node": ">=18"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stripe/ai"
+  },
   "author": "Stripe <support@stripe.com> (https://stripe.com/)",
   "contributors": [
     "Steve Kaliski <stevekaliski@stripe.com>"
@@ -67,13 +71,13 @@
   },
   "dependencies": {
     "@ai-sdk/provider": "^2.0.0",
+    "@modelcontextprotocol/sdk": "^1.17.1",
     "stripe": "^17.5.0",
     "zod": "^3.25.76",
     "zod-to-json-schema": "^3.24.6"
   },
   "peerDependencies": {
     "@langchain/core": "^0.3.6",
-    "@modelcontextprotocol/sdk": "^1.17.1",
     "agents": "^0.0.84",
     "ai": "^5.0.89",
     "openai": "^4.86.1"

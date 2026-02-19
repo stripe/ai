@@ -1,0 +1,3 @@
+# Mark auto-generated skills as linguist-generated
+skills/*/SKILL.md linguist-generated
+providers/*/plugin/skills/*/SKILL.md linguist-generated

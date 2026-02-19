@@ -90,7 +90,12 @@ async def respond(thread: List[Email]) -> Union[Email, None]:
 
 
 async def main():
-    await emailer.run(respond, delay=30, mark_read=True)
+    await support_agent.init()
+
+    try:
+        await emailer.run(respond, delay=30, mark_read=True)
+    finally:
+        await support_agent.close()
 
 
 if __name__ == "__main__":

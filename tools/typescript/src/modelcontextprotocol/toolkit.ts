@@ -1,58 +1,146 @@
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {RequestHandlerExtra} from '@modelcontextprotocol/sdk/shared/protocol.js';
-import {Configuration, isToolAllowed} from '../shared/configuration';
-import StripeAPI from '../shared/api';
-import tools from '../shared/tools';
+import {Configuration} from '../shared/configuration';
+import {StripeMcpClient, McpTool} from '../shared/mcp-client';
+import {jsonSchemaToZodShape} from '../shared/schema-utils';
+import {AsyncInitializer} from '../shared/async-initializer';
+import {VERSION} from '../shared/constants';
+
+export interface McpToolkitConfig {
+  secretKey: string;
+  configuration: Configuration;
+}
 
 class StripeAgentToolkit extends McpServer {
-  private _stripe: StripeAPI;
+  private _mcpClient: StripeMcpClient;
+  private _configuration: Configuration;
+  private _initializer = new AsyncInitializer();
 
-  constructor({
-    secretKey,
-    configuration,
-  }: {
-    secretKey: string;
-    configuration: Configuration;
-  }) {
+  constructor({secretKey, configuration}: McpToolkitConfig) {
     super({
       name: 'Stripe',
-      version: '0.4.0',
-      configuration: {
-        ...configuration,
-        context: {
-          ...configuration.context,
-          mode: 'modelcontextprotocol',
-        },
-      },
+      version: VERSION,
     });
 
-    this._stripe = new StripeAPI(secretKey, configuration.context);
+    this._configuration = configuration;
 
-    const context = configuration.context || {};
-    const filteredTools = tools(context).filter((tool) =>
-      isToolAllowed(tool, configuration)
-    );
+    // MCP client for connecting to mcp.stripe.com
+    this._mcpClient = new StripeMcpClient({
+      secretKey,
+      context: {
+        account: configuration.context?.account,
+        customer: configuration.context?.customer,
+      },
+      mode: configuration.context?.mode,
+    });
+  }
 
-    filteredTools.forEach((tool) => {
-      this.tool(
-        tool.method,
-        tool.description,
-        tool.inputSchema.shape,
-        tool.annotations,
-        async (arg: any, _extra: RequestHandlerExtra<any, any>) => {
-          const result = await this._stripe.run(tool.method, arg);
+  /**
+   * Initialize the toolkit by connecting to mcp.stripe.com and registering tools.
+   * Must be called after construction and before the server starts handling requests.
+   */
+  initialize(): Promise<void> {
+    return this._initializer.initialize(() => this.doInitialize());
+  }
+
+  private async doInitialize(): Promise<void> {
+    await this._mcpClient.connect();
+
+    // Get tools from remote MCP and register as local proxies
+    // The server filters tools based on RAK permissions
+    const remoteTools = this._mcpClient.getTools();
+
+    for (const remoteTool of remoteTools) {
+      this.registerProxyTool(remoteTool);
+    }
+  }
+
+  /**
+   * Register a tool that proxies execution to mcp.stripe.com
+   */
+  private registerProxyTool(remoteTool: McpTool): void {
+    // Convert JSON Schema to Zod shape for MCP SDK tool registration
+    // This properly handles the 'required' field and type validation
+    const zodShape = jsonSchemaToZodShape(remoteTool.inputSchema);
+
+    this.tool(
+      remoteTool.name,
+      remoteTool.description || remoteTool.name,
+      zodShape,
+      async (
+        args: Record<string, unknown>,
+        _extra: RequestHandlerExtra<any, any>
+      ) => {
+        try {
+          // If args.customer exists, pass it as override to callTool
+          // callTool will handle fallback to connection-time customer
+          const options = args.customer
+            ? {customer: args.customer as string}
+            : undefined;
+
+          const result = await this._mcpClient.callTool(
+            remoteTool.name,
+            args,
+            options
+          );
           return {
             content: [
               {
                 type: 'text' as const,
-                text: String(result),
+                text: result,
               },
             ],
           };
+        } catch (error) {
+          // Re-throw for proper MCP error propagation
+          // MCP protocol expects errors to propagate as exceptions, not as successful responses with isError: true
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error(String(error));
         }
-      );
-    });
+      }
+    );
   }
+
+  /**
+   * Check if the toolkit has been initialized.
+   */
+  isInitialized(): boolean {
+    return this._initializer.isInitialized;
+  }
+
+  /**
+   * Close the MCP client connection and clean up resources.
+   * Safe to call multiple times (idempotent).
+   */
+  async close(): Promise<void> {
+    if (!this._initializer.isInitialized) {
+      return; // Already closed or never initialized
+    }
+
+    await this._mcpClient.disconnect();
+    this._initializer.reset();
+  }
+}
+
+/**
+ * Factory function to create and initialize a StripeAgentToolkit.
+ * Provides a simpler async initialization pattern.
+ *
+ * @example
+ * const toolkit = await createStripeAgentToolkit({
+ *   secretKey: 'rk_test_...',
+ *   configuration: { actions: { customers: { create: true } } }
+ * });
+ * // toolkit is now ready to use as an MCP server
+ */
+export async function createStripeAgentToolkit(
+  config: McpToolkitConfig
+): Promise<StripeAgentToolkit> {
+  const toolkit = new StripeAgentToolkit(config);
+  await toolkit.initialize();
+  return toolkit;
 }
 
 export default StripeAgentToolkit;

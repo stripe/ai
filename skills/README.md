@@ -8,4 +8,4 @@ Stripe has:
 - `search_stripe_documentation` tool built into our MCP server
 - MCP Prompts
 
-This folder is a folder of "prompts" synced with prompts on mcp.stripe.com. The syncing is done through a GitHub action.
+This folder is a folder of "prompts" synced from prompts on mcp.stripe.com. The syncing is done through [this GitHub Action](https://github.com/stripe/agent-toolkit/blob/main/.github/workflows/sync-skills.yml).

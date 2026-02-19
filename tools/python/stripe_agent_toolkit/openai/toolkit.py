@@ -1,43 +1,125 @@
-"""Stripe Agent Toolkit."""
+"""Stripe Agent Toolkit for OpenAI Agents SDK."""
 
-from typing import List, Optional
-from pydantic import PrivateAttr
 import json
+from typing import List, Optional, Any
 
 from agents import FunctionTool
+from agents.run_context import RunContextWrapper
+
+from ..shared.toolkit_core import ToolkitCore
+from ..shared.mcp_client import McpTool
+from ..configuration import Configuration
 
 
-from ..api import StripeAPI
-from ..tools import tools
-from ..configuration import Configuration, is_tool_allowed
-from .tool import StripeTool
-from .hooks import BillingHooks
+class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
+    """
+    Stripe Agent Toolkit for OpenAI Agents SDK.
 
-class StripeAgentToolkit:
-    _tools: List[FunctionTool] = PrivateAttr(default=[])
-    _stripe_api: StripeAPI = PrivateAttr(default=None)
+    Example:
+        toolkit = await create_stripe_agent_toolkit(
+            secret_key='rk_test_...',
+        )
+        tools = toolkit.get_tools()
+        agent = Agent(name="Stripe Agent", tools=tools)
+        await toolkit.close()
+    """
 
     def __init__(
-        self, secret_key: str, configuration: Optional[Configuration] = None
+        self,
+        secret_key: str,
+        configuration: Optional[Configuration] = None
     ):
-        super().__init__()
+        super().__init__(secret_key, configuration)
 
-        context = configuration.get("context") if configuration else None
+    def _empty_tools(self) -> List[FunctionTool]:
+        """Return empty list of tools."""
+        return []
 
-        self._stripe_api = StripeAPI(secret_key=secret_key, context=context)
+    def _convert_tools(
+        self,
+        mcp_tools: List[McpTool]
+    ) -> List[FunctionTool]:
+        """Convert MCP tools to OpenAI FunctionTool instances."""
+        tools = []
+        for mcp_tool in mcp_tools:
+            tools.append(self._create_function_tool(mcp_tool))
+        return tools
 
-        filtered_tools = [
-            tool for tool in tools if is_tool_allowed(tool, configuration)
-        ]
+    def _create_function_tool(self, mcp_tool: McpTool) -> FunctionTool:
+        """Create a FunctionTool from an MCP tool definition."""
+        toolkit = self
+        tool_name = mcp_tool["name"]
 
-        self._tools = [
-            StripeTool(self._stripe_api, tool)
-            for tool in filtered_tools
-        ]
+        async def on_invoke_tool(
+            ctx: RunContextWrapper[Any],
+            input_str: str
+        ) -> str:
+            args = json.loads(input_str)
+            return await toolkit.run_tool(tool_name, args)
 
-    def get_tools(self) -> List[FunctionTool]:
-        """Get the tools in the toolkit."""
-        return self._tools
+        # Prepare parameters schema
+        parameters = dict(mcp_tool.get("inputSchema", {}))
+        parameters["additionalProperties"] = False
+        parameters["type"] = "object"
 
-    def billing_hook(self, type: Optional[str] = None, customer: Optional[str] = None, meter: Optional[str] = None, meters: Optional[dict[str, str]] = None) -> BillingHooks:
-        return BillingHooks(self._stripe_api, type, customer, meter, meters)
+        # Clean up schema - remove fields not needed in OpenAI function schema
+        for key in ["description", "title"]:
+            parameters.pop(key, None)
+
+        if "properties" in parameters:
+            for prop in parameters["properties"].values():
+                for key in ["title", "default"]:
+                    if isinstance(prop, dict):
+                        prop.pop(key, None)
+
+        return FunctionTool(
+            name=tool_name,
+            description=mcp_tool.get("description", tool_name),
+            params_json_schema=parameters,
+            on_invoke_tool=on_invoke_tool,
+            strict_json_schema=False
+        )
+
+    @property
+    def tools(self) -> List[FunctionTool]:
+        """
+        The tools available in the toolkit.
+
+        .. deprecated::
+            Access tools via get_tools() after calling initialize().
+        """
+        return self._get_tools_with_warning()
+
+
+async def create_stripe_agent_toolkit(
+    secret_key: str,
+    configuration: Optional[Configuration] = None
+) -> StripeAgentToolkit:
+    """
+    Factory function to create and initialize a StripeAgentToolkit.
+
+    This is the recommended way to create a toolkit as it handles
+    async initialization automatically.
+
+    Example:
+        toolkit = await create_stripe_agent_toolkit(
+            secret_key='rk_test_...',
+        )
+        tools = toolkit.get_tools()
+
+        # Use with agent
+        agent = Agent(name="Stripe Agent", tools=tools)
+
+        # Clean up when done
+        await toolkit.close()
+
+    Args:
+        secret_key: Stripe API key (rk_* strongly recommended over sk_*)
+        configuration: Optional configuration for context
+
+    Returns:
+        Initialized StripeAgentToolkit ready to use
+    """
+    toolkit = StripeAgentToolkit(secret_key, configuration)
+    await toolkit.initialize()
+    return toolkit

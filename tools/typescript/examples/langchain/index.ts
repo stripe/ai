@@ -12,19 +12,7 @@ const llm = new ChatOpenAI({
 
 const stripeAgentToolkit = new StripeAgentToolkit({
   secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-      products: {
-        create: true,
-      },
-      prices: {
-        create: true,
-      },
-    },
-  },
+  configuration: {},
 });
 
 (async (): Promise<void> => {

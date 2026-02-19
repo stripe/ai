@@ -1,6 +1,6 @@
 # Stripe Agent Toolkit - TypeScript
 
-The Stripe Agent Toolkit enables popular agent frameworks including LangChain and Vercel's AI SDK to integrate with Stripe APIs through function calling. It also provides tooling to quickly integrate metered billing for prompt and completion token usage.
+The Stripe Agent Toolkit enables popular agent frameworks including LangChain and Vercel's AI SDK to integrate with Stripe APIs through function calling.
 
 ## Installation
 
@@ -17,20 +17,14 @@ npm install @stripe/agent-toolkit
 
 ## Usage
 
-The library needs to be configured with your account's secret key which is available in your [Stripe Dashboard][api-keys]. Additionally, `configuration` enables you to specify the types of actions that can be taken using the toolkit.
+The library needs to be configured with your account's secret key which is available in your [Stripe Dashboard][api-keys]. We strongly recommend using a [Restricted API Key][restricted-keys] (`rk_*`) for better security and granular permissions. Tool availability is determined by the permissions you configure on the restricted key.
 
 ```typescript
 import {StripeAgentToolkit} from '@stripe/agent-toolkit/langchain';
 
 const stripeAgentToolkit = new StripeAgentToolkit({
   secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-    },
-  },
+  configuration: {},
 });
 ```
 
@@ -70,45 +64,6 @@ const stripeAgentToolkit = new StripeAgentToolkit({
 });
 ```
 
-### Metered billing
-
-For Vercel's AI SDK, you can use middleware to submit billing events for usage. All that is required is the customer ID and the input/output meters to bill.
-
-```typescript
-import {StripeAgentToolkit} from '@stripe/agent-toolkit/ai-sdk';
-import {openai} from '@ai-sdk/openai';
-import {
-  generateText,
-  experimental_wrapLanguageModel as wrapLanguageModel,
-} from 'ai';
-
-const stripeAgentToolkit = new StripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-    },
-  },
-});
-
-const model = wrapLanguageModel({
-  model: openai('gpt-4o'),
-  middleware: stripeAgentToolkit.middleware({
-    billing: {
-      customer: 'cus_123',
-      meters: {
-        input: 'input_tokens',
-        output: 'output_tokens',
-      },
-    },
-  }),
-});
-```
-
-This works with both `generateText` and `generateStream` from the Vercel AI SDK.
-
 ## Model Context Protocol
 
 The Stripe Agent Toolkit also supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.com/). See `/examples/modelcontextprotocol` for an example. The same configuration options are available, and the server can be run with all supported transports.
@@ -119,19 +74,7 @@ import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 
 const server = new StripeAgentToolkit({
   secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    actions: {
-      paymentLinks: {
-        create: true,
-      },
-      products: {
-        create: true,
-      },
-      prices: {
-        create: true,
-      },
-    },
-  },
+  configuration: {},
 });
 
 async function main() {
@@ -148,3 +91,4 @@ main().catch((error) => {
 
 [node-sdk]: https://github.com/stripe/stripe-node
 [api-keys]: https://dashboard.stripe.com/account/apikeys
+[restricted-keys]: https://docs.stripe.com/keys#create-restricted-api-keys
