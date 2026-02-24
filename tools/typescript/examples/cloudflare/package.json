@@ -23,7 +23,7 @@
     "@stripe/agent-toolkit": "workspace:*",
     "@types/node": "^22.15.18",
     "add": "^2.0.6",
-    "agents": "^0.0.84",
+    "agents": "^0.3.10",
     "dotenv": "^16.5.0",
     "emoji-from-text": "^1.1.13",
     "hono": "^4.11.10",
