@@ -1,4 +1,5 @@
 ---
+name: stripe-best-practices
 description: Best practices for building Stripe integrations
 alwaysApply: false
 ---
