@@ -1,3 +1,5 @@
+[![AgentAudit Security](https://agentaudit.dev/api/badge/ai)](https://agentaudit.dev/packages/ai)
+
 ![Hero GIF](https://stripe.dev/images/badges/ai-banner.gif)
 
 # Stripe AI
