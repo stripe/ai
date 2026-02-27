@@ -67,7 +67,7 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsup": "^8.3.5",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@ai-sdk/provider": "^2.0.0",

@@ -13,7 +13,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@cloudflare/workers-types": "^4.20250515.0",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.3",
     "workers-mcp": "0.1.0-3",
     "wrangler": "^4.15.2"
   },
