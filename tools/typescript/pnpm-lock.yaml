@@ -141,8 +141,8 @@ importers:
         specifier: ^16.5.0
         version: 16.5.0
       emoji-from-text:
-        specifier: ^1.1.13
-        version: 1.1.13
+        specifier: ^1.1.14
+        version: 1.1.14
       hono:
         specifier: ^4.11.10
         version: 4.11.10
@@ -1959,8 +1959,8 @@ packages:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
     engines: {node: '>=12'}
 
-  emoji-from-text@1.1.13:
-    resolution: {integrity: sha512-HwfMlYjfov338P7nOepr2195hIeoWa1McQ1qNYLZRcWoqnu27qa/lUPba/Q6ykzluTfzvHiFVPEVIixFzOn9Dg==}
+  emoji-from-text@1.1.14:
+    resolution: {integrity: sha512-rp59lPsJlj+AnVs9S1lgGs5HkOj98hOEPKs/O06vDg5SfPSZj0e8nibPfaL7visxHbnIny8FHIOnes7jof3OpQ==}
 
   emoji-from-word@1.2.13:
     resolution: {integrity: sha512-HZjGXezTwXEVSMMax+gE3XPbLR7KmhDgRLGrXa6KnUTJeRTs2BQ2qdKep0h4pO2hhqEh4mFLWXwda3Y3tYiygw==}
@@ -3139,8 +3139,8 @@ packages:
     resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  minimatch@9.0.6:
-    resolution: {integrity: sha512-kQAVowdR33euIqeA0+VZTDqU+qo1IeVY+hrKYtZMio3Pg0P0vuh/kwRylLUddJhB6pf3q/botcOvRtx4IN1wqQ==}
+  minimatch@9.0.9:
+    resolution: {integrity: sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==}
     engines: {node: '>=16 || 14 >=14.17'}
 
   minimist@1.2.8:
@@ -5447,7 +5447,7 @@ snapshots:
       debug: 4.4.3
       fast-glob: 3.3.3
       is-glob: 4.0.3
-      minimatch: 9.0.6
+      minimatch: 9.0.9
       semver: 7.7.4
       ts-api-utils: 1.4.3(typescript@5.8.3)
     optionalDependencies:
@@ -6060,7 +6060,7 @@ snapshots:
 
   emittery@0.13.1: {}
 
-  emoji-from-text@1.1.13:
+  emoji-from-text@1.1.14:
     dependencies:
       count-words-array: 1.0.14
       emoji-from-word: 1.2.13
@@ -7565,7 +7565,7 @@ snapshots:
     dependencies:
       brace-expansion: 2.0.2
 
-  minimatch@9.0.6:
+  minimatch@9.0.9:
     dependencies:
       brace-expansion: 2.0.2
 
