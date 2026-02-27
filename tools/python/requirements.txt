@@ -4,7 +4,7 @@ crewai-tools==1.4.1
 flake8
 langchain==1.0.4
 langchain-openai==1.0.2
-mypy==1.18.2
+mypy==1.19.1
 pydantic>=2.12.4
 pyright==1.1.407
 pytest>=9.0.0
