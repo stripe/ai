@@ -1,5 +1,5 @@
 twine
-crewai==1.4.1
+crewai==1.10.0
 crewai-tools==1.4.1
 flake8
 langchain==1.0.4
