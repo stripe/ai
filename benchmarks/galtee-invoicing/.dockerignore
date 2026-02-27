@@ -1,0 +1,14 @@
+# Ignore node_modules - will be reinstalled in container
+environment/server/node_modules/
+solution/node_modules/
+
+# Ignore OS files
+.DS_Store
+**/.DS_Store
+
+# Ignore git
+.git/
+
+# Ignore IDE files
+.vscode/
+.idea/

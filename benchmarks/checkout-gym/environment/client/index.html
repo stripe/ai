@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Galtee Adventures</title>
+    <meta name="description" content="A demo of Galtee Adventures" />
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="index.js" defer></script>
+    <style>
+    /* Custom styles for header section */
+    .header {
+      background: url('/img/annecy.png');
+      background-size: cover;
+      padding: 250px 0;
+      align-items: center;
+      text-align: center;
+      color: white;
+      height: 70vh;
+    }
+    .header h1 {
+      margin: 0 0 20px 0;
+      font-size: 36pt;
+    }
+
+    .header p {
+      font-size: 18pt;
+    }
+
+    /* Custom styles for hikes */
+    .hikes {
+      padding: 20px;
+      text-align: center;
+    }
+    .hikes h2 {
+      margin-bottom: 20px;
+    }
+    .hike {
+      display: inline-block;
+      width: 250px;
+      margin: 10px;
+      padding: 10px;
+      background: var(--gray-offset);
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      text-align: left;
+    }
+    .hike h3 {
+      margin: 0 0 10px 0;
+    }
+    .hike p {
+      margin: 0 0 10px 0;
+    }
+
+    .guide {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 30vh; /* Or any height you require */
+    }
+
+    .btn-link {
+      color: rgb(39, 39, 39);
+    }
+
+    .btn {
+      color: rgb(39, 39, 39);
+    }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <h1>Galtee Adventures</h1>
+      <p>Wherever you explore, let's go there together</p>
+    </div>
+  
+    <div class="hikes">
+      <h2>Upcoming Hikes</h2>
+      <div class="hike">
+        <h3>Hadrian’s Wall</h3>
+        <p>2000 GBP - May 24th</p>
+        <button class="btn"><a class="btn-link" href="checkout.html?product=gb_hike">Book Now</a></button>
+      </div>
+      <div class="hike">
+        <h3>French Alps FR hike</h3>
+        <p>2500 EUR - May 23rd</p>
+        <button class="btn"><a class="btn-link" href="checkout.html?product=fr_hike">Book Now</a></button>
+      </div>
+      <div class="hike">
+        <h3>Painter’s Way</h3>
+        <p>1500 EUR - May 30th</p>
+        <button class="btn"><a class="btn-link" href="checkout.html?product=painters_way">Book Now</a></button>
+      </div>
+    </div>
+    <div class="guide">
+      <div>
+        <h2>Help others discover Europe's treasures</h2>
+        <button class="btn" onClick="fetchClientSecret()">
+          Become a Guide
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

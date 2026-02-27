@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    @apply dark:border-neutral-700;
+  }
+
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 100%;
+
+    --dialog-background: rgba(197, 197, 197, 0.7);
+    --dialog-content: white;
+
+    --screen-background: white;
+    --screen-foreground: white;
+
+    --embedded-component: #7f81fa;
+    --embedded-component-hover: #6c6ee6;
+
+    --offset: #f5f6f8;
+
+    --accent: #27ae60;
+    --accent-foreground: #f4f4f5;
+    --accent-subdued: #e9f7ef;
+
+    --primary: #353a44;
+    --subdued: #596171;
+
+    --radius: 0.5rem;
+
+    --success: #d6fce6;
+    --success-border: #94d5af;
+    --success-foreground: #1e884b;
+
+    --destructive: #e74c3c;
+    --destructive-foreground: #e9f7ef;
+    --ring: 145 63.4% 41.8%;
+
+    --tools-background: white;
+  }
+  .dark {
+    --background: 220 18.37% 9.61%;
+    --foreground: 220 16.67% 14.12%;
+
+    --screen-background: #1b1e25;
+    --screen-foreground: #1e222a;
+
+    --dialog-content: 220, 18.37%, 9.61%;
+
+    --dialog-background: rgba(0, 0, 0, 0.7);
+
+    --offset: #1e222a;
+    --accent: #27ae60;
+    --accent-foreground: #14171d;
+    --accent-subdued: rgba(39, 174, 96, 0.1);
+
+    --primary: #c9ced8;
+    --subdued: #8c99ad;
+
+    --radius: 0.5rem;
+
+    --success: #0c4223;
+    --success-border: #156236;
+    --success-foreground: #27ae60;
+
+    --destructive: #400a00;
+    --destructive-border: #632013;
+    --destructive-foreground: #e9f7ef;
+    --ring: 145 63.4% 41.8%;
+    --tools-background: #1b1e25;
+  }
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 100%;
+
+    --dialog-background: rgba(197, 197, 197, 70%);
+    --dialog-content: white;
+
+    --screen-background: white;
+    --screen-foreground: white;
+
+    --offset: #f5f6f8;
+
+    --accent: #27ae60;
+    --accent-foreground: #f4f4f5;
+    --accent-subdued: #e9f7ef;
+
+    --primary: #353a44;
+    --subdued: #596171;
+
+    --radius: 0.5rem;
+
+    --success: #d6fce6;
+    --success-border: #94d5af;
+    --success-foreground: #1e884b;
+
+    --destructive: #e74c3c;
+    --destructive-foreground: #e9f7ef;
+    --ring: 145 63.4% 41.8%;
+
+    --tools-background: white;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-primary;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+@layer base {
+  @font-face {
+    font-family: 'Sohne';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(/fonts/Sohne-Buch.otf) format('opentype');
+  }
+
+  @font-face {
+    font-family: 'Sohne';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(/fonts/Sohne-Kraftig.otf) format('opentype');
+  }
+
+  @font-face {
+    font-family: 'Sohne';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url(/fonts/Sohne-Halbfett.otf) format('opentype');
+  }
+}

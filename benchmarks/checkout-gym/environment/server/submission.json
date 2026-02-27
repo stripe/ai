@@ -1,0 +1,38 @@
+{
+  "example_payment": {
+    "ui_mode": "embedded",
+    "mode": "payment",
+    "line_items": [
+      {
+        "price": "price_1SDZRPBj4yaZNFr8mnAxiS5c",
+        "quantity": 1
+      }
+    ],
+    "return_url": "http://localhost:4242/session-status?session_id={CHECKOUT_SESSION_ID}"
+  },
+  "basic_payment": {},
+  "basic_payment_ko": {},
+  "basic_payment_custom_text": {},
+  "basic_payment_phone_number": {},
+  "basic_payment_consent_promotion_emails": {},
+  "basic_payment_automatic_tax": {},
+  "basic_payment_tax_id_collection": {},
+  "basic_payment_quantity_adjustment": {},
+  "basic_payment_promotion_code": {},
+  "basic_payment_optional_items": {},
+  "basic_payment_save_payment_method": {},
+  "basic_donation": {},
+  "complex_payment_custom_field_text": {},
+  "complex_payment_shipping": {},
+  "mega_complex_payment": {},
+  "basic_setup": {},
+  "basic_subscription": {},
+  "basic_subscription_trial": {},
+  "basic_subscription_with_one_time_price": {},
+  "basic_subscription_billing_cycle_anchor_with_proration": {},
+  "basic_subscription_billing_cycle_anchor_without_proration": {},
+  "basic_subscription_promotion_code": {},
+  "basic_subscription_shipping": {},
+  "basic_subscription_optional_items": {},
+  "complex_subscription": {}
+}

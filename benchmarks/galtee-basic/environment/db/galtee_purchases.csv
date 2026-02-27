@@ -1,0 +1,4 @@
+product,purchase_time,email,method,amount_paid
+fr_hike,"June 8th, 2025",hiker+test@stripe.com,phone,325.00 Euro
+gb_hike,"June 22nd, 2025",trekker+gb@stripe.com,phone,200 GBP
+painters_way,"July 1st, 2025",hiker+1123@stripe.com,phone,0

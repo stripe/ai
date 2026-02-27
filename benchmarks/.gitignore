@@ -1,0 +1,20 @@
+# Environment files with secrets - NEVER commit these
+.env
+**/.env
+
+# But DO track the example templates
+!.env.example
+!**/.env.example
+
+# Node modules
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# Ruby
+.ruby-version
+
+# OS files
+.DS_Store

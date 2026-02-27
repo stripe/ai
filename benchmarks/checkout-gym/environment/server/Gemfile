@@ -1,0 +1,9 @@
+source 'https://rubygems.org/'
+
+gem 'dotenv', '2.8.1'
+gem 'json', '2.7.6'
+gem 'sinatra', '3.2.0'
+gem 'stripe', '15.2.1'
+gem 'webrick', '1.8.2'
+
+gem 'rerun', '0.14.0' # for reloading the server

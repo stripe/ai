@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Accept a payment</title>
+    <meta name="description" content="A demo of a payment on Stripe" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="checkout.js" defer></script>
+  </head>
+  <body>
+    <div class="flex flex-col min-h-screen">
+      <nav class="bg-gray-800 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+          <a href="#" class="text-white text-lg font-bold">Omnistore</a>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-300 hover:text-white">Home</a>
+            <a href="#" class="text-gray-300 hover:text-white">Cart</a>
+            <a href="#" class="text-gray-300 hover:text-white">Profile</a>
+          </div>
+        </div>
+      </nav>
+      <div id="checkout" class="py-4 flex-grow">
+        <!-- Checkout will insert the payment form here -->
+      </div>
+      <footer class="bg-gray-400 p-4 mt-8">
+        <div class="container mx-auto text-center text-gray-300">
+          <p>&copy; 2025 Omnistore incorporated. All rights reserved.</p>
+          <div class="flex justify-center space-x-4 mt-2">
+            <a href="#" class="hover:text-white">Contact Us</a>
+            <a href="#" class="hover:text-white">Privacy Policy</a>
+            <a href="#" class="hover:text-white">Terms of Service</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
