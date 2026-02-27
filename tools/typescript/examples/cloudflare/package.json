@@ -21,7 +21,7 @@
     "@cloudflare/workers-oauth-provider": "^0.0.5",
     "@modelcontextprotocol/sdk": "^1.17.1",
     "@stripe/agent-toolkit": "workspace:*",
-    "@types/node": "^22.15.18",
+    "@types/node": "^25.3.2",
     "add": "^2.0.6",
     "agents": "^0.3.10",
     "dotenv": "^16.5.0",

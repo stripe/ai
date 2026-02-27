@@ -14,6 +14,6 @@
     "@stripe/agent-toolkit": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.7.4"
+    "@types/node": "^25.3.2"
   }
 }
