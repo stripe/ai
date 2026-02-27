@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Welcome to our amazing website - your gateway to exceptional experiences">
+    <title>Welcome | Your Amazing Site</title>
+    <link rel="stylesheet" href="css/global.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Welcome to Our Store</h1>
+            <p>Select your desired products and quantities to get started with your purchase.</p>
+        </section>
+
+        <section class="products-section">
+            <h2>Our Products</h2>
+            <div id="loading-spinner" class="loading">
+                <p>Loading products...</p>
+            </div>
+            <div id="error-message" class="error-message" style="display: none;">
+                <p>Unable to load products. Please try again later.</p>
+                <button id="retry-products" class="retry-button">Retry</button>
+            </div>
+            <form id="product-form" style="display: none;">
+                <div id="products-container" class="products-grid">
+                    <!-- Products will be dynamically loaded here -->
+                </div>
+                
+                <div class="form-actions">
+                    <div class="total-section">
+                        <h3>Total: $<span id="total-amount">0.00</span></h3>
+                    </div>
+                    <button type="submit" class="cta-button" id="checkout-btn">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Payment Section -->
+        <section id="payment-section" class="payment-section" style="display: none;">
+            <h2>Payment Details</h2>
+            
+            <div class="payment-container">
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div id="order-items">
+                        <!-- Order items will be populated here -->
+                    </div>
+                    
+                    <!-- Promotion Code Section -->
+                    <div class="promo-section">
+                        <div class="promo-input-container">
+                            <input type="text" id="promo-code" placeholder="Enter promotion code" maxlength="20">
+                            <button type="button" id="apply-promo" class="promo-button">Apply</button>
+                        </div>
+                        <div id="promo-message" class="promo-message"></div>
+                        <div id="discount-line" class="discount-line" style="display: none;">
+                            <span class="discount-label">Discount (<span id="discount-code"></span>):</span>
+                            <span class="discount-amount">-$<span id="discount-value">0.00</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-total">
+                        <div class="subtotal-line">
+                            <span>Subtotal:</span>
+                            <span>$<span id="subtotal">0.00</span></span>
+                        </div>
+                        <div class="total-line">
+                            <strong>Total: $<span id="final-total">0.00</span></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-form-container">
+                    <form id="payment-form">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required placeholder="your@email.com">
+                        </div>
+
+                        <!-- Shipping Address Section -->
+                        <div class="shipping-section">
+                            <h3>Shipping Address</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="shipping-name">Full Name</label>
+                                    <input type="text" id="shipping-name" name="shipping-name" required placeholder="John Doe">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="shipping-address">Street Address</label>
+                                <input type="text" id="shipping-address" name="shipping-address" required placeholder="123 Main St">
+                            </div>
+                            <div class="form-group">
+                                <label for="shipping-address2">Apartment, suite, etc. (Optional)</label>
+                                <input type="text" id="shipping-address2" name="shipping-address2" placeholder="Apt 4B">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="shipping-city">City</label>
+                                    <input type="text" id="shipping-city" name="shipping-city" required placeholder="New York">
+                                </div>
+                                <div class="form-group">
+                                    <label for="shipping-state">State/Province</label>
+                                    <input type="text" id="shipping-state" name="shipping-state" required placeholder="NY">
+                                </div>
+                                <div class="form-group">
+                                    <label for="shipping-zip">ZIP/Postal Code</label>
+                                    <input type="text" id="shipping-zip" name="shipping-zip" required placeholder="10001">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="shipping-country">Country</label>
+                                <select id="shipping-country" name="shipping-country" required>
+                                    <option value="">Select Country</option>
+                                    <option value="US">United States</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="GB">United Kingdom</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="card-element">Credit or Debit Card</label>
+                            <div id="card-element" class="card-element">
+                                <!-- Stripe Card Element will be mounted here -->
+                            </div>
+                            <div id="card-errors" class="card-errors" role="alert"></div>
+                        </div>
+
+                        <div class="payment-actions">
+                            <button type="submit" id="submit-payment" class="cta-button">
+                                <span id="button-text">Pay Now</span>
+                                <div id="spinner" class="spinner hidden"></div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="payment-result" class="payment-result" style="display: none;">
+                <!-- Payment result will be shown here -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Your Amazing Site. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#" aria-label="Facebook">📘</a>
+                <a href="#" aria-label="Twitter">🐦</a>
+                <a href="#" aria-label="Instagram">📷</a>
+                <a href="#" aria-label="LinkedIn">💼</a>
+            </div>
+        </div>
+    </footer>
+    <script src="scripts.js"></script>
+</body>
+</html>

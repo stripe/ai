@@ -1,0 +1,27 @@
+name: build
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  STRIPE_SECRET_KEY: sk_secret_key
+  STRIPE_PUBLIC_KEY: pk_pub_key
+  NEXT_PUBLIC_STRIPE_PUBLIC_KEY: pk_pub_key
+  APP_NAME: Furever
+  PORT: 3000
+  SECRET: S3cr3t
+  MONGO_URI: 'mongodb://localhost/furever'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 20
+      - run: yarn install --frozen-lockfile
+      - run: yarn run validate-change
+      - run: yarn run build

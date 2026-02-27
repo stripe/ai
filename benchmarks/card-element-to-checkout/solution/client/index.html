@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Welcome to our amazing website - your gateway to exceptional experiences">
+    <title>Welcome | Your Amazing Site</title>
+    <link rel="stylesheet" href="css/global.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Welcome to Our Store</h1>
+            <p>Select your desired products and quantities to get started with your purchase.</p>
+        </section>
+
+        <section class="products-section">
+            <h2>Our Products</h2>
+            <div id="loading-spinner" class="loading">
+                <p>Loading products...</p>
+            </div>
+            <div id="error-message" class="error-message" style="display: none;">
+                <p>Unable to load products. Please try again later.</p>
+                <button id="retry-products" class="retry-button">Retry</button>
+            </div>
+            <form id="product-form" style="display: none;">
+                <div id="products-container" class="products-grid">
+                    <!-- Products will be dynamically loaded here -->
+                </div>
+                
+                <div class="form-actions">
+                    <div class="total-section">
+                        <h3>Total: $<span id="total-amount">0.00</span></h3>
+                    </div>
+                    <button type="submit" class="cta-button" id="checkout-btn">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Payment Section -->
+        <section id="payment-section" class="payment-section" style="display: none;">
+            <h2>Payment Details</h2>
+            
+            <div class="payment-container">
+                <div id="checkout">
+                    <!-- Embedded Checkout will be mounted here -->
+                </div>
+            </div>
+            <div id="payment-result" class="payment-result" style="display: none;">
+                <!-- Payment result will be shown here -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Your Amazing Site. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#" aria-label="Facebook">📘</a>
+                <a href="#" aria-label="Twitter">🐦</a>
+                <a href="#" aria-label="Instagram">📷</a>
+                <a href="#" aria-label="LinkedIn">💼</a>
+            </div>
+        </div>
+    </footer>
+    <script src="scripts.js"></script>
+</body>
+</html>

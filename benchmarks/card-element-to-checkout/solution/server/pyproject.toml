@@ -1,0 +1,18 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11.6"
+dependencies = [
+    "flask>=3.1.2",
+    "python-dotenv>=1.1.1",
+    "stripe>=13.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "ruff>=0.13.3",
+    "ty>=0.0.1a21",
+]

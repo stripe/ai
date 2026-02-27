@@ -1,0 +1,18 @@
+# Ignore node_modules - will be reinstalled in container
+environment/node_modules/
+environment/.next/
+
+# Ignore .env with real keys (only .env.example should be in the image)
+environment/.env
+environment/.env.local
+
+# Ignore OS files
+.DS_Store
+**/.DS_Store
+
+# Ignore git
+.git/
+
+# Ignore IDE files
+.vscode/
+.idea/
