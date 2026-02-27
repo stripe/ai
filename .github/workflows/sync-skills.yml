@@ -32,7 +32,7 @@ jobs:
       # If the content is identical, no PR will be created
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: 'sync mcp.stripe.com prompts to skills and provider plugins'
           title: '[automated] sync mcp.stripe.com prompts to skills and provider plugins'
