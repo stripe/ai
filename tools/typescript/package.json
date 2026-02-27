@@ -70,7 +70,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@ai-sdk/provider": "^2.0.0",
+    "@ai-sdk/provider": "^3.0.8",
     "@modelcontextprotocol/sdk": "^1.17.1",
     "stripe": "^17.5.0",
     "zod": "^3.25.76",
