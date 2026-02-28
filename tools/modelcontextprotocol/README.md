@@ -57,6 +57,27 @@ or if you're using Docker
 3. Start Gemini CLI: `gemini`.
 4. Go through the OAUTH flow: `/mcp auth stripe`.
 
+### Usage with GitHub Copilot CLI
+
+You can add an MCP server interactively with `/mcp add`, or edit `~/.copilot/mcp-config.json` directly. See [here](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli#add-an-mcp-server).
+
+```
+{
+  "mcpServers": {
+    "stripe": {
+      "type": "local",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@stripe/mcp",
+        "--tools=all",
+        "--api-key=STRIPE_SECRET_KEY"
+      ]
+    }
+  }
+}
+```
+
 ## Available tools
 
 See the [Stripe MCP documentation](https://docs.stripe.com/mcp#tools) for a list of tools.
