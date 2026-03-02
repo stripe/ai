@@ -28,4 +28,29 @@ For our evaluation, models were run via a goose-based agent harness in a contain
 The score on an individual task is the best score of 3 runs. Failing runs due to observed infrastructure failures were discarded, and the best scoring run transcript was human reviewed by a Stripe engineer for run integrity.
 One exceptional scoring case were the sdk upgrades tasks - charges-on-payment-intent, invoice-partial-payments, and subscription-billing-migration. For these tasks, before aggregating, the task score for each of these were coalesced into a language-upgrades (e.g. ruby-sdk-upgrades) task by averaging. Tasks were then averaged by category: gym, backend, or full-stack.
 
-{TODO: Results coming soon!}
+## Backend
+
+| Model | Average Score (Best Run) | Turn Count Range (Best Run) |
+|-------|-------------------------|----------------------------|
+| gpt-5 | 73% | 18 - 71 |
+| sonnet-4.5 | 75% | 27 - 101 |
+| gpt-5.2 | 80% | 17 - 102 |
+| opus-4.5 | 85% | 19 - 148 |
+
+## Full-stack
+
+| Model | Average Score (Best Run) | Turn Count Range (Best Run) |
+|-------|-------------------------|----------------------------|
+| gpt-5 | 86% | 52 - 123 |
+| sonnet-4.5 | 80% | 69 - 134 |
+| gpt-5.2 | 77% | 70 - 137 |
+| opus-4.5 | 92% | 64 - 154 |
+
+## Gym
+
+| Model | Average Score (Best Run) | Turn Count Range (Best Run) |
+|-------|-------------------------|----------------------------|
+| gpt-5 | 61% | 68 - 76 |
+| sonnet-4.5 | 61% | 61 - 141 |
+| gpt-5.2 | 73% | 105 - 163 |
+| opus-4.5 | 65% | 101 - 102 |
