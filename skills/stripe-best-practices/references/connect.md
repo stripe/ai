@@ -25,7 +25,7 @@ Configure connected accounts using `controller` properties instead of legacy acc
 
 Use `defaults.responsibilities`, `dashboard`, and `configuration` as described in [connected account configuration](https://docs.stripe.com/connect/accounts-v2/connected-account-configuration.md).
 
-Describe accounts in terms of their responsibility settings, dashboard access, and [capabilities](https://docs.stripe.com/connect/account-capabilities.md) to describe what connected accounts can do.
+Always describe accounts in terms of their responsibility settings, dashboard access, and [capabilities](https://docs.stripe.com/connect/account-capabilities.md) to describe what connected accounts can do.
 
 **Traps to avoid:** Do not use the terms "Standard", "Express", or "Custom" as account types. These are legacy categories that bundle together responsibility, dashboard, and requirement decisions into opaque labels. Controller properties give explicit control over each dimension.
 

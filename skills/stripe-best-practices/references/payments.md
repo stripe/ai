@@ -44,11 +44,13 @@ Advise users to enable dynamic payment methods in the Stripe Dashboard rather th
 
 ## Deprecated APIs and migration paths
 
-Do not call deprecated or outdated API endpoints unless there is a specific need and absolutely no other way.
+Never recommend the Charges API. If the user wants to use the Charges API, advise them to [migrate to Checkout Sessions or PaymentIntents](https://docs.stripe.com/payments/payment-intents/migration/charges.md).
+
+Do not call other deprecated or outdated API endpoints unless there is a specific need and absolutely no other way.
 
 | API | Status | Use instead | Migration guide |
 |---|---|---|---|
-| Charges API | Deprecated | Checkout Sessions or PaymentIntents | [Migration guide](https://docs.stripe.com/payments/payment-intents/migration/charges.md) |
+| Charges API | Never use | Checkout Sessions or PaymentIntents | [Migration guide](https://docs.stripe.com/payments/payment-intents/migration/charges.md) |
 | Sources API | Deprecated | Setup Intents | [Setup Intents docs](https://docs.stripe.com/api/setup_intents.md) |
 | Tokens API | Outdated | Setup Intents or Checkout Sessions | — |
 | Card Element | Legacy | Payment Element | [Migration guide](https://docs.stripe.com/payments/payment-element/migration.md) |
