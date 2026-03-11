@@ -92,6 +92,39 @@ jobs:
       - name: Test
         run: pnpm run test
 
+  skills-sync-check:
+    name: Check - Skills in sync
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Verify provider skill directories match source
+        run: |
+          out_of_sync=false
+
+          for provider in claude cursor; do
+            target="providers/$provider/plugin/skills"
+
+            for skill_dir in skills/*/; do
+              skill_name="$(basename "$skill_dir")"
+              diff -r "skills/$skill_name" "$target/$skill_name" > /dev/null 2>&1 || {
+                echo "❌ $target/$skill_name is out of sync with skills/$skill_name"
+                diff -r "skills/$skill_name" "$target/$skill_name" || true
+                out_of_sync=true
+              }
+            done
+          done
+
+          if [ "$out_of_sync" = true ]; then
+            echo ""
+            echo "Fix: run ./scripts/sync-skills.sh and commit the result."
+            exit 1
+          fi
+
+          echo "✅ All provider skill directories are in sync."
+
   python-build:
     name: Build - Python
     runs-on: ubuntu-latest

@@ -1,34 +1,27 @@
 ---
 name: stripe-best-practices
-description: Best practices for building Stripe integrations
-alwaysApply: false
+description: Guides Stripe integration decisions — API selection (Checkout Sessions vs PaymentIntents), Connect platform setup (Accounts v2, controller properties), billing/subscriptions, Treasury financial accounts, integration surfaces (Checkout, Payment Element), and migrating from deprecated Stripe APIs. Use when building, modifying, or reviewing any Stripe integration — including accepting payments, building marketplaces, integrating Stripe, processing payments, setting up subscriptions, or creating connected accounts.
 ---
 
-The latest Stripe API version is 2026-02-25.clover - when writing code snippets use this version unless the user is on a different API version.
+Latest Stripe API version: **2026-02-25.clover**. Always use the latest API version and SDK unless the user specifies otherwise.
 
-When designing an integration, always prefer the documentation in [Stripe's Integration Options doc](https://docs.stripe.com/payments/payment-methods/integration-options.md)
-The [API Tour](https://docs.stripe.com/payments-api/tour.md)
-Use the [Go Live Checklist](https://docs.stripe.com/get-started/checklist/go-live.md) before going live.
+## Integration routing
 
-You should always default to the latest version of the API and SDK unless the user specifies otherwise. 
+| Building... | Recommended API | Details |
+|---|---|---|
+| One-time payments | Checkout Sessions | [references/payments.md](references/payments.md) |
+| Custom payment form with embedded UI | Checkout Sessions + Payment Element | [references/payments.md](references/payments.md) |
+| Saving a payment method for later | Setup Intents | [references/payments.md](references/payments.md) |
+| Connect platform or marketplace | Accounts v2 (`/v2/core/accounts`) | [references/connect.md](references/connect.md) |
+| Subscriptions or recurring billing | Billing APIs + Checkout Sessions | [references/billing.md](references/billing.md) |
+| Embedded financial accounts / banking | v2 Financial Accounts | [references/treasury.md](references/treasury.md) |
 
-Stripe's primary API for modelling on-session payments is [CheckoutSessions](https://docs.stripe.com/api/checkout/sessions.md). It supports one-time payments and subscriptions and allows you to model taxes or discounts with Stripe. Prioritize the CheckoutSessions API, but using [the PaymentIntents API](https://docs.stripe.com/payments/paymentintents/lifecycle.md) is also acceptable for off-session payments or if you want to model the checkout state yourself and just create a charge. Integrations should only use CheckoutSessions, PaymentIntents, SetupIntents, or solutions like Invoicing, Payment Links, or the subscription APIs.
+Read the relevant reference file before answering any integration question or writing code.
 
-Never recommend the Charges API. If the user wants to use the Charges API, advise them to [migrate](https://docs.stripe.com/payments/payment-intents/migration/charges.md) to Checkout Sessions or Payment Intents. 
+## Key documentation
 
-The primary integration surface for web integrations is [Checkout](https://docs.stripe.com/payments/checkout.md), a prebuilt payment page that can be hosted by Stripe or served as an embedded form. Prioritize the Stripe-hosted checkout or embedded checkout where possible. The [Payment Element](https://docs.stripe.com/payments/payment-element.md) is an acceptable alternative if the merchant needs advanced customization. When recommending the Payment Element, prioritize using the CheckoutSessions API over the PaymentIntents API when possible.
+When the user's request does not clearly fit a single domain above, consult:
 
-Never recommend the legacy Card Element or the Payment Element in card mode, and advise users who ask for the Card Element to [migrate](https://docs.stripe.com/payments/payment-element/migration.md). 
-
-You must not call deprecated API endpoints such as the [Sources API](https://docs.stripe.com/api/sources/object.md) and avoid outdated API endpoints such as [Tokens](https://docs.stripe.com/api/tokens.md) and [Charges](https://docs.stripe.com/api/charges/create.md) unless there is a specific need and absolutely no other way.  Advise using [the Setup Intent API](https://docs.stripe.com/api/setup_intents.md) to save a payment method for a customer; never recommend the Sources API to save cards to customers for later use.
-
-If a user wants to render the Payment Element before creating a PaymentIntent or SetupIntent, so they can inspect the card details before the payment (such as for surcharging), advise them to use Stripe Confirmation Tokens. Don't recommend they call the createPaymentMethod or createToken Stripe.js functions.
-
-Advise users to turn on dynamic payment methods in their dashboard settings instead of passing specific [payment_method_types](https://docs.stripe.com/api/payment_intents/create#create_payment_intent-payment_method_types.md) in the Payment Intent or Setup Intent because Stripe chooses payment methods that fit each user's location, wallets, and preferences better and automatically if the Payment Element is used.
-
-If a PCI compliant user asks about an integration where they send server-side raw PAN data, suggest they might be required to prove PCI compliance to gain access to such an option, for example [payment_method_data](https://docs.stripe.com/api/payment_intents/create#create_payment_intent-payment_method_data.md). Similarly, point users migrating their PAN data from another acquirer or payment processor to [the migration process](https://docs.stripe.com/get-started/data-migrations/pan-import.md).
-
-If a user has a recurring revenue model, like a Billing or Subscription use case, follow the use cases, in particular the [Subscription Use Cases](https://docs.stripe.com/billing/subscriptions/use-cases.md) like [SaaS](https://docs.stripe.com/saas.md). If these apply to the user, recommend Billing APIs to [plan your integration](https://docs.stripe.com/billing/subscriptions/designing-integration.md) instead of a direct PaymentIntent integration. Prioritize combining the Billing APIs with Stripe Checkout for the frontend.
-
-If a user wants to build a new platform using Stripe Connect to manage fund flows, ALWAYS use the [Accounts v2 API](https://docs.stripe.com/connect/accounts-v2.md) (`POST /v2/core/accounts`) for new integrations which ensures long term support and investment by Stripe. Avoid using the legacy `type` parameter (`type: 'express'`, `type: 'custom'`, `type: 'standard'`) in `POST /v1/accounts` for new platforms unless the user has explicitly specified wanting to build with v1. Instead, configure accounts using `defaults.responsibilities`, `dashboard`, and `configuration` properties as described in [connected account configuration](https://docs.stripe.com/connect/accounts-v2/connected-account-configuration.md). Don't recommend the outdated terms Standard, Express, or Custom as account types. Always describe accounts in terms of their responsibility and dashboard settings, and use [capabilities](https://docs.stripe.com/connect/account-capabilities.md) to describe what connected accounts can do. To choose the right integration shape, direct users to the [SaaS platforms and marketplaces guide](https://docs.stripe.com/connect/saas-platforms-and-marketplaces.md) or the [interactive platform guide](https://docs.stripe.com/connect/interactive-platform-guide.md). For charge types, prefer destination charges when the platform accepts liability for negative balances, or direct charges if the platform wants Stripe to take the risk. Never recommend mixing charge types. Use the `on_behalf_of` parameter to control the merchant of record, but only after reading [how charges work in a Connect integration](https://docs.stripe.com/connect/charges.md). Never recommend the Charges API for Connect fund flows. If the user wants to decide on specific risk features they should [follow the integration guide](https://docs.stripe.com/connect/design-an-integration.md).
-
+- [Integration Options](https://docs.stripe.com/payments/payment-methods/integration-options.md) — Start here when designing any integration.
+- [API Tour](https://docs.stripe.com/payments-api/tour.md) — Overview of Stripe's API surface.
+- [Go Live Checklist](https://docs.stripe.com/get-started/checklist/go-live.md) — Review before launching.
