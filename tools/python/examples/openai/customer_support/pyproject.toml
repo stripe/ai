@@ -11,7 +11,7 @@ dependencies = [
     "stripe-agent-toolkit>=0.6.2",
     "stripe>=13.2.0",
     "urllib3<3",
-    "markdown==3.7"
+    "markdown==3.8.1"
 ]
 
 [tool.hatch.metadata]
