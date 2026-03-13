@@ -2,7 +2,7 @@
  * Utility functions for AI SDK metering
  */
 
-import type {LanguageModelV2StreamPart} from '@ai-sdk/provider';
+import type {LanguageModelV2StreamPart, LanguageModelV3StreamPart} from '@ai-sdk/provider';
 import type {Provider} from './meter-event-types';
 
 /**
@@ -44,6 +44,26 @@ export function extractUsageFromStream(
       inputTokens = chunk.usage.inputTokens ?? 0;
       outputTokens = chunk.usage.outputTokens ?? 0;
       break; // Usage is typically in the final chunk
+    }
+  }
+
+  return {inputTokens, outputTokens};
+}
+
+/**
+ * Processes V3 stream chunks to extract usage information
+ */
+export function extractUsageFromStreamV3(
+  chunks: LanguageModelV3StreamPart[]
+): {inputTokens: number; outputTokens: number} {
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  for (const chunk of chunks) {
+    if (chunk.type === 'finish' && chunk.usage) {
+      inputTokens = chunk.usage.inputTokens?.total ?? 0;
+      outputTokens = chunk.usage.outputTokens?.total ?? 0;
+      break;
     }
   }
 

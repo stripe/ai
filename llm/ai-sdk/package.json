@@ -58,8 +58,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@ai-sdk/provider": "^2.0.0",
-    "@ai-sdk/provider-utils": "^2.0.0",
+    "@ai-sdk/provider": "^3.0.0",
+    "@ai-sdk/provider-utils": "^3.0.0",
     "stripe": "^17.5.0",
     "zod": "^3.24.1"
   },
