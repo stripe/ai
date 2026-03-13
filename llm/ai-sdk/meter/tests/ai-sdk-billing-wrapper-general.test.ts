@@ -108,7 +108,7 @@ describe('AI SDK Billing Wrapper - General', () => {
 
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
-      }).toThrow('Only LanguageModelV2 models are supported');
+      }).toThrow('Only LanguageModelV2 and LanguageModelV3 models are supported');
     });
 
     it('should throw error for unsupported specification version', () => {
@@ -120,7 +120,7 @@ describe('AI SDK Billing Wrapper - General', () => {
 
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
-      }).toThrow('Only LanguageModelV2 models are supported');
+      }).toThrow('Only LanguageModelV2 and LanguageModelV3 models are supported');
     });
 
     it('should provide clear error messages', () => {
@@ -132,7 +132,7 @@ describe('AI SDK Billing Wrapper - General', () => {
 
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
-      }).toThrow(/specificationVersion "v2"/);
+      }).toThrow(/specificationVersion "v1"/);
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
       }).toThrow(/OpenAI, Anthropic, Google/);

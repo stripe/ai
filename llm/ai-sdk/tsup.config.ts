@@ -7,7 +7,9 @@ export default defineConfig([
       'provider/index': 'provider/index.ts',
       'provider/stripe-provider': 'provider/stripe-provider.ts',
       'provider/stripe-language-model': 'provider/stripe-language-model.ts',
+      'provider/stripe-language-model-v3': 'provider/stripe-language-model-v3.ts',
       'provider/utils': 'provider/utils.ts',
+      'provider/utils-v3': 'provider/utils-v3.ts',
       'provider/types': 'provider/types.ts',
     },
     outDir: 'dist',
@@ -31,6 +33,7 @@ export default defineConfig([
     entry: {
       'meter/index': 'meter/index.ts',
       'meter/wrapperV2': 'meter/wrapperV2.ts',
+      'meter/wrapperV3': 'meter/wrapperV3.ts',
       'meter/meter-event-logging': 'meter/meter-event-logging.ts',
       'meter/meter-event-types': 'meter/meter-event-types.ts',
       'meter/types': 'meter/types.ts',

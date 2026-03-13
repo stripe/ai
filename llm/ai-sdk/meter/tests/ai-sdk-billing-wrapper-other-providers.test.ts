@@ -132,7 +132,7 @@ describe('AI SDK Billing Wrapper - Other Providers', () => {
 
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
-      }).toThrow('Only LanguageModelV2 models are supported');
+      }).toThrow('Only LanguageModelV2 and LanguageModelV3 models are supported');
     });
 
     it('should throw error for model without specification version', () => {
@@ -145,7 +145,7 @@ describe('AI SDK Billing Wrapper - Other Providers', () => {
 
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
-      }).toThrow('Only LanguageModelV2 models are supported');
+      }).toThrow('Only LanguageModelV2 and LanguageModelV3 models are supported');
     });
 
     it('should throw error for model with unknown specification version', () => {
@@ -159,7 +159,7 @@ describe('AI SDK Billing Wrapper - Other Providers', () => {
 
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
-      }).toThrow('Only LanguageModelV2 models are supported');
+      }).toThrow('Only LanguageModelV2 and LanguageModelV3 models are supported');
     });
 
     it('should provide clear error message', () => {
@@ -167,7 +167,7 @@ describe('AI SDK Billing Wrapper - Other Providers', () => {
 
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
-      }).toThrow(/Only LanguageModelV2 models are supported/);
+      }).toThrow(/Only LanguageModelV2 and LanguageModelV3 models are supported/);
       expect(() => {
         meteredModel(mockModel, TEST_API_KEY, 'cus_test123');
       }).toThrow(/Please use a supported provider/);
@@ -230,8 +230,8 @@ describe('AI SDK Billing Wrapper - Other Providers', () => {
         meteredModel(unsupportedModel, TEST_API_KEY, 'cus_test123');
         fail('Should have thrown an error');
       } catch (error: any) {
-        expect(error.message).toContain('Only LanguageModelV2 models are supported');
-        expect(error.message).toContain('specificationVersion "v2"');
+        expect(error.message).toContain('Only LanguageModelV2 and LanguageModelV3 models are supported');
+        expect(error.message).toContain('specificationVersion "v1"');
         expect(error.message).toContain('OpenAI, Anthropic, Google');
       }
     });
