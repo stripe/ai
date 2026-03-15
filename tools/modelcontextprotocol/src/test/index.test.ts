@@ -1,4 +1,100 @@
 import {parseArgs} from '../cli';
+import {extractClientName, buildUserAgent} from '../index';
+
+describe('extractClientName', () => {
+  it('should extract client name from a valid initialize request', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      id: 0,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2024-11-05',
+        capabilities: {},
+        clientInfo: {
+          name: 'cursor',
+          version: '1.0.0',
+        },
+      },
+    };
+    expect(extractClientName(message)).toBe('cursor');
+  });
+
+  it('should extract client name from Claude Desktop initialize request', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      id: 0,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2024-11-05',
+        capabilities: {},
+        clientInfo: {
+          name: 'claude-ai',
+          version: '0.1.0',
+        },
+      },
+    };
+    expect(extractClientName(message)).toBe('claude-ai');
+  });
+
+  it('should return undefined for non-initialize messages', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      id: 1,
+      method: 'tools/list',
+      params: {},
+    };
+    expect(extractClientName(message)).toBeUndefined();
+  });
+
+  it('should return undefined when clientInfo is missing', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      id: 0,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2024-11-05',
+        capabilities: {},
+      },
+    };
+    expect(extractClientName(message)).toBeUndefined();
+  });
+
+  it('should return undefined for response messages', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      id: 0,
+      result: {
+        protocolVersion: '2024-11-05',
+        serverInfo: {name: 'Stripe', version: '0.4.0'},
+      },
+    };
+    expect(extractClientName(message)).toBeUndefined();
+  });
+
+  it('should return undefined for notification messages', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      method: 'notifications/initialized',
+    };
+    expect(extractClientName(message)).toBeUndefined();
+  });
+});
+
+describe('buildUserAgent', () => {
+  it('should append client name in parentheses when provided', () => {
+    expect(buildUserAgent('cursor')).toMatch(
+      /^stripe-mcp-local\/[\d.]+ \(cursor\)$/
+    );
+  });
+
+  it('should return base user agent when no client name provided', () => {
+    expect(buildUserAgent()).toMatch(/^stripe-mcp-local\/[\d.]+$/);
+  });
+
+  it('should return base user agent when client name is undefined', () => {
+    expect(buildUserAgent(undefined)).toMatch(/^stripe-mcp-local\/[\d.]+$/);
+  });
+});
 
 describe('parseArgs function', () => {
   const originalEnv = process.env.STRIPE_SECRET_KEY;
