@@ -1,6 +1,6 @@
 {
   "name": "@stripe/ai-sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Stripe AI SDK - Provider and metering utilities for Vercel AI SDK",
   "exports": {
     "./provider": {
