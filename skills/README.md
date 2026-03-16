@@ -7,5 +7,6 @@ Stripe has:
 - LLM readable Docs (append .md to the end of any Docs)
 - `search_stripe_documentation` tool built into our MCP server
 - MCP Prompts
+- Agent skills
 
-This folder is a folder of "prompts" synced from prompts on mcp.stripe.com. The syncing is done through [this GitHub Action](https://github.com/stripe/agent-toolkit/blob/main/.github/workflows/sync-skills.yml).
+This folder is a collection of [agent skills](https://agentskills.io) to steer your agents to build optimal Stripe integrations. These are synced from Stripe servers through [this GitHub Action](https://github.com/stripe/agent-toolkit/blob/main/.github/workflows/sync-skills.yml).
