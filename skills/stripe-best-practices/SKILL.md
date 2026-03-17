@@ -15,6 +15,7 @@ Latest Stripe API version: **2026-02-25.clover**. Always use the latest API vers
 | Connect platform or marketplace | Accounts v2 (`/v2/core/accounts`) | [references/connect.md](references/connect.md) |
 | Subscriptions or recurring billing | Billing APIs + Checkout Sessions | [references/billing.md](references/billing.md) |
 | Embedded financial accounts / banking | v2 Financial Accounts | [references/treasury.md](references/treasury.md) |
+| Infrastructure provisioning / service management | Stripe Projects CLI | [references/projects.md](references/projects.md) |
 
 Read the relevant reference file before answering any integration question or writing code.
 
