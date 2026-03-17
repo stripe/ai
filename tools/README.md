@@ -10,7 +10,7 @@ For a local MCP, see the [MCP](/modelcontextprotocol) package.
 
 ## Agent Toolkit
 
-The Stripe Agent Toolkit enables popular agent frameworks including Model Context Protocol (MCP), OpenAI's Agent SDK, LangChain, CrewAI, and Vercel's AI SDK to integrate with Stripe APIs through function calling. The
+The Stripe Agent Toolkit enables popular agent frameworks including Model Context Protocol (MCP), OpenAI's Agent SDK, LangChain, CrewAI, AG2, and Vercel's AI SDK to integrate with Stripe APIs through function calling. The
 library is not exhaustive of the entire Stripe API. It includes support for MCP, Python, and TypeScript and is built directly on top of the Stripe [Python][python-sdk] and [Node][node-sdk] SDKs.
 
 Included below are basic instructions, but refer to [Python](/tools/python), [TypeScript](/tools/typescript) packages for more information.

@@ -1,6 +1,6 @@
 # Stripe Agent Toolkit - Python
 
-The Stripe Agent Toolkit library enables popular agent frameworks including OpenAI's Agent SDK, LangChain, and CrewAI to integrate with Stripe APIs through function calling. The
+The Stripe Agent Toolkit library enables popular agent frameworks including OpenAI's Agent SDK, LangChain, CrewAI, and AG2 to integrate with Stripe APIs through function calling. The
 library is not exhaustive of the entire Stripe API. It is built directly on top
 of the [Stripe Python SDK][python-sdk].
 
@@ -49,7 +49,34 @@ async def main():
     await toolkit.close()
 ```
 
-Examples for OpenAI's Agent SDK, LangChain, and CrewAI are included in [/examples](/examples).
+Examples for OpenAI's Agent SDK, LangChain, CrewAI, and AG2 are included in [/examples](/examples).
+
+### AG2 (formerly AutoGen)
+
+```python
+import asyncio
+from stripe_agent_toolkit.ag2.toolkit import create_stripe_agent_toolkit
+
+async def main():
+    toolkit = await create_stripe_agent_toolkit(
+        secret_key="rk_test_...",
+    )
+    tools = toolkit.get_tools()
+
+    from autogen import ConversableAgent, LLMConfig
+    llm_config = LLMConfig({"model": "gpt-4.1-mini", "api_key": "..."})
+    agent = ConversableAgent(
+        name="billing",
+        system_message="You handle billing with Stripe.",
+        llm_config=llm_config,
+    )
+    for tool in tools:
+        tool.register_tool(agent)
+
+    await toolkit.close()
+
+asyncio.run(main())
+```
 
 [python-sdk]: https://github.com/stripe/stripe-python
 [api-keys]: https://dashboard.stripe.com/account/apikeys

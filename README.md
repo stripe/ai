@@ -26,7 +26,7 @@ See [MCP](/tools/modelcontextprotocol) for more details.
 
 ## Agent toolkit
 
-Stripe's Agent Toolkit enables popular agent frameworks including OpenAI's Agent SDK, LangChain, CrewAI, and Vercel's AI SDK to integrate with Stripe APIs through function calling. The library is not exhaustive of the entire Stripe API. It includes support for Python and TypeScript, and is built directly on top of the Stripe [Python][python-sdk] and [Node][node-sdk] SDKs.
+Stripe's Agent Toolkit enables popular agent frameworks including OpenAI's Agent SDK, LangChain, CrewAI, AG2, and Vercel's AI SDK to integrate with Stripe APIs through function calling. The library is not exhaustive of the entire Stripe API. It includes support for Python and TypeScript, and is built directly on top of the Stripe [Python][python-sdk] and [Node][node-sdk] SDKs.
 
 Included below are basic instructions, but refer to [Python](/tools/python) and [TypeScript](/tools/typescript) packages for more information.
 
@@ -60,7 +60,7 @@ async def main():
     await toolkit.close()  # Clean up when done
 ```
 
-The toolkit works with OpenAI's Agent SDK, LangChain, and CrewAI and can be passed as a list of tools. For example:
+The toolkit works with OpenAI's Agent SDK, LangChain, CrewAI, and AG2 (formerly AutoGen) and can be passed as a list of tools. For example:
 
 ```python
 from agents import Agent
@@ -77,7 +77,7 @@ async def main():
     await toolkit.close()
 ```
 
-Examples for OpenAI's Agent SDK,LangChain, and CrewAI are included in [/examples](/tools/python/examples).
+Examples for OpenAI's Agent SDK, LangChain, CrewAI, and AG2 are included in [/examples](/tools/python/examples).
 
 ##### Context
 
