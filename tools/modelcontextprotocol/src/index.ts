@@ -19,8 +19,6 @@ function handleError(error: unknown): void {
   console.error(`   ${message}\n`);
 }
 
-export {extractClientName, buildUserAgent};
-
 export async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
 
