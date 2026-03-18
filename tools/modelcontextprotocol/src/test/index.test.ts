@@ -1,5 +1,5 @@
 import {parseArgs} from '../cli';
-import {extractClientName, buildUserAgent} from '../index';
+import {extractClientName, buildUserAgent} from '../userAgent';
 
 describe('extractClientName', () => {
   it('should extract client name from a valid initialize request', () => {

@@ -2,7 +2,6 @@
 
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import {JSONRPCMessage} from '@modelcontextprotocol/sdk/types.js';
 import {green, red} from 'colors';
 import {
   parseArgs,
@@ -10,10 +9,9 @@ import {
   validateStripeAccount,
   buildHeaders,
 } from './cli';
+import {extractClientName, buildUserAgent} from './userAgent';
 
 const MCP_SERVER_URL = 'https://mcp.stripe.com';
-const VERSION = '0.3.1';
-const BASE_USER_AGENT = `stripe-mcp-local/${VERSION}`;
 
 function handleError(error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
@@ -21,37 +19,7 @@ function handleError(error: unknown): void {
   console.error(`   ${message}\n`);
 }
 
-/**
- * Extract the client name from an MCP initialize request message.
- * Returns undefined if the message is not an initialize request or has no clientInfo.
- */
-export function extractClientName(message: JSONRPCMessage): string | undefined {
-  if (
-    'method' in message &&
-    message.method === 'initialize' &&
-    'params' in message &&
-    message.params != null &&
-    typeof message.params === 'object' &&
-    'clientInfo' in message.params &&
-    message.params.clientInfo != null &&
-    typeof message.params.clientInfo === 'object' &&
-    'name' in message.params.clientInfo &&
-    typeof message.params.clientInfo.name === 'string'
-  ) {
-    return message.params.clientInfo.name;
-  }
-  return undefined;
-}
-
-/**
- * Build the User-Agent string, appending the MCP client name if available.
- */
-export function buildUserAgent(clientName?: string): string {
-  if (clientName) {
-    return `${BASE_USER_AGENT} (${clientName})`;
-  }
-  return BASE_USER_AGENT;
-}
+export {extractClientName, buildUserAgent};
 
 export async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
