@@ -68,7 +68,7 @@ export function jsonSchemaToZodShape(
     }
 
     if (!required.has(key)) {
-      zodType = zodType.optional();
+      zodType = zodType.optional().nullable();
     }
 
     shape[key] = zodType;

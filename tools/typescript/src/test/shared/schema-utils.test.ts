@@ -119,6 +119,25 @@ describe('jsonSchemaToZodShape', () => {
     expect(shape.optional_field.isOptional()).toBe(true);
   });
 
+  it('should accept null for optional fields', () => {
+    const shape = jsonSchemaToZodShape({
+      type: 'object',
+      properties: {
+        required_field: {type: 'string'},
+        optional_field: {type: 'string'},
+      },
+      required: ['required_field'],
+    });
+
+    // Optional field should accept null (LLM agents commonly send null)
+    const result = shape.optional_field.safeParse(null);
+    expect(result.success).toBe(true);
+
+    // Required field should not accept null
+    const requiredResult = shape.required_field.safeParse(null);
+    expect(requiredResult.success).toBe(false);
+  });
+
   it('should preserve descriptions', () => {
     const shape = jsonSchemaToZodShape({
       type: 'object',
@@ -208,6 +227,21 @@ describe('jsonSchemaToZod', () => {
     if (result.success) {
       expect(result.data.extra).toBe('field');
     }
+  });
+
+  it('should accept null for optional fields', () => {
+    const schema = jsonSchemaToZod({
+      type: 'object',
+      properties: {
+        email: {type: 'string'},
+        name: {type: 'string'},
+      },
+      required: ['email'],
+    });
+
+    // LLM agents commonly send null for optional parameters
+    const result = schema.safeParse({email: 'john@example.com', name: null});
+    expect(result.success).toBe(true);
   });
 
   it('should work with complex nested schemas', () => {
