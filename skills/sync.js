@@ -5,14 +5,23 @@ const { execSync } = require("child_process");
 const BASE_URL = "https://docs.stripe.com/.well-known/skills";
 
 const fetchText = (url) => {
-  return execSync(
-    `curl -sf --user-agent "github.com/stripe/ai/skills" "${url}"`,
-    { encoding: "utf8" }
-  );
+  try {
+    return execSync(
+      `curl -sf --user-agent "github.com/stripe/ai/skills" "${url}"`,
+      { encoding: "utf8" }
+    );
+  } catch (err) {
+    throw new Error(`Failed to fetch ${url}: ${err.message}`);
+  }
 };
 
 const fetchManifest = () => {
-  return JSON.parse(fetchText(`${BASE_URL}/index.json`));
+  const text = fetchText(`${BASE_URL}/index.json`);
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    throw new Error(`Failed to parse manifest: ${err.message}`);
+  }
 };
 
 const run = async () => {
@@ -27,12 +36,20 @@ const run = async () => {
     path.join(__dirname, "../providers/cursor/plugin/skills"),
   ];
 
+  let errors = 0;
   for (const skill of skills) {
     console.log(`Syncing skill: ${skill.name}`);
 
     for (const file of skill.files) {
       const url = `${BASE_URL}/${skill.name}/${file}`;
-      const content = fetchText(url);
+      let content;
+      try {
+        content = fetchText(url);
+      } catch (err) {
+        console.error(`  Error: ${err.message}`);
+        errors++;
+        continue;
+      }
 
       for (const location of outputLocations) {
         const outputPath = path.join(location, skill.name, file);
@@ -42,6 +59,14 @@ const run = async () => {
       }
     }
   }
+
+  if (errors > 0) {
+    throw new Error(`Sync completed with ${errors} error(s)`);
+  }
 };
 
-run();
+run().catch((err) => {
+  console.error(err.message);
+  console.error("Encountered an error while fetching skills, skills will not be updated. Try triggering the workflow manually.");
+  process.exit(1);
+});
