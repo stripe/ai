@@ -1,56 +1,24 @@
 const fs = require("fs").promises;
 const path = require("path");
+const { execSync } = require("child_process");
 
-const STRIPE_API_KEY = process.env.MCP_STRIPE_API_KEY;
+const BASE_URL = "https://docs.stripe.com/.well-known/skills";
 
-if (!STRIPE_API_KEY) {
-  throw new Error("MCP_STRIPE_API_KEY environment variable is required");
-}
-
-const getMCPPrompt = async (promptName) => {
-  const response = await fetch("https://mcp.stripe.com", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${STRIPE_API_KEY}`,
-      "User-Agent": "github.com/stripe/ai/skills",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method: "prompts/get",
-      params: {
-        name: promptName,
-        arguments: {},
-      },
-      id: 1,
-    }),
-  });
-  const data = await response.json();
-  return data.result.messages[0].content.text;
+const fetchText = (url) => {
+  return execSync(
+    `curl -sf --user-agent "github.com/stripe/ai/skills" "${url}"`,
+    { encoding: "utf8" }
+  );
 };
 
-const listMCPPrompts = async () => {
-  const response = await fetch("https://mcp.stripe.com", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${STRIPE_API_KEY}`,
-      "User-Agent": "github.com/stripe/ai/skills",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method: "prompts/list",
-      params: {},
-      id: 1,
-    }),
-  });
-  const data = await response.json();
-  return data.result.prompts;
+const fetchManifest = () => {
+  return JSON.parse(fetchText(`${BASE_URL}/index.json`));
 };
 
 const run = async () => {
-  const prompts = await listMCPPrompts();
-  console.log(`Found ${prompts.length} prompts`);
+  const manifest = fetchManifest();
+  const skills = manifest.skills;
+  console.log(`Found ${skills.length} skills`);
 
   // Define all locations where skills should be written
   const outputLocations = [
@@ -59,28 +27,19 @@ const run = async () => {
     path.join(__dirname, "../providers/cursor/plugin/skills"),
   ];
 
-  for (const prompt of prompts) {
-    const content = await getMCPPrompt(prompt.name);
+  for (const skill of skills) {
+    console.log(`Syncing skill: ${skill.name}`);
 
-    const skillFileContent = `---
-name: ${prompt.name}
-description: ${prompt.description}
-alwaysApply: false
----
+    for (const file of skill.files) {
+      const url = `${BASE_URL}/${skill.name}/${file}`;
+      const content = fetchText(url);
 
-${content}
-`;
-
-    // Write to all locations
-    for (const location of outputLocations) {
-      const outputDir = path.join(location, prompt.name);
-      const outputPath = path.join(outputDir, "SKILL.md");
-
-      // Ensure directory exists
-      await fs.mkdir(outputDir, { recursive: true });
-
-      await fs.writeFile(outputPath, skillFileContent, "utf8");
-      console.log(`Content written to ${outputPath}`);
+      for (const location of outputLocations) {
+        const outputPath = path.join(location, skill.name, file);
+        await fs.mkdir(path.dirname(outputPath), { recursive: true });
+        await fs.writeFile(outputPath, content, "utf8");
+        console.log(`  Written: ${outputPath}`);
+      }
     }
   }
 };

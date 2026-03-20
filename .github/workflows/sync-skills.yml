@@ -1,9 +1,8 @@
-name: Sync MCP prompts to skills folder
+name: Sync skills from docs.stripe.com
 
 on:
-  # schedule:
-    # Uncomment this to Run daily at 00:00 UTC
-    # - cron: '0 0 * * *'
+  schedule:
+    - cron: '0 0 * * *' # Run daily at 00:00 UTC
   workflow_dispatch: # Allow manual triggering
 
 permissions:
@@ -13,19 +12,17 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: '20'
-      
+
       - name: Run sync script
-        env:
-          MCP_STRIPE_API_KEY: ${{ secrets.MCP_STRIPE_API_KEY }}
         run: node skills/sync.js
 
       # This action will only create a PR if there are actual changes to the file
@@ -34,10 +31,12 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: 'sync mcp.stripe.com prompts to skills and provider plugins'
-          title: '[automated] sync mcp.stripe.com prompts to skills and provider plugins'
+          commit-message: 'sync skills from docs.stripe.com/.well-known/skills'
+          title: '[automated] sync skills from docs.stripe.com'
           body: |
             This is an automated PR created by the sync-skills workflow.
+
+            Synced from `https://docs.stripe.com/.well-known/skills/` via the [agent skills discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc).
 
             Updates skills in:
             - skills/ (source)
@@ -49,7 +48,7 @@ jobs:
             skills/**/*.md
             providers/claude/plugin/skills/
             providers/cursor/plugin/skills/
-      
+
       - name: Check outputs
         if: steps.cpr.outputs.pull-request-number
         run: |
