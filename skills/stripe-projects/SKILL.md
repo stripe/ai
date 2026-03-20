@@ -1,7 +1,6 @@
 ---
 name: stripe-projects
-description: Stripe Projects CLI tool for provisioning and managing accounts and services across third-party infrastructure SaaS providers. Use when user wants to set up a new web stack, configure infrastructure services, or manage service provider accounts through a unified CLI interface.
-alwaysApply: false
+description: Stripe Projects CLI plugin for provisioning and managing third-party infrastructure services from the terminal. Use when a user wants to set up a new project stack, provision hosting, databases, auth, analytics, observability, or email services, bootstrap a new web app, manage service credentials, or connect existing SaaS provider accounts — including Vercel, Cloudflare, Neon, Supabase, Clerk, PostHog, Sentry, and Resend.
 ---
 
 # Stripe Projects
@@ -186,15 +185,6 @@ stripe projects env export
 # JSON status check
 stripe projects status --json
 ```
-
-## When to Use Stripe Projects
-
-Use Stripe Projects when you need to:
-- Set up a new web stack or infrastructure
-- Provision accounts across multiple SaaS providers
-- Manage service credentials in one place
-- Configure hosting, databases, auth, analytics, observability, or email services
-- Automate infrastructure provisioning in CI/CD pipelines
 
 ## Best Practices
 
