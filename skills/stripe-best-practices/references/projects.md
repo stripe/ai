@@ -149,9 +149,5 @@ stripe projects status --json
 
 ## Traps to avoid
 
-- Do not use the old `provider/service` format — services now use `provider:service:tier` (e.g. `neon:db:free`, not `neon/postgres`)
-- Do not use `stripe projects env sync` — the correct command is `stripe projects env export`
-- Do not use `stripe projects catalog` — the correct command is `stripe projects services list`
-- Do not use `--no-interactive` — the correct flag is `--no-input`
 - Do not manually manage credentials across provider dashboards — use `stripe projects env export` to centralize
 - Add `.env` to `.gitignore` — never commit credentials
