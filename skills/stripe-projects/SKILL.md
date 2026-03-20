@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Stripe Projects
 
-Provision real services from the terminal - unified CLI for infrastructure setup across Vercel, Railway, Neon, Supabase, Clerk, PostHog, and more.
+Provision real services from the terminal — unified CLI for infrastructure setup across Vercel, Neon, Supabase, Clerk, PostHog, Sentry, Resend, and more.
 
 ## Overview
 
@@ -14,8 +14,7 @@ Stripe Projects is a CLI plugin that provisions and manages infrastructure servi
 - ✓ Provisions real services from the terminal
 - ✓ Keeps resources in your provider accounts
 - ✓ Returns credentials in an agent-readable format
-- ✓ Supports upgrades to paid tiers without stack rebuilds
-- ✓ Centralizes credential management
+- ✓ Centralizes credential management in a single `.env` file
 
 ## Prerequisites
 
@@ -35,46 +34,47 @@ stripe plugin install projects
 stripe projects init my-app
 ```
 
-Creates a local project with `stripe-projects.json` configuration file and authenticates with Stripe.
+Creates a `project.toml` configuration file in the current directory and authenticates with Stripe.
 
 ### 2. Browse Available Providers
 
 ```bash
 # List all providers and tiers
-stripe projects catalog
+stripe projects services list
 
-# Include pricing details
-stripe projects catalog --prices
+# Filter by category
+stripe projects services list --category db
+stripe projects services list --category auth
+stripe projects services list --category hosting
 ```
 
-Shows available providers (Vercel, Railway, Neon, Supabase, Clerk, PostHog, etc.) with tier options.
+Categories: `db`, `auth`, `hosting`, `analytics`, `observability`, `email`
 
 ### 3. Add Services
 
+Services use the format `provider:service:tier`:
+
 ```bash
-# Add any service (hosting, database, auth, analytics)
-stripe projects services add neon/postgres
-stripe projects services add clerk/auth
-stripe projects services add vercel/hosting
-stripe projects services add posthog/analytics
+stripe projects services add neon:db:free
+stripe projects services add clerk:auth:free
+stripe projects services add vercel:hosting:hobby
+stripe projects services add posthog:analytics:base
 ```
 
-Provisions services and stores credentials in your project.
-
-**Pro tip:** Use `--tier free` and `--no-interactive` flags for scripting:
+For scripting, use `--no-input` to skip confirmation prompts:
 ```bash
-stripe projects services add neon/postgres --tier free --no-interactive
+stripe projects services add neon:db:free --no-input
 ```
 
 ### 4. Connect Existing Accounts
 
 ```bash
-# Import existing account via OAuth
-stripe projects services link clerk/auth
-stripe projects services link supabase/postgres
+# Connect existing account via OAuth
+stripe projects services link supabase
+stripe projects services link clerk
 ```
 
-Opens browser OAuth flow to connect your existing provider accounts instead of creating new ones.
+Opens a browser OAuth flow to connect your existing provider accounts instead of creating new ones.
 
 ### 5. View Project Status
 
@@ -86,153 +86,105 @@ stripe projects status
 stripe projects status --json
 ```
 
-Shows service health, tiers, usage, and support contacts.
-
 ### 6. Export Credentials
 
 ```bash
-# View credentials (masked)
+# Write all credentials to .env
+stripe projects env export
+
+# Export to a specific file
+stripe projects env export --path .env.local
+
+# View credentials without writing to disk
 stripe projects env list
-
-# Write to .env files
-stripe projects env sync
 ```
-
-Creates `.env` files for each provider with unmasked credentials (`.env.neon`, `.env.clerk`, `.env.vercel`, etc.).
 
 ### 7. Rotate Credentials
 
 ```bash
-# Rotate service credentials
-stripe projects services rotate neon/postgres
-
-# Skip confirmation prompt
-stripe projects services rotate neon/postgres --auto-confirm
+stripe projects services rotate neon:db
+stripe projects services rotate clerk:auth
 ```
 
-Generates new credentials and invalidates old ones. Run `stripe projects env sync` afterward to update local files.
+Generates new credentials and invalidates old ones. Run `stripe projects env export` afterward to update your local `.env`.
 
-### 8. Upgrade Service Tiers
+### 8. Change Service Tiers
+
+To change tiers, remove the existing service and add the new tier:
 
 ```bash
-# Upgrade single service
-stripe projects services upgrade neon/postgres
-
-# Upgrade multiple services
-stripe projects services upgrade railway/hosting vercel/hosting
+stripe projects services remove neon:db
+stripe projects services add neon:db:launch
+# -> neon:db:launch costs $19/mo. Continue? [y/N]
 ```
 
-### 9. Open Provider Dashboards
+### 9. Remove Services
 
 ```bash
-# Open provider dashboard in browser
-stripe projects services open vercel
-stripe projects services open neon
+stripe projects services remove neon:db
 ```
 
-Automatically authenticates you to the provider's dashboard.
-
-### 10. Manage Billing
-
-```bash
-# View payment method
-stripe projects billing method
-
-# Update payment method
-stripe projects billing update
-```
+Removes credentials from Projects. Provider-side data is not deleted.
 
 ## Complete Setup Example
 
 ```bash
-# 1. Install
+# 1. Install plugin
 stripe plugin install projects
 
 # 2. Create project
 stripe projects init my-stack
 
-# 3. Add services
-stripe projects services add vercel/hosting --tier free
-stripe projects services add neon/postgres --tier free
-stripe projects services add clerk/auth --tier free
+# 3. Browse what's available
+stripe projects services list
 
-# 4. Check status
+# 4. Add services
+stripe projects services add vercel:hosting:hobby
+stripe projects services add neon:db:free
+stripe projects services add clerk:auth:free
+
+# 5. Check status
 stripe projects status
 
-# 5. Export credentials
-stripe projects env sync
+# 6. Export credentials
+stripe projects env export
 
-# 6. Verify setup
-ls -la .env.*
+# 7. Verify
+cat .env
 ```
 
 ## Supported Providers
 
-**Hosting:** Vercel, Railway
-**Databases:** Neon (Postgres), Supabase, PlanetScale (MySQL), Turso (SQLite)
-**Auth:** Clerk
-**Analytics:** PostHog
-**Other:** Chroma (vector DB), Runloop (dev sandboxes)
+| Category | Provider | Free Tier | Paid Tier |
+|----------|----------|-----------|-----------|
+| **Hosting** | `vercel:hosting` | hobby (free) | pro ($20/mo) |
+| | `cloudflare:hosting` | free | pro ($20/mo) |
+| **Database** | `neon:db` | free | launch ($19/mo) |
+| | `supabase:db` | micro (free) | pro ($25/mo) |
+| **Auth** | `clerk:auth` | free | pro ($25/mo) |
+| **Analytics** | `posthog:analytics` | base (free) | premium ($20/mo) |
+| **Observability** | `sentry:observability` | developer (free) | team ($26/mo) |
+| **Email** | `resend:email` | free | pro ($20/mo) |
 
 ## Common Flags
 
 | Flag | Description |
 |------|-------------|
 | `--json` | Return output as structured JSON instead of formatted text |
-| `--no-interactive` | Disable interactive prompts (commands fail when required input is missing) |
-| `--auto-confirm` | Accept confirmation prompts automatically |
-| `--quiet` | Suppress non-essential output, return only results or errors |
-| `--tier <tier>` | Specify tier when adding a service to skip tier selection |
+| `--no-input` | Disable interactive prompts (fail if input is required) |
+| `-h, --help` | Show help for any command |
 
 ## CI/CD Usage
 
 ```bash
 # Non-interactive service provisioning
-stripe projects services add supabase/postgres \
-  --tier free \
-  --no-interactive \
-  --json
+stripe projects services add neon:db:free --no-input --json
 
-# Silent credential sync
-stripe projects env sync --quiet
+# Export credentials
+stripe projects env export
 
 # JSON status check
 stripe projects status --json
-```
-
-## Additional Commands
-
-### Export Project Configuration
-
-```bash
-# Export as JSON
-stripe projects export > config.json
-
-# Export as YAML
-stripe projects export --format=yaml > stack.yaml
-```
-
-Useful for documentation and version control (credentials are not exported).
-
-### List All Projects
-
-```bash
-# Show all projects in your account
-stripe projects list
-```
-
-### Configure Services
-
-```bash
-# Run configuration prompts for existing service
-stripe projects services config vercel/hosting
-```
-
-### Remove Services
-
-```bash
-# Remove a service from your project
-stripe projects services remove neon/postgres
 ```
 
 ## When to Use Stripe Projects
@@ -241,15 +193,13 @@ Use Stripe Projects when you need to:
 - Set up a new web stack or infrastructure
 - Provision accounts across multiple SaaS providers
 - Manage service credentials in one place
-- Configure hosting, databases, auth, or analytics services
-- Upgrade service tiers without rebuilding your stack
+- Configure hosting, databases, auth, analytics, observability, or email services
 - Automate infrastructure provisioning in CI/CD pipelines
 
 ## Best Practices
 
-- Always specify tiers explicitly with `--tier` flag when scripting
+- Run `stripe projects services list` to discover exact provider and tier names before adding
 - Use `--json` output for parsing in scripts and automation
-- Run `stripe projects env sync` after credential rotation
+- Run `stripe projects env export` after rotating credentials
 - Use `stripe projects services link` to connect existing accounts rather than creating duplicates
-- Export project configuration with `stripe projects export` for documentation
-- Centralize credential management through Projects instead of manually managing across dashboards
+- Add `.env` to `.gitignore` — never commit credentials
