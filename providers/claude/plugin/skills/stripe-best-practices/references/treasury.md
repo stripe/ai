@@ -1,8 +1,3 @@
----
-title: Treasury / Financial Accounts
-
----
-
 # Treasury / Financial Accounts
 
 ## Table of contents

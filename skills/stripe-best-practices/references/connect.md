@@ -1,8 +1,3 @@
----
-title: Connect / platforms
-
----
-
 # Connect / platforms
 
 ## Table of contents

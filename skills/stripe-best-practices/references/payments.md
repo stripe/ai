@@ -1,8 +1,3 @@
----
-title: Payments
-
----
-
 # Payments
 
 ## Table of contents
