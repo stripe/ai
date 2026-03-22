@@ -157,6 +157,110 @@ describe('jsonSchemaToZodShape', () => {
     const result = shape.data.safeParse('anything');
     expect(result.success).toBe(true);
   });
+
+  it('should convert array with integer items as number', () => {
+    const shape = jsonSchemaToZodShape({
+      type: 'object',
+      properties: {
+        ids: {type: 'array', items: {type: 'integer'}},
+      },
+    });
+
+    expect(shape.ids).toBeDefined();
+    expect(shape.ids.safeParse([1, 2, 3]).success).toBe(true);
+    expect(shape.ids.safeParse(['a', 'b']).success).toBe(false);
+  });
+
+  it('should convert array with no items as unknown', () => {
+    const shape = jsonSchemaToZodShape({
+      type: 'object',
+      properties: {
+        data: {type: 'array'},
+      },
+    });
+
+    expect(shape.data).toBeDefined();
+    // Array without items should accept any array elements
+    expect(shape.data.safeParse([1, 'mixed', true]).success).toBe(true);
+  });
+
+  it('should handle schema with no properties', () => {
+    const shape = jsonSchemaToZodShape({
+      type: 'object',
+    });
+
+    expect(shape).toEqual({});
+  });
+
+  it('should handle missing required array', () => {
+    const shape = jsonSchemaToZodShape({
+      type: 'object',
+      properties: {
+        a: {type: 'string'},
+        b: {type: 'number'},
+      },
+    });
+
+    // All fields should be optional when required is absent
+    expect(shape.a.isOptional()).toBe(true);
+    expect(shape.b.isOptional()).toBe(true);
+  });
+
+  it('should reject invalid enum values', () => {
+    const shape = jsonSchemaToZodShape({
+      type: 'object',
+      properties: {
+        color: {type: 'string', enum: ['red', 'blue', 'green']},
+      },
+      required: ['color'],
+    });
+
+    expect(shape.color.safeParse('red').success).toBe(true);
+    expect(shape.color.safeParse('yellow').success).toBe(false);
+    expect(shape.color.safeParse(123).success).toBe(false);
+  });
+
+  it('should reject wrong types and report expected zod issues', () => {
+    const shape = jsonSchemaToZodShape({
+      type: 'object',
+      properties: {
+        count: {type: 'number'},
+        name: {type: 'string'},
+        active: {type: 'boolean'},
+      },
+      required: ['count', 'name', 'active'],
+    });
+
+    const countResult = shape.count.safeParse('not-a-number');
+    expect(countResult.success).toBe(false);
+    if (!countResult.success) {
+      const issue = countResult.error.issues[0] as z.ZodInvalidTypeIssue;
+      expect(issue.code).toBe('invalid_type');
+      expect(issue.expected).toBe('number');
+      expect(issue.received).toBe('string');
+    }
+
+    const nameResult = shape.name.safeParse(42);
+    expect(nameResult.success).toBe(false);
+    if (!nameResult.success) {
+      const issue = nameResult.error.issues[0] as z.ZodInvalidTypeIssue;
+      expect(issue.code).toBe('invalid_type');
+      expect(issue.expected).toBe('string');
+      expect(issue.received).toBe('number');
+    }
+
+    expect(shape.active.safeParse('yes').success).toBe(false);
+  });
+
+  it('should handle schema with only required key', () => {
+    const shape = jsonSchemaToZodShape({
+      type: 'object',
+      required: ['x'],
+    });
+
+    // No properties defined, so shape should be empty
+    expect(shape).toEqual({});
+  });
 });
 
 describe('jsonSchemaToZod', () => {
@@ -230,5 +334,56 @@ describe('jsonSchemaToZod', () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it('should reject non-object input', () => {
+    const schema = jsonSchemaToZod({
+      type: 'object',
+      properties: {
+        name: {type: 'string'},
+      },
+    });
+
+    expect(schema.safeParse('not-an-object').success).toBe(false);
+    expect(schema.safeParse(42).success).toBe(false);
+    expect(schema.safeParse(null).success).toBe(false);
+  });
+
+  it('should accept empty object when no fields are required', () => {
+    const schema = jsonSchemaToZod({
+      type: 'object',
+      properties: {
+        name: {type: 'string'},
+        age: {type: 'number'},
+      },
+    });
+
+    const result = schema.safeParse({});
+    expect(result.success).toBe(true);
+  });
+
+  it('should reject when any required field is missing', () => {
+    const schema = jsonSchemaToZod({
+      type: 'object',
+      properties: {
+        customer: {type: 'string'},
+        amount: {type: 'number'},
+        currency: {type: 'string'},
+      },
+      required: ['customer', 'amount', 'currency'],
+    });
+
+    // Missing all required
+    expect(schema.safeParse({}).success).toBe(false);
+    // Missing some required
+    expect(schema.safeParse({customer: 'cus_123'}).success).toBe(false);
+    // All required present
+    expect(
+      schema.safeParse({
+        customer: 'cus_123',
+        amount: 100,
+        currency: 'usd',
+      }).success
+    ).toBe(true);
   });
 });

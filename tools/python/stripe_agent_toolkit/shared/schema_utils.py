@@ -2,11 +2,11 @@
 
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type, Tuple
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, ConfigDict, Field, create_model
 
 
 def json_schema_to_pydantic_fields(
-    schema: Optional[Dict[str, Any]]
+    schema: Optional[Dict[str, Any]],
 ) -> Dict[str, Tuple[Any, Any]]:
     """
     Convert a JSON Schema to Pydantic field definitions.
@@ -37,8 +37,7 @@ def json_schema_to_pydantic_fields(
             if enum_values:
                 # Create enum type dynamically
                 enum_class = Enum(
-                    f"{key}_enum",
-                    {str(v): str(v) for v in enum_values}
+                    f"{key}_enum", {str(v): str(v) for v in enum_values}
                 )
                 python_type = enum_class
             else:
@@ -89,8 +88,7 @@ def json_schema_to_pydantic_fields(
 
 
 def json_schema_to_pydantic_model(
-    schema: Optional[Dict[str, Any]],
-    model_name: str = "DynamicModel"
+    schema: Optional[Dict[str, Any]], model_name: str = "DynamicModel"
 ) -> Type[BaseModel]:
     """
     Convert a JSON Schema to a Pydantic model class.
@@ -115,11 +113,8 @@ def json_schema_to_pydantic_model(
     # Create model dynamically with extra="allow" config
     model = create_model(
         model_name,
-        __config__=None,  # type: ignore
-        **fields  # type: ignore
+        __config__=ConfigDict(extra="allow"),  # type: ignore
+        **fields,  # type: ignore
     )
-
-    # Set extra="allow" on the created model
-    model.model_config = {"extra": "allow"}
 
     return model
