@@ -1,4 +1,4 @@
-# Billing / Subscriptions
+# Billing / Subscriptions 
 
 ## Table of contents
 
