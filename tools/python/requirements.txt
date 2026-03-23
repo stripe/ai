@@ -2,7 +2,7 @@ twine
 crewai==1.4.1
 crewai-tools==1.4.1
 flake8
-langchain==1.0.4
+langchain==1.2.13
 langchain-openai==1.0.2
 mypy==1.18.2
 pydantic>=2.12.4
