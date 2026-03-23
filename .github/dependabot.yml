@@ -8,15 +8,15 @@ updates:
   - package-ecosystem: "npm"
     directories:
       - "/**"
-    exclude-patterns:
-      - "/benchmarks/**"
+    exclude-paths:
+      - "benchmarks/**"
     schedule:
       interval: "weekly"
 
   - package-ecosystem: "pip"
     directories:
       - "/**"
-    exclude-patterns:
-      - "/benchmarks/**"
+    exclude-paths:
+      - "benchmarks/**"
     schedule:
       interval: "weekly"
