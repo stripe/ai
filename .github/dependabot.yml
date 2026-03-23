@@ -6,12 +6,4 @@ updates:
     exclude-paths:
       - "benchmarks/**"
     schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "pip"
-    directories:
-      - "/**"
-    exclude-paths:
-      - "benchmarks/**"
-    schedule:
-      interval: "weekly"
+      interval: "monthly"
