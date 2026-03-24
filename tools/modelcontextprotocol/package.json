@@ -1,12 +1,13 @@
 {
   "name": "@stripe/mcp",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "homepage": "https://github.com/stripe/ai/tree/main/tools/modelcontextprotocol",
   "description": "A command line tool for setting up Stripe MCP server",
   "bin": "dist/index.js",
   "files": [
     "dist/index.js",
     "dist/cli.js",
+    "dist/useragent.js"
     "LICENSE",
     "README.md",
     "VERSION",
