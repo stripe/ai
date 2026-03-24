@@ -5,9 +5,7 @@
   "description": "A command line tool for setting up Stripe MCP server",
   "bin": "dist/index.js",
   "files": [
-    "dist/index.js",
-    "dist/cli.js",
-    "dist/useragent.js",
+    "dist/**",
     "LICENSE",
     "README.md",
     "VERSION",
