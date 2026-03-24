@@ -7,7 +7,7 @@
   "files": [
     "dist/index.js",
     "dist/cli.js",
-    "dist/useragent.js"
+    "dist/useragent.js",
     "LICENSE",
     "README.md",
     "VERSION",
