@@ -4,6 +4,6 @@ updates:
     directories:
       - "/**"
     exclude-paths:
-      - "benchmarks/**"
+      - "/benchmarks/**"
     schedule:
       interval: "monthly"
