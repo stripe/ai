@@ -11,7 +11,7 @@ description: >-
 
 ---
 
-Latest Stripe API version: **2026-02-25.clover**. Always use the latest API version and SDK unless the user specifies otherwise.
+Latest Stripe API version: **2026-03-25.dahlia**. Always use the latest API version and SDK unless the user specifies otherwise.
 
 ## Integration routing
 
