@@ -88,14 +88,14 @@ const stripe = require('stripe')('sk_test_xxx');
 
 See [Stripe.js Versioning](https://docs.stripe.com/sdks/stripejs-versioning.md) for details.
 
-Stripe.js uses an evergreen model with major releases (Acacia, Basil, Clover) on a biannual basis.
+Stripe.js uses an evergreen model with major releases (Acacia, Basil, Clover, Dahlia) on a biannual basis.
 
 ### Loading Versioned Stripe.js
 
 **Via Script Tag:**
 
 ```html
-<script src="https://js.stripe.com/clover/stripe.js"></script>
+<script src="https://js.stripe.com/dahlia/stripe.js"></script>
 ```
 
 **Via npm:**
@@ -110,7 +110,7 @@ Major npm versions correspond to specific Stripe.js versions.
 
 Each Stripe.js version automatically pairs with its corresponding API version. For instance:
 
-- Clover Stripe.js uses `2026-02-25.clover` API
+- Dahlia Stripe.js uses `2026-02-25.clover` API
 - Acacia Stripe.js uses `2024-12-18.acacia` API
 
 You can’t override this association.
