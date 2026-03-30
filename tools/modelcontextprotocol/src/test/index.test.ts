@@ -181,7 +181,9 @@ describe('validateApiKey', () => {
   });
 
   it('should reject keys without valid prefix', () => {
-    expect(() => validateApiKey('pk_test_123')).toThrow('Invalid API key format');
+    expect(() => validateApiKey('pk_test_123')).toThrow(
+      'Invalid API key format'
+    );
   });
 
   it('should reject empty keys', () => {
