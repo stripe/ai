@@ -1,4 +1,5 @@
-const VERSION = '0.3.1';
+// Keep in sync with version field in package.json
+const VERSION = '0.3.3';
 const BASE_USER_AGENT = `stripe-mcp-local/${VERSION}`;
 
 /**
