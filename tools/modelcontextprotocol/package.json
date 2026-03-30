@@ -12,7 +12,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('dist/index.js', '755')\"",
+    "build": "tsc && node scripts/inject-version.js && node -e \"require(\\\"fs\\\").chmodSync(\\\"dist/index.js\\\", \\\"755\\\")\"",
     "clean": "rm -rf dist",
     "lint": "eslint \"./**/*.ts*\"",
     "prettier": "prettier './**/*.{js,ts,md,html,css}' --write",
