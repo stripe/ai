@@ -1,4 +1,4 @@
-import {parseArgs} from '../cli';
+import {parseArgs, validateApiKey, validateStripeAccount} from '../cli';
 import {extractClientName, buildUserAgent} from '../userAgent';
 
 describe('extractClientName', () => {
@@ -167,5 +167,44 @@ describe('parseArgs function', () => {
         'Invalid argument: invalid-arg. Accepted arguments are: api-key, stripe-account'
       );
     });
+  });
+});
+
+describe('validateApiKey', () => {
+  it('should accept sk_ prefixed keys', () => {
+    // Should not throw (warning is OK)
+    expect(() => validateApiKey('sk_test_123')).not.toThrow();
+  });
+
+  it('should accept rk_ prefixed keys', () => {
+    expect(() => validateApiKey('rk_test_123')).not.toThrow();
+  });
+
+  it('should reject keys without valid prefix', () => {
+    expect(() => validateApiKey('pk_test_123')).toThrow('Invalid API key format');
+  });
+
+  it('should reject empty keys', () => {
+    expect(() => validateApiKey('')).toThrow('Invalid API key format');
+  });
+});
+
+describe('validateStripeAccount', () => {
+  it('should accept acct_ prefixed accounts', () => {
+    expect(() => validateStripeAccount('acct_123')).not.toThrow();
+  });
+
+  it('should reject accounts without acct_ prefix', () => {
+    expect(() => validateStripeAccount('invalid_123')).toThrow(
+      'Stripe account must start with "acct_"'
+    );
+  });
+});
+
+describe('--tools deprecation', () => {
+  it('should accept --tools flag without throwing', () => {
+    const args = ['--api-key=sk_test_123', '--tools=all'];
+    const options = parseArgs(args);
+    expect(options.apiKey).toBe('sk_test_123');
   });
 });
