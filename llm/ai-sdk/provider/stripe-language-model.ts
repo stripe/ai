@@ -261,45 +261,13 @@ export class StripeLanguageModel implements LanguageModelV2 {
     // Convert AI SDK prompt to OpenAI-compatible format
     const messages = convertToOpenAIMessages(options.prompt);
 
-    // Check if tools are provided and throw error (tool calling not supported by Stripe API)
+    // Tool calling is not supported by the Stripe AI SDK Provider.
     if (options.tools && options.tools.length > 0) {
       throw new Error(
         'Tool calling is not supported by the Stripe AI SDK Provider. ' +
-        'The llm.stripe.com API does not currently support function calling or tool use. ' +
-        'Please remove the tools parameter from your request.'
+          'The llm.stripe.com API does not currently support function calling or tool use. ' +
+          'Please remove the tools parameter from your request.'
       );
-    }
-
-    // Prepare tools if provided
-    const tools =
-      options.tools && options.tools.length > 0
-        ? options.tools.map((tool) => {
-            if (tool.type === 'function') {
-              return {
-                type: 'function',
-                function: {
-                  name: tool.name,
-                  description: tool.description,
-                  parameters: tool.inputSchema,
-                },
-              };
-            }
-            // Provider-defined tools
-            return tool;
-          })
-        : undefined;
-
-    // Map tool choice
-    let toolChoice: string | {type: string; function?: {name: string}} | undefined;
-    if (options.toolChoice) {
-      if (options.toolChoice.type === 'tool') {
-        toolChoice = {
-          type: 'function',
-          function: {name: options.toolChoice.toolName},
-        };
-      } else {
-        toolChoice = options.toolChoice.type; // 'auto', 'none', 'required'
-      }
     }
 
     // Build request body, only including defined values
@@ -310,18 +278,18 @@ export class StripeLanguageModel implements LanguageModelV2 {
 
     // Add optional parameters only if they're defined
     if (options.temperature !== undefined) body.temperature = options.temperature;
-    
+
     // Handle max_tokens with model-specific defaults for Anthropic
     const maxTokens = options.maxOutputTokens ?? this.getDefaultMaxTokens(this.modelId);
     if (maxTokens !== undefined) body.max_tokens = maxTokens;
-    
+
     if (options.topP !== undefined) body.top_p = options.topP;
-    if (options.frequencyPenalty !== undefined) body.frequency_penalty = options.frequencyPenalty;
-    if (options.presencePenalty !== undefined) body.presence_penalty = options.presencePenalty;
+    if (options.frequencyPenalty !== undefined)
+      body.frequency_penalty = options.frequencyPenalty;
+    if (options.presencePenalty !== undefined)
+      body.presence_penalty = options.presencePenalty;
     if (options.stopSequences !== undefined) body.stop = options.stopSequences;
     if (options.seed !== undefined) body.seed = options.seed;
-    if (tools !== undefined) body.tools = tools;
-    if (toolChoice !== undefined) body.tool_choice = toolChoice;
 
     return {args: body, warnings};
   }
