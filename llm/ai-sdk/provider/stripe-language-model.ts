@@ -266,7 +266,15 @@ export class StripeLanguageModel implements LanguageModelV2 {
       throw new Error(
         'Tool calling is not supported by the Stripe AI SDK Provider. ' +
           'The llm.stripe.com API does not currently support function calling or tool use. ' +
-          'Please remove the tools parameter from your request.'
+          'Please remove the tools and toolChoice parameters from your request.'
+      );
+    }
+
+    if (options.toolChoice !== undefined) {
+      throw new Error(
+        'Tool calling is not supported by the Stripe AI SDK Provider. ' +
+          'The llm.stripe.com API does not currently support function calling or tool use. ' +
+          'Please remove the tools and toolChoice parameters from your request.'
       );
     }
 

@@ -116,6 +116,33 @@ describe('StripeMcpClient', () => {
       expect(results).toHaveLength(3);
       expect(client.isConnected()).toBe(true);
     });
+
+    it('should close the client if listTools fails after connect succeeds', async () => {
+      const {
+        Client,
+      } = require('@modelcontextprotocol/sdk/client/index.js');
+      const connect = jest.fn().mockResolvedValue(undefined);
+      const listTools = jest.fn().mockRejectedValue(new Error('listTools failed'));
+      const close = jest.fn().mockResolvedValue(undefined);
+
+      Client.mockImplementationOnce(() => ({
+        connect,
+        listTools,
+        callTool: jest.fn(),
+        close,
+      }));
+
+      const client = new StripeMcpClient({secretKey: 'rk_test_123'});
+
+      await expect(client.connect()).rejects.toThrow(
+        'Failed to connect to Stripe MCP server'
+      );
+
+      expect(connect).toHaveBeenCalledTimes(1);
+      expect(listTools).toHaveBeenCalledTimes(1);
+      expect(close).toHaveBeenCalledTimes(1);
+      expect(client.isConnected()).toBe(false);
+    });
   });
 
   describe('getTools', () => {
