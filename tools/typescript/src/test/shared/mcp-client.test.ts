@@ -118,11 +118,11 @@ describe('StripeMcpClient', () => {
     });
 
     it('should close the client if listTools fails after connect succeeds', async () => {
-      const {
-        Client,
-      } = require('@modelcontextprotocol/sdk/client/index.js');
+      const { Client } = require('@modelcontextprotocol/sdk/client/index.js');
       const connect = jest.fn().mockResolvedValue(undefined);
-      const listTools = jest.fn().mockRejectedValue(new Error('listTools failed'));
+      const listTools = jest
+        .fn()
+        .mockRejectedValue(new Error('listTools failed'));
       const close = jest.fn().mockResolvedValue(undefined);
 
       Client.mockImplementationOnce(() => ({
