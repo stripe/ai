@@ -24,6 +24,28 @@ Tool permissions are controlled by your Restricted API Key (RAK). Create a RAK w
 
 See [MCP](/tools/modelcontextprotocol) for more details.
 
+### Policy enforcement (optional)
+
+The MCP server exposes tools that can move money (`create_refund`, `finalize_invoice`), create live payment URLs (`create_payment_link`), and cancel subscriptions. Restricted API Keys control which tools are available, but not how often or how aggressively an agent uses them.
+
+You can add rate limits, daily caps, and access control by wrapping the server with [PolicyLayer Intercept](https://github.com/policylayer/intercept), an open-source MCP proxy:
+
+```sh
+npx -y @policylayer/intercept \
+  --policy policies/recommended.yaml \
+  -- npx -y @stripe/mcp --api-key=YOUR_STRIPE_SECRET_KEY
+```
+
+Three policy presets are included in [`/policies`](/policies):
+
+| Policy | Description |
+|--------|-------------|
+| `recommended.yaml` | Rate limits on writes, daily caps on financial tools, reads allowed freely |
+| `strict.yaml` | Default deny — only read tools are allowed unless you explicitly opt in |
+| `permissive.yaml` | Everything allowed, rate limits only on financial and destructive operations |
+
+Policies are YAML files you can edit to match your requirements. See the [Intercept docs](https://github.com/policylayer/intercept) for the full policy reference.
+
 ## Agent toolkit
 
 Stripe's Agent Toolkit enables popular agent frameworks including OpenAI's Agent SDK, LangChain, CrewAI, and Vercel's AI SDK to integrate with Stripe APIs through function calling. The library is not exhaustive of the entire Stripe API. It includes support for Python and TypeScript, and is built directly on top of the Stripe [Python][python-sdk] and [Node][node-sdk] SDKs.

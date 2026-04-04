@@ -1,0 +1,37 @@
+version: "1"
+description: "Stripe MCP — permissive policy. All tools allowed. Rate limits on financial and destructive operations."
+default: allow
+
+tools:
+  # Financial tools — rate limited even in permissive mode
+  create_refund:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "10/hour"
+        on_deny: "Max 10 refunds per hour"
+
+  finalize_invoice:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "20/hour"
+        on_deny: "Max 20 invoice finalisations per hour"
+
+  create_payment_link:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "20/hour"
+        on_deny: "Max 20 payment links per hour"
+
+  # Destructive tools — rate limited
+  cancel_subscription:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "10/hour"
+        on_deny: "Max 10 subscription cancellations per hour"
+
+  # Global safety net
+  "*":
+    rules:
+      - name: "global-rate-limit"
+        rate_limit: "120/minute"
+        on_deny: "Global rate limit — max 120 tool calls per minute"
