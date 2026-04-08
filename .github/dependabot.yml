@@ -2,8 +2,6 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directories:
-      - "/**"
-    exclude-paths:
-      - "/benchmarks/**"
+      - "/tools"
     schedule:
       interval: "monthly"
