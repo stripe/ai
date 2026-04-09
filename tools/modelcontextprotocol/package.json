@@ -12,7 +12,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "tsc && node scripts/inject-version.js && node -e \"require(\\\"fs\\\").chmodSync(\\\"dist/index.js\\\", \\\"755\\\")\"",
+    "build": "tsup && node -e \"require('fs').chmodSync('dist/index.js', '755')\"",
     "clean": "rm -rf dist",
     "lint": "eslint \"./**/*.ts*\"",
     "prettier": "prettier './**/*.{js,ts,md,html,css}' --write",
@@ -46,6 +46,7 @@
     "@types/node": "^22.13.4",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "esbuild": "^0.25.5",
+    "tsup": "^8.4.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jest": "^28.11.0",
