@@ -25,7 +25,19 @@ export async function registerPaidTool<Args extends ZodRawShape>(
   paidCallback: ToolCallback<Args>,
   options: PaidToolOptions
 ) {
-  const priceId = options.checkout.line_items?.find((li) => li.price)?.price;
+  let priceId:
+    | string
+    | Stripe.Checkout.SessionCreateParams.LineItem.PriceData
+    | undefined;
+  if (options.checkout.line_items) {
+    for (let i = 0; i < options.checkout.line_items.length; i++) {
+      const li = options.checkout.line_items[i];
+      if (li.price) {
+        priceId = li.price;
+        break;
+      }
+    }
+  }
 
   if (!priceId) {
     throw new Error(
@@ -47,10 +59,12 @@ export async function registerPaidTool<Args extends ZodRawShape>(
     });
     let customerId: null | string = null;
     if (customers.data.length > 0) {
-      customerId =
-        customers.data.find((customer) => {
-          return customer.email === options.userEmail;
-        })?.id || null;
+      for (let i = 0; i < customers.data.length; i++) {
+        if (customers.data[i].email === options.userEmail) {
+          customerId = customers.data[i].id;
+          break;
+        }
+      }
     }
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -68,11 +82,17 @@ export async function registerPaidTool<Args extends ZodRawShape>(
       customer: customerId,
       limit: 100,
     });
-    const paidSession = sessions.data.find(
-      (session) =>
+    let paidSession: Stripe.Checkout.Session | undefined;
+    for (let i = 0; i < sessions.data.length; i++) {
+      const session = sessions.data[i];
+      if (
         session.metadata?.toolName === toolName &&
         session.payment_status === 'paid'
-    );
+      ) {
+        paidSession = session;
+        break;
+      }
+    }
 
     if (paidSession?.subscription) {
       // Check for active subscription for the priceId
@@ -80,9 +100,19 @@ export async function registerPaidTool<Args extends ZodRawShape>(
         customer: customerId || '',
         status: 'active',
       });
-      const activeSub = subs.data.find((sub) =>
-        sub.items.data.find((item) => item.price.id === priceId)
-      );
+
+      let activeSub: Stripe.Subscription | undefined;
+      let found = false;
+      for (let i = 0; i < subs.data.length && !found; i++) {
+        const sub = subs.data[i];
+        for (let j = 0; j < sub.items.data.length; j++) {
+          if (sub.items.data[j].price.id === priceId) {
+            activeSub = sub;
+            found = true;
+            break;
+          }
+        }
+      }
       if (activeSub) {
         return true;
       }

@@ -89,10 +89,16 @@ async function getStripePriceId(productId, currency) {
 
 app.get("/products", async (req, res) => {
   try {
+    const stripeProducts = await stripe.products.list({ limit: 100 });
+    const productMap = {};
+    stripeProducts.data.forEach((p) => {
+      productMap[p.metadata.product_id] = p.id;
+    });
+
     const products = [];
 
     for (const [productId, config] of Object.entries(PRODUCT_CONFIG)) {
-      const stripeProductId = await getStripeProductId(productId);
+      const stripeProductId = productMap[productId] || null;
 
       products.push({
         id: productId,
