@@ -27,7 +27,7 @@ GEM
       rack-protection (= 4.1.1)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
-    stripe (13.5.1)
+    stripe (15.5.0)
     tilt (2.7.0)
 
 PLATFORMS
@@ -40,7 +40,7 @@ DEPENDENCIES
   rack (>= 3.2.6)
   rackup (~> 2.1)
   sinatra (~> 4.1.0)
-  stripe (~> 13.0)
+  stripe (~> 15.0)
 
 BUNDLED WITH
    2.5.4
