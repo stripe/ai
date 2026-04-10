@@ -7,11 +7,10 @@ Contributions of any kind are welcome! If you've found a bug or have a feature r
 To make changes yourself, follow these steps:
 
 1. [Fork](https://help.github.com/articles/fork-a-repo/) this repository and [clone](https://help.github.com/articles/cloning-a-repository/) it locally.
-<!-- 1. TODO add install step(s), e.g. "Run `npm install`" -->
-<!-- 1. TODO add build step(s), e.g. "Build the library using `npm run build`" -->
-2. Make your changes
-<!-- 1. TODO add test step(s), e.g. "Test your changes with `npm test`" -->
-3. Submit a [pull request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/)
+2. Install dependencies and build libraries by referring to `README.md` and `Makefile` or `package.json` inside the specific package you are working on, e.g. `tools/python` or `tools/typescript`.
+3. Make your changes.
+4. Test your changes locally in the package directory.
+5. Submit a [pull request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/)
 
 ## Contributor License Agreement ([CLA](https://en.wikipedia.org/wiki/Contributor_License_Agreement))
 
