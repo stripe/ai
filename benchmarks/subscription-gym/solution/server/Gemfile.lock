@@ -3,6 +3,7 @@ GEM
   specs:
     base64 (0.3.0)
     dotenv (2.8.1)
+    json (2.7.6)
     logger (1.7.0)
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
@@ -27,7 +28,7 @@ GEM
       rack-protection (= 4.1.1)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
-    stripe (13.5.1)
+    stripe (15.2.1)
     tilt (2.7.0)
 
 PLATFORMS
@@ -35,12 +36,13 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  dotenv (~> 2.8)
+  dotenv (= 2.8.1)
+  json (= 2.7.6)
   puma (~> 6.0)
   rack (>= 3.2.6)
   rackup (~> 2.1)
   sinatra (~> 4.1.0)
-  stripe (~> 13.0)
+  stripe (= 15.2.1)
 
 BUNDLED WITH
    2.5.4
