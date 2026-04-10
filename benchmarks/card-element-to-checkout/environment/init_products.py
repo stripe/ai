@@ -12,6 +12,7 @@ Usage:
 import os
 import sqlite3
 import stripe
+import concurrent.futures
 
 # Configuration
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
@@ -158,27 +159,35 @@ def migrate_to_stripe(products, discounts):
     stripe_products = {}
     stripe_prices = {}
 
-    for product in products:
-        # Check if product already exists by name
+    def process_product(product):
         stripe_product = stripe.Product.create(
             name=product["name"],
             description=product["description"] or "",
             images=[product["image_url"]] if product["image_url"] else [],
         )
-        print(f"Created: {product['name']}")
-        print(f"  Stripe ID: {stripe_product.id}")
-
-        stripe_products[product["local_id"]] = stripe_product.id
-
-        # Create a new price
         stripe_price = stripe.Price.create(
             product=stripe_product.id,
             unit_amount=product["price"],
             currency=product["currency"],
         )
-        stripe_prices[product["local_price_id"]] = stripe_price.id
-        print(f"  Price: ${product['price']/100:.2f} -> {stripe_price.id}")
-        print()
+        return {
+            "local_id": product["local_id"],
+            "stripe_product_id": stripe_product.id,
+            "local_price_id": product["local_price_id"],
+            "stripe_price_id": stripe_price.id,
+            "name": product["name"],
+            "price": product["price"]
+        }
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        product_results = list(executor.map(process_product, products))
+
+    for res in product_results:
+        print(f"Created: {res['name']}")
+        print(f"  Stripe ID: {res['stripe_product_id']}")
+        stripe_products[res["local_id"]] = res["stripe_product_id"]
+        stripe_prices[res["local_price_id"]] = res["stripe_price_id"]
+        print(f"  Price: ${res['price']/100:.2f} -> {res['stripe_price_id']}\n")
 
     # Update database with Stripe IDs
     update_stripe_ids("inventory", "id", "stripe_product_id", stripe_products)
@@ -190,10 +199,8 @@ def migrate_to_stripe(products, discounts):
     stripe_coupons = {}
     stripe_promos = {}
 
-    for discount in discounts:
+    def process_discount(discount):
         code = discount["code"]
-
-        # Create coupon
         coupon_params = {
             "name": code,
             "duration": "once",
@@ -207,17 +214,28 @@ def migrate_to_stripe(products, discounts):
             desc = f"${discount['amount_off']/100:.2f} off"
 
         coupon = stripe.Coupon.create(**coupon_params)
-        stripe_coupons[code] = coupon.id
-        print(f"Created coupon: {code} ({desc})")
-        print(f"  Coupon ID: {coupon.id}")
 
-        # Create promotion code
         promo = stripe.PromotionCode.create(
             promotion={"type": "coupon", "coupon": coupon.id},
         )
-        stripe_promos[code] = promo.id
-        print(f"  Promo Code ID: {promo.id}")
-        print()
+
+        return {
+            "code": code,
+            "stripe_coupon_id": coupon.id,
+            "stripe_promo_id": promo.id,
+            "desc": desc
+        }
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        discount_results = list(executor.map(process_discount, discounts))
+
+    for res in discount_results:
+        code = res["code"]
+        stripe_coupons[code] = res["stripe_coupon_id"]
+        stripe_promos[code] = res["stripe_promo_id"]
+        print(f"Created coupon: {code} ({res['desc']})")
+        print(f"  Coupon ID: {res['stripe_coupon_id']}")
+        print(f"  Promo Code ID: {res['stripe_promo_id']}\n")
 
     # Update database with Stripe IDs
     update_stripe_ids("discounts", "code", "stripe_coupon_id", stripe_coupons)
