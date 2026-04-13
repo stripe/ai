@@ -88,6 +88,28 @@ describe('Stripe Provider Utils', () => {
       expect(content[0].image_url.url).toMatch(/^data:image\/png;base64,/);
     });
 
+    it('should convert large file Uint8Array without overflowing the stack', () => {
+      const fileData = Uint8Array.from({length: 200_000}, (_, index) => index % 256);
+
+      const result = convertToOpenAIMessages([
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'file',
+              data: fileData,
+              mediaType: 'image/png',
+            },
+          ],
+        },
+      ]);
+
+      const content = result[0].content as any[];
+      expect(content[0].image_url.url).toBe(
+        `data:image/png;base64,${Buffer.from(fileData).toString('base64')}`
+      );
+    });
+
     it('should convert assistant message with text', () => {
       const result = convertToOpenAIMessages([
         {
@@ -459,4 +481,3 @@ describe('Stripe Provider Utils', () => {
     });
   });
 });
-

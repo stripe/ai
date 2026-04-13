@@ -6,6 +6,7 @@ import {
   LanguageModelV2Prompt,
   LanguageModelV2FinishReason,
 } from '@ai-sdk/provider';
+import {uint8ArrayToBase64} from './base64';
 
 type AssistantMessage = Extract<
   LanguageModelV2Prompt[number],
@@ -95,9 +96,7 @@ export function convertToOpenAIMessages(
               fileUrl = part.data.toString();
             } else {
               // Convert Uint8Array to base64 data URL
-              const base64 = btoa(
-                String.fromCharCode(...Array.from(part.data))
-              );
+              const base64 = uint8ArrayToBase64(part.data);
               fileUrl = `data:${part.mediaType};base64,${base64}`;
             }
             

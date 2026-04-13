@@ -85,6 +85,33 @@ describe('Stripe Provider V3 Utils', () => {
       ]);
     });
 
+    it('should convert large file Uint8Array without overflowing the stack', () => {
+      const data = Uint8Array.from({length: 200_000}, (_, index) => index % 256);
+      const prompt: LanguageModelV3Prompt = [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'file',
+              data,
+              mediaType: 'image/png',
+            },
+          ],
+        },
+      ];
+
+      const result = convertToOpenAIMessagesV3(prompt);
+
+      expect(result[0].content).toEqual([
+        {
+          type: 'image_url',
+          image_url: {
+            url: `data:image/png;base64,${Buffer.from(data).toString('base64')}`,
+          },
+        },
+      ]);
+    });
+
     it('should convert assistant message with text', () => {
       const prompt: LanguageModelV3Prompt = [
         {
