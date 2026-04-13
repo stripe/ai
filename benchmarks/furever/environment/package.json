@@ -38,7 +38,7 @@
     "lucide-react": "0.363.0",
     "micro-cors": "0.1.1",
     "mongoose": "6.13.6",
-    "next": "14.2.35",
+    "next": "16.2.3",
     "next-auth": "4.24.13",
     "random-words": "2.0.1",
     "react": "18.3.1",
