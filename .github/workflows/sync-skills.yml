@@ -16,6 +16,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          # Use a PAT so pushed commits trigger downstream workflows.
+          # GITHUB_TOKEN pushes do not trigger workflow_run / push events.
+          # See: https://docs.github.com/en/actions/concepts/security/github_token#when-github_token-triggers-workflow-runs
+          token: ${{ secrets.SYNC_SKILLS_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -31,6 +36,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.SYNC_SKILLS_PAT || secrets.GITHUB_TOKEN }}
           commit-message: 'sync skills from docs.stripe.com/.well-known/skills'
           title: '[automated] sync skills from docs.stripe.com'
           body: |
