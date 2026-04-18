@@ -40,6 +40,7 @@ class Email:
         msg["In-Reply-To"] = reply_id
         msg["References"] = reply_id
         msg["Reply-To"] = reply_to
+        msg["Bcc"] = self.from_address
         msg.attach(MIMEText(f"<html><body>{self.body}</body></html>", "html"))
         return msg
 
@@ -58,7 +59,6 @@ class Emailer:
     """
     Emailer is an IMAP/SMTP client that can be used to fetch and respond to emails.
     It was mostly vibe-coded so please make improvements!
-    TODO: add agent replies to the context
     """
 
     def __init__(
@@ -73,7 +73,9 @@ class Emailer:
     ):
         # Email configuration
         self.email_address = email_address
-        self.support_address = support_address if support_address else email_address
+        self.support_address = (
+            support_address if support_address else email_address
+        )
         self.email_password = email_password
         self.imap_server = imap_server
         self.imap_port = imap_port
@@ -177,7 +179,8 @@ class Emailer:
             _, thread_ids = imap_conn.search(None, f"X-GM-THRID {thread_id}")
             if thread_ids and thread_ids[0]:
                 thread = [
-                    self._parse_email(imap_conn, mid) for mid in thread_ids[0].split()
+                    self._parse_email(imap_conn, mid)
+                    for mid in thread_ids[0].split()
                 ]
                 thread = [e for e in thread if e]
                 thread.sort(key=lambda e: e.date)
@@ -189,15 +192,21 @@ class Emailer:
         )
         if ref_data and ref_data[0]:
             ref_line = (
-                ref_data[0][1].decode() if isinstance(ref_data[0][1], bytes) else ""
+                ref_data[0][1].decode()
+                if isinstance(ref_data[0][1], bytes)
+                else ""
             )
             refs = re.findall(r"<([^>]+)>", ref_line)
             for ref in refs:
-                _, ref_ids = imap_conn.search(None, f'(HEADER Message-ID "<{ref}>")')
+                _, ref_ids = imap_conn.search(
+                    None, f'(HEADER Message-ID "<{ref}>")'
+                )
                 if ref_ids and ref_ids[0]:
                     for ref_id in ref_ids[0].split():
                         ref_email = self._parse_email(imap_conn, ref_id)
-                        if ref_email and ref_email.id not in [e.id for e in thread]:
+                        if ref_email and ref_email.id not in [
+                            e.id for e in thread
+                        ]:
                             thread.append(ref_email)
 
             # Sort emails in the thread by date (ascending order)
@@ -206,13 +215,26 @@ class Emailer:
 
         return thread
 
-    def _get_unread_emails(self, imap_conn: imaplib.IMAP4_SSL) -> List[List[Email]]:
+    def _get_unread_emails(
+        self, imap_conn: imaplib.IMAP4_SSL
+    ) -> List[List[Email]]:
         imap_conn.select("INBOX")
-        _, msg_nums = imap_conn.search(None, f'(UNSEEN TO "{self.support_address}")')
+        _, msg_nums = imap_conn.search(
+            None, f'(UNSEEN TO "{self.support_address}")'
+        )
         emails: List[List[Email]] = []
 
         for email_id in msg_nums[0].split():
             thread = self._get_email_thread(imap_conn, email_id)
+            if not thread:
+                continue
+
+            most_recent = thread[-1]
+            if most_recent.from_address == self.support_address:
+                # Agent's own reply (e.g. BCC'd), mark as read so it stops showing up as unseen
+                self.mark_as_read(imap_conn, email_id.decode())
+                continue
+
             emails.append(thread)
 
         return emails
