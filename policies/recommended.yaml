@@ -1,0 +1,95 @@
+version: "1"
+description: "Stripe MCP — recommended policy. Rate limits on writes, caps on financial tools, reads allowed freely."
+default: allow
+
+tools:
+  # Financial tools — highest risk, tightest limits
+  create_refund:
+    rules:
+      - name: "burst-limit"
+        rate_limit: "3/minute"
+        on_deny: "Slow down — max 3 refunds per minute"
+      - name: "daily-cap"
+        rate_limit: "10/day"
+        on_deny: "Daily refund limit (10) reached"
+
+  finalize_invoice:
+    rules:
+      - name: "burst-limit"
+        rate_limit: "3/minute"
+        on_deny: "Slow down — max 3 invoice finalisations per minute"
+      - name: "daily-cap"
+        rate_limit: "20/day"
+        on_deny: "Daily invoice finalisation limit (20) reached — finalised invoices trigger payment collection"
+
+  create_payment_link:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "10/hour"
+        on_deny: "Max 10 payment links per hour"
+
+  # Destructive tools — require deliberation
+  cancel_subscription:
+    rules:
+      - name: "burst-limit"
+        rate_limit: "2/minute"
+        on_deny: "Slow down — max 2 cancellations per minute"
+      - name: "daily-cap"
+        rate_limit: "10/day"
+        on_deny: "Daily subscription cancellation limit (10) reached"
+
+  # Write tools — moderate limits
+  create_customer:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "30/hour"
+        on_deny: "Max 30 customer creations per hour"
+
+  create_product:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "30/hour"
+        on_deny: "Max 30 product creations per hour"
+
+  create_price:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "30/hour"
+        on_deny: "Max 30 price creations per hour"
+
+  create_coupon:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "20/hour"
+        on_deny: "Max 20 coupon creations per hour"
+
+  create_invoice:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "20/hour"
+        on_deny: "Max 20 invoice creations per hour"
+
+  create_invoice_item:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "30/hour"
+        on_deny: "Max 30 invoice item creations per hour"
+
+  update_subscription:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "20/hour"
+        on_deny: "Max 20 subscription updates per hour"
+
+  update_dispute:
+    rules:
+      - name: "rate-limit"
+        rate_limit: "10/hour"
+        on_deny: "Max 10 dispute updates per hour"
+
+  # Global safety net
+  "*":
+    rules:
+      - name: "global-rate-limit"
+        rate_limit: "60/minute"
+        on_deny: "Global rate limit — max 60 tool calls per minute across all Stripe tools"
