@@ -62,7 +62,7 @@
     "css-loader": "7.1.1",
     "eslint": "8.57.0",
     "eslint-config-next": "14.1.4",
-    "postcss": "8.4.38",
+    "postcss": "8.5.10",
     "prettier": "3.2.5",
     "prettier-plugin-tailwindcss": "0.5.13",
     "tailwindcss": "3.3.0",
