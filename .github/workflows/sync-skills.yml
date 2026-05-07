@@ -17,9 +17,7 @@ jobs:
       - name: Generate GitHub App token
         id: app-token
         if: |
-          github.ref == 'refs/heads/master' &&
-          github.event_name == 'push' &&
-          !github.event.repository.fork
+          github.ref == 'refs/heads/main'
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
@@ -45,8 +43,7 @@ jobs:
 
       - name: Push to Github
         if: |
-          github.ref == 'refs/heads/master' &&
-          github.event_name == 'push' &&
+          github.ref == 'refs/heads/main'&&
           !github.event.repository.fork
         shell: bash
         run: |
