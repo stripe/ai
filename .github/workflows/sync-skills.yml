@@ -72,6 +72,7 @@ jobs:
           !github.event.repository.fork
         shell: bash
         run: |
+          git checkout -b matv/syncskillstest
           git add -u
 
           # Allow commit to work
@@ -80,6 +81,7 @@ jobs:
 
           # Append a commit with a fix applied
           git commit -m "sync skills"
+
 
           # Authenticate with the GitHub App token and push
           git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
