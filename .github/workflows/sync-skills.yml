@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        
       - name: Generate GitHub App token
         id: app-token
         if: |
@@ -26,13 +29,6 @@ jobs:
           repositories: ${{ github.event.repository.name }}
           permission-contents: write
       
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          # GITHUB_TOKEN pushes do not trigger workflow_run / push events. So we use a Github App
-          # See: https://docs.github.com/en/actions/concepts/security/github_token#when-github_token-triggers-workflow-runs
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
