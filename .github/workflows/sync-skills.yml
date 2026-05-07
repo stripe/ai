@@ -14,13 +14,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        if: |
+          github.ref == 'refs/heads/master' &&
+          github.event_name == 'push' &&
+          !github.event.repository.fork
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_STRIPE_AI_SYNC_PEM }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+      
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           # Use a PAT so pushed commits trigger downstream workflows.
           # GITHUB_TOKEN pushes do not trigger workflow_run / push events.
           # See: https://docs.github.com/en/actions/concepts/security/github_token#when-github_token-triggers-workflow-runs
-          token: ${{ secrets.SYNC_SKILLS_PAT || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -30,34 +44,22 @@ jobs:
       - name: Run sync script
         run: node skills/sync.js
 
-      # This action will only create a PR if there are actual changes to the file
-      # If the content is identical, no PR will be created
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.SYNC_SKILLS_PAT || secrets.GITHUB_TOKEN }}
-          commit-message: 'sync skills from docs.stripe.com/.well-known/skills'
-          title: '[automated] sync skills from docs.stripe.com'
-          body: |
-            This is an automated PR created by the sync-skills workflow.
-
-            Synced from `https://docs.stripe.com/.well-known/skills/` via the [agent skills discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc).
-
-            Updates skills in:
-            - skills/ (source)
-            - providers/claude/plugin/skills/
-            - providers/cursor/plugin/skills/
-          branch: sync-skills-update
-          delete-branch: true
-          add-paths: |
-            skills/**/*.md
-            providers/claude/plugin/skills/
-            providers/cursor/plugin/skills/
-
-      - name: Check outputs
-        if: steps.cpr.outputs.pull-request-number
+      - name: Auto-fix formatting issues
+        if: |
+          github.ref == 'refs/heads/master' &&
+          github.event_name == 'push' &&
+          !github.event.repository.fork
+        shell: bash
         run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+          git add -u
 
+          # Allow commit to work
+          git config user.name "stripe-ai-sync[bot]"
+          git config user.email "282683001+stripe-ai-sync[bot]@users.noreply.github.com"
+
+          # Append a commit with a fix applied
+          git commit -m "sync skills"
+
+          # Authenticate with the GitHub App token and push
+          git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
+          git push
