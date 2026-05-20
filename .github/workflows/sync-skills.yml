@@ -37,32 +37,7 @@ jobs:
           node-version: '20'
 
       - name: Run sync script
-        run: node skills/sync.js
- 
-      - name: Verify provider skill directories match source
-        run: |
-          out_of_sync=false
-
-          for provider in claude cursor; do
-            target="providers/$provider/plugin/skills"
-
-            for skill_dir in skills/*/; do
-              skill_name="$(basename "$skill_dir")"
-              diff -r "skills/$skill_name" "$target/$skill_name" > /dev/null 2>&1 || {
-                echo "❌ $target/$skill_name is out of sync with skills/$skill_name"
-                diff -r "skills/$skill_name" "$target/$skill_name" || true
-                out_of_sync=true
-              }
-            done
-          done
-
-          if [ "$out_of_sync" = true ]; then
-            echo ""
-            echo "Fix: run ./scripts/sync-skills.sh and commit the result."
-            exit 1
-          fi
-
-          echo "✅ All provider skill directories are in sync."
+        run: node scripts/sync.js
     
       - name: Push to Github
         if: |
@@ -70,7 +45,7 @@ jobs:
           !github.event.repository.fork
         shell: bash
         run: |
-          git add -u
+          git add ':(glob)**/skills/'
 
           # Skip if nothing changed
           if git diff --staged --quiet; then

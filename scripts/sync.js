@@ -8,7 +8,7 @@ const fetchText = (url) => {
   try {
     return execSync(
       `curl -sf --user-agent "github.com/stripe/ai/skills" "${url}"`,
-      { encoding: "utf8" }
+      { encoding: "utf8" },
     );
   } catch (err) {
     throw new Error(`Failed to fetch ${url}: ${err.message}`);
@@ -24,17 +24,29 @@ const fetchManifest = () => {
   }
 };
 
+const cleanDirectory = async (dir) => {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.name === "README.md") continue;
+    await fs.rm(path.join(dir, entry.name), { recursive: true, force: true });
+  }
+};
+
+const OUTPUT_LOCATIONS = [
+  path.join(__dirname, "../skills"),
+  path.join(__dirname, "../providers/claude/plugin/skills"),
+  path.join(__dirname, "../providers/cursor/plugin/skills"),
+];
+
 const run = async () => {
   const manifest = fetchManifest();
   const skills = manifest.skills;
   console.log(`Found ${skills.length} skills`);
 
-  // Define all locations where skills should be written
-  const outputLocations = [
-    __dirname, // skills/ (source of truth)
-    path.join(__dirname, "../providers/claude/plugin/skills"),
-    path.join(__dirname, "../providers/cursor/plugin/skills"),
-  ];
+  for (const location of OUTPUT_LOCATIONS) {
+    await fs.mkdir(location, { recursive: true });
+    await cleanDirectory(location);
+  }
 
   let errors = 0;
   for (const skill of skills) {
@@ -51,7 +63,7 @@ const run = async () => {
         continue;
       }
 
-      for (const location of outputLocations) {
+      for (const location of OUTPUT_LOCATIONS) {
         const outputPath = path.join(location, skill.name, file);
         await fs.mkdir(path.dirname(outputPath), { recursive: true });
         await fs.writeFile(outputPath, content, "utf8");
@@ -67,6 +79,8 @@ const run = async () => {
 
 run().catch((err) => {
   console.error(err.message);
-  console.error("Encountered an error while fetching skills, skills will not be updated. Try triggering the workflow manually.");
+  console.error(
+    "Encountered an error while fetching skills, skills will not be updated. Try triggering the workflow manually.",
+  );
   process.exit(1);
 });

@@ -1,5 +1,5 @@
-# Auto-request reviews for skill changes
-# Any PR that modifies skills will automatically request reviews from these users
-
-/skills/ @stevekaliski-stripe @matv-stripe @sgr-stripe @jleong-stripe @tomchen-stripe
-/providers/*/plugin/skills/ @stevekaliski-stripe @matv-stripe @sgr-stripe @jleong-stripe @tomchen-stripe
+# Skills were previously reviewed here, but are now managed internally.
+# No other directories were marked for CODEOWNER review, but if we do so
+# in the future, the appropriate user list is:
+#
+# @anirudhgoyal-stripe @gusnguyen-stripe @jleong-stripe @johno-stripe @keshavc-stripe @markguan-stripe @matv-stripe @sgr-stripe @vncz-stripe
