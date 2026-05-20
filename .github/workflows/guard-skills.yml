@@ -35,7 +35,7 @@ jobs:
               : 'These changes need to be applied internally. Tagging @stripe/developer-ai to take a look.';
 
             const body = [
-              'This PR modifies files that are automatically synced from a centrally maintained copy at [docs.stripe.com/.well-known/skills](https://docs.stripe.com/.well-known/skills). Any changes made here will be overwritten by the next sync.',
+              'This PR modifies files that are automatically synced from a centrally maintained copy at [docs.stripe.com/.well-known/skills](https://docs.stripe.com/.well-known/skills/index.json). Any changes made here will be overwritten by the next sync.',
               '',
               action,
             ].join('\n');
