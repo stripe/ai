@@ -24,28 +24,31 @@ const fetchManifest = () => {
   }
 };
 
+const PRESERVE_FILES = new Set(["README.md", ".gitkeep"]);
+
 const cleanDirectory = async (dir) => {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name === "README.md") continue;
+    if (PRESERVE_FILES.has(entry.name)) continue;
     await fs.rm(path.join(dir, entry.name), { recursive: true, force: true });
   }
 };
 
-const OUTPUT_LOCATIONS = [
-  path.join(__dirname, "../skills"),
+const SKILLS_DIR = path.join(__dirname, "../skills");
+const PLUGIN_SKILLS_DIRS = [
   path.join(__dirname, "../providers/claude/plugin/skills"),
   path.join(__dirname, "../providers/cursor/plugin/skills"),
 ];
+const ALL_OUTPUT_DIRS = [SKILLS_DIR, ...PLUGIN_SKILLS_DIRS];
 
 const run = async () => {
   const manifest = fetchManifest();
   const skills = manifest.skills;
   console.log(`Found ${skills.length} skills`);
 
-  for (const location of OUTPUT_LOCATIONS) {
-    await fs.mkdir(location, { recursive: true });
-    await cleanDirectory(location);
+  for (const dir of ALL_OUTPUT_DIRS) {
+    await fs.mkdir(dir, { recursive: true });
+    await cleanDirectory(dir);
   }
 
   let errors = 0;
@@ -63,8 +66,8 @@ const run = async () => {
         continue;
       }
 
-      for (const location of OUTPUT_LOCATIONS) {
-        const outputPath = path.join(location, skill.name, file);
+      for (const dir of ALL_OUTPUT_DIRS) {
+        const outputPath = path.join(dir, skill.name, file);
         await fs.mkdir(path.dirname(outputPath), { recursive: true });
         await fs.writeFile(outputPath, content, "utf8");
         console.log(`  Written: ${outputPath}`);
