@@ -45,7 +45,9 @@ jobs:
           !github.event.repository.fork
         shell: bash
         run: |
-          git add ':(glob)**/skills/'
+          # Glob syntax will work with future skill directories,
+          # but throws error if no changes are found, so we silence it
+          git add ':(glob)**/skills/**' 2>/dev/null || true
 
           # Skip if nothing changed
           if git diff --staged --quiet; then
