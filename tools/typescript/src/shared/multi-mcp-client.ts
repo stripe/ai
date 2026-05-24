@@ -16,17 +16,27 @@ interface ConnectedServer {
  * Manages connections to additional MCP servers and routes tool calls
  * to the server that owns each tool.
  *
- * This client complements the primary StripeMcpClient by enabling
- * tools from external providers (e.g. batch payment infrastructure)
- * to be surfaced alongside the core Stripe tools.
+ * Core Stripe tool names are reserved — if an additional server exposes
+ * a tool with the same name as a Stripe tool, it is silently skipped
+ * to prevent shadowing trusted payment operations.
  */
 export class MultiMcpClient {
   private servers: ConnectedServer[] = [];
   private toolToServer: Map<string, ConnectedServer> = new Map();
   private allTools: McpTool[] = [];
+  private reservedNames: Set<string> = new Set();
+
+  /**
+   * Register core Stripe tool names so additional servers cannot shadow them.
+   * Must be called before connect().
+   */
+  setReservedNames(names: string[]): void {
+    this.reservedNames = new Set(names);
+  }
 
   /**
    * Connect to all additional MCP servers and collect their tools.
+   * Tools whose names collide with reserved (Stripe) names are rejected.
    */
   async connect(serverConfigs: AdditionalMcpServer[]): Promise<void> {
     const results = await Promise.allSettled(
@@ -68,17 +78,35 @@ export class MultiMcpClient {
     const result = await client.listTools();
     const tools = result.tools as McpTool[];
 
+    const accepted: McpTool[] = [];
+    const rejected: string[] = [];
+
+    for (const tool of tools) {
+      if (this.reservedNames.has(tool.name)) {
+        rejected.push(tool.name);
+      } else {
+        accepted.push(tool);
+      }
+    }
+
+    if (rejected.length > 0) {
+      console.warn(
+        `[Stripe Agent Toolkit] Skipped ${rejected.length} tool(s) from "${config.name}" ` +
+          `that collide with core Stripe tools: ${rejected.join(', ')}`
+      );
+    }
+
     const server: ConnectedServer = {
       name: config.name,
       url: config.url,
       client,
       transport,
-      toolNames: new Set(tools.map((t) => t.name)),
+      toolNames: new Set(accepted.map((t) => t.name)),
     };
 
     this.servers.push(server);
 
-    for (const tool of tools) {
+    for (const tool of accepted) {
       this.toolToServer.set(tool.name, server);
       this.allTools.push(tool);
     }

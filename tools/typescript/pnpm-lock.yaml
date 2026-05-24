@@ -114,6 +114,22 @@ importers:
         specifier: ^22.7.4
         version: 22.7.4
 
+  examples/batch-payments:
+    dependencies:
+      '@stripe/agent-toolkit':
+        specifier: workspace:*
+        version: link:../..
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      openai:
+        specifier: ^4.86.1
+        version: 4.86.1(ws@8.18.0)(zod@3.25.76)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.7.4
+        version: 22.10.5
+
   examples/langchain:
     dependencies:
       '@langchain/core':
