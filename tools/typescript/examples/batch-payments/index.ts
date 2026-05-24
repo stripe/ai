@@ -10,9 +10,13 @@ const openai = new OpenAI();
  * Example: Extending the Stripe Agent Toolkit with batch payment tools
  * via an additional MCP server.
  *
- * This example demonstrates using Spraay Protocol's x402 batch payment
- * infrastructure alongside the core Stripe tools, enabling agents to
- * process multi-recipient payments in a single on-chain transaction.
+ * This example uses Spraay Protocol (https://spraay.app) — an x402 batch
+ * payment gateway supporting 13 chains, payroll, invoicing, and multi-
+ * recipient transfers in a single on-chain transaction.
+ *
+ * Spraay's x402 gateway:  https://gateway.spraay.app
+ * MCP server (Smithery):  https://smithery.ai/server/@plagtech/spraay-x402-mcp
+ * npm:                    @plagtech/spraay-x402-mcp
  *
  * Use cases:
  * - Payroll: "Pay all 5 contractors from this invoice batch"
@@ -20,17 +24,24 @@ const openai = new OpenAI();
  * - Revenue sharing: "Split this payment across 4 recipients"
  */
 async function main(): Promise<void> {
+  if (!process.env.SPRAAY_MCP_URL) {
+    console.error(
+      'Set SPRAAY_MCP_URL to your Spraay MCP server endpoint.\n' +
+        'See: https://smithery.ai/server/@plagtech/spraay-x402-mcp'
+    );
+    process.exit(1);
+  }
+
   const toolkit = await createStripeAgentToolkit({
     secretKey: process.env.STRIPE_SECRET_KEY!,
     configuration: {
       additionalMcpServers: [
         {
           name: 'Spraay Protocol',
-          url: process.env.SPRAAY_MCP_URL || 'https://mcp.spraay.app',
+          url: process.env.SPRAAY_MCP_URL,
           headers: {
-            // Optional: include authentication for the batch payment server
             ...(process.env.SPRAAY_API_KEY && {
-              Authorization: `Bearer ${process.env.SPRAAY_API_KEY}`,
+              'X-API-KEY': process.env.SPRAAY_API_KEY,
             }),
           },
         },
@@ -40,7 +51,7 @@ async function main(): Promise<void> {
 
   // The toolkit now includes both Stripe's core tools (create_payment_link,
   // create_invoice, etc.) AND Spraay's batch payment tools
-  // (batch_transfer, batch_payout, etc.)
+  // (batch_execute, payroll_execute, invoice_create, etc.)
   const tools = toolkit.getTools();
 
   console.log(
@@ -52,9 +63,9 @@ async function main(): Promise<void> {
       role: 'user',
       content: `I need to pay three contractors for this month's work:
         - Alice (0x1234...abcd): $500 USDC
-        - Bob (0x5678...efgh): $750 USDC  
+        - Bob (0x5678...efgh): $750 USDC
         - Carol (0x9abc...ijkl): $300 USDC
-        
+
         Use a batch transfer on Base to pay them all in one transaction.`,
     },
   ];

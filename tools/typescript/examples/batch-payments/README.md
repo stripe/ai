@@ -1,62 +1,54 @@
 # Batch Payments Example
 
-This example demonstrates extending the Stripe Agent Toolkit with batch payment capabilities using an additional MCP server.
+Extends the Stripe Agent Toolkit with batch payment tools from [Spraay Protocol](https://spraay.app) — an x402 batch payment gateway supporting 13 chains.
 
-## Overview
+## What this enables
 
-The Stripe Agent Toolkit supports connecting to additional MCP servers alongside the core Stripe tools. This example uses [Spraay Protocol](https://spraay.app)'s x402 batch payment infrastructure to enable agents to process multi-recipient payments in a single on-chain transaction on Base.
-
-### What this enables
-
-- **Payroll automation**: Pay multiple contractors in one transaction
+- **Payroll**: Pay multiple contractors in one transaction
 - **Revenue sharing**: Split payments across multiple recipients
-- **Multi-vendor payments**: Transfer funds to multiple suppliers simultaneously
-- **Batch refunds**: Process refunds to multiple customers at once
+- **Multi-vendor payments**: Transfer funds to multiple suppliers
+- **Batch invoicing**: Generate invoices for multiple recipients
 
-### How it works
+## Spraay Protocol
 
-1. The toolkit connects to both `mcp.stripe.com` (core Stripe tools) and an additional MCP server for batch payments
-2. Tools from both servers are merged into a single tool list
-3. When the agent calls a batch payment tool, the toolkit automatically routes the call to the correct server
-4. Batch payments settle on-chain via x402 protocol on Base
+| Resource | URL |
+|---|---|
+| x402 Gateway (live) | https://gateway.spraay.app |
+| MCP Server (120 tools) | https://smithery.ai/server/@plagtech/spraay-x402-mcp |
+| npm | [@plagtech/spraay-x402-mcp](https://www.npmjs.com/package/@plagtech/spraay-x402-mcp) |
+| Documentation | https://docs.spraay.app |
 
 ## Setup
 
-```bash
 npm install
-```
 
 Copy `.env.template` to `.env` and fill in:
 
-```
 STRIPE_SECRET_KEY=rk_test_...
 OPENAI_API_KEY=sk-...
-SPRAAY_MCP_URL=https://mcp.spraay.app
-SPRAAY_API_KEY=        # optional
-```
+SPRAAY_MCP_URL=         # Your Spraay MCP server endpoint
+SPRAAY_API_KEY=         # Optional API key
 
 ## Run
 
-```bash
 npx ts-node index.ts
-```
 
-## Configuration
+## How it works
 
 Additional MCP servers are configured via the `additionalMcpServers` option:
 
-```typescript
 const toolkit = await createStripeAgentToolkit({
   secretKey: process.env.STRIPE_SECRET_KEY!,
   configuration: {
     additionalMcpServers: [
       {
         name: 'Spraay Protocol',
-        url: 'https://mcp.spraay.app',
+        url: process.env.SPRAAY_MCP_URL,
       },
     ],
   },
 });
-```
 
-This pattern can be used to add tools from any MCP-compatible server alongside the core Stripe tools.
+Tools from both Stripe and additional servers are merged into a single list. When the agent calls a tool, the toolkit automatically routes to the correct server.
+
+This pattern works with any MCP-compatible server — Spraay is one example providing batch payment infrastructure that complements Stripe's core tools.
