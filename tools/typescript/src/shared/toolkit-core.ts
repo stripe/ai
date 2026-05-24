@@ -83,10 +83,7 @@ export class ToolkitCore<T = McpTool[]> {
 
       // Connect additional MCP servers and merge their tools.
       // Stripe tool names are reserved — additional servers cannot shadow them.
-      if (
-        this.additionalClient &&
-        this.configuration.additionalMcpServers
-      ) {
+      if (this.additionalClient && this.configuration.additionalMcpServers) {
         const stripeToolNames = remoteTools.map((t) => t.name);
         this.additionalClient.setReservedNames(stripeToolNames);
 
@@ -141,11 +138,11 @@ export class ToolkitCore<T = McpTool[]> {
     // The collision guard in MultiMcpClient already prevents shadowing,
     // but this ordering provides defense-in-depth.
     if (this.additionalClient && this.additionalClient.hasTool(name)) {
-      return this.additionalClient.callTool(name, args);
+      return await this.additionalClient.callTool(name, args);
     }
 
     // Default: route to the primary Stripe MCP server
-    return this.mcpClient.callTool(name, args, options);
+    return await this.mcpClient.callTool(name, args, options);
   }
 
   /**

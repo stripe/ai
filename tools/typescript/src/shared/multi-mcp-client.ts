@@ -129,15 +129,10 @@ export class MultiMcpClient {
   /**
    * Call a tool, routing to the server that provides it.
    */
-  async callTool(
-    name: string,
-    args: Record<string, unknown>
-  ): Promise<string> {
+  async callTool(name: string, args: Record<string, unknown>): Promise<string> {
     const server = this.toolToServer.get(name);
     if (!server) {
-      throw new Error(
-        `Tool "${name}" not found in any additional MCP server.`
-      );
+      throw new Error(`Tool "${name}" not found in any additional MCP server.`);
     }
 
     try {

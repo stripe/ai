@@ -25,11 +25,10 @@ const openai = new OpenAI();
  */
 async function main(): Promise<void> {
   if (!process.env.SPRAAY_MCP_URL) {
-    console.error(
-      'Set SPRAAY_MCP_URL to your Spraay MCP server endpoint.\n' +
+    throw new Error(
+      'Set SPRAAY_MCP_URL to your Spraay MCP server endpoint. ' +
         'See: https://smithery.ai/server/@plagtech/spraay-x402-mcp'
     );
-    process.exit(1);
   }
 
   const toolkit = await createStripeAgentToolkit({
@@ -49,48 +48,48 @@ async function main(): Promise<void> {
     },
   });
 
-  // The toolkit now includes both Stripe's core tools (create_payment_link,
-  // create_invoice, etc.) AND Spraay's batch payment tools
-  // (batch_execute, payroll_execute, invoice_create, etc.)
   const tools = toolkit.getTools();
+  console.log(`Loaded ${tools.length} tools (Stripe core + batch payments)\n`);
 
-  console.log(
-    `Loaded ${tools.length} tools (Stripe core + batch payments)\n`
-  );
-
-  let messages: ChatCompletionMessageParam[] = [
+  const messages: ChatCompletionMessageParam[] = [
     {
       role: 'user',
-      content: `I need to pay three contractors for this month's work:
-        - Alice (0x1234...abcd): $500 USDC
-        - Bob (0x5678...efgh): $750 USDC
-        - Carol (0x9abc...ijkl): $300 USDC
-
-        Use a batch transfer on Base to pay them all in one transaction.`,
+      content: [
+        "I need to pay three contractors for this month's work:",
+        '- Alice (0x1234...abcd): $500 USDC',
+        '- Bob (0x5678...efgh): $750 USDC',
+        '- Carol (0x9abc...ijkl): $300 USDC',
+        '',
+        'Use a batch transfer on Base to pay them all in one transaction.',
+      ].join('\n'),
     },
   ];
 
-  while (true) {
+  async function step(
+    msgs: ChatCompletionMessageParam[]
+  ): Promise<ChatCompletionMessageParam[]> {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
-      messages,
+      messages: msgs,
       tools,
     });
 
     const message = completion.choices[0].message;
-    messages.push(message);
+    const updated = [...msgs, message];
 
-    if (message.tool_calls) {
-      const toolMessages = await Promise.all(
-        message.tool_calls.map((tc) => toolkit.handleToolCall(tc))
-      );
-      messages = [...messages, ...toolMessages];
-    } else {
+    if (!message.tool_calls) {
       console.log('Agent response:', message.content);
-      break;
+      return updated;
     }
+
+    const toolMessages = await Promise.all(
+      message.tool_calls.map((tc) => toolkit.handleToolCall(tc))
+    );
+
+    return step([...updated, ...toolMessages]);
   }
 
+  await step(messages);
   await toolkit.close();
 }
 

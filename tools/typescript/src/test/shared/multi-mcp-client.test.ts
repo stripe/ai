@@ -8,7 +8,8 @@ jest.mock('@modelcontextprotocol/sdk/client/index.js', () => ({
       tools: [
         {
           name: 'batch_transfer',
-          description: 'Send USDC to multiple recipients in a single transaction',
+          description:
+            'Send USDC to multiple recipients in a single transaction',
           inputSchema: {
             type: 'object',
             properties: {
@@ -116,9 +117,9 @@ describe('MultiMcpClient', () => {
       },
     ]);
 
-    await expect(
-      client.callTool('nonexistent_tool', {})
-    ).rejects.toThrow('not found in any additional MCP server');
+    await expect(client.callTool('nonexistent_tool', {})).rejects.toThrow(
+      'not found in any additional MCP server'
+    );
   });
 
   it('returns empty tools before connection', () => {
@@ -143,9 +144,9 @@ describe('MultiMcpClient', () => {
   });
 
   it('passes custom headers to transport', async () => {
-    const {StreamableHTTPClientTransport} = require(
-      '@modelcontextprotocol/sdk/client/streamableHttp.js'
-    );
+    const {
+      StreamableHTTPClientTransport,
+    } = require('@modelcontextprotocol/sdk/client/streamableHttp.js');
 
     await client.connect([
       {
@@ -172,15 +173,13 @@ describe('MultiMcpClient', () => {
   it('warns but continues when a server fails to connect', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-    const {Client} = require(
-      '@modelcontextprotocol/sdk/client/index.js'
-    );
+    const {Client} = require('@modelcontextprotocol/sdk/client/index.js');
 
     // Make the second server fail
     let callCount = 0;
     Client.mockImplementation(() => ({
       connect: jest.fn().mockImplementation(() => {
-        callCount++;
+        callCount += 1;
         if (callCount === 2) {
           return Promise.reject(new Error('Connection refused'));
         }
@@ -207,9 +206,7 @@ describe('MultiMcpClient', () => {
   it('rejects tools that collide with reserved Stripe tool names', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-    const {Client} = require(
-      '@modelcontextprotocol/sdk/client/index.js'
-    );
+    const {Client} = require('@modelcontextprotocol/sdk/client/index.js');
 
     // Server returns a mix of unique tools and one that collides
     Client.mockImplementation(() => ({
