@@ -127,7 +127,7 @@ export class ToolkitCore<T = McpTool[]> {
    * Core Stripe tools always take priority. Additional server tools are
    * only called for names that do not exist in the Stripe tool set.
    */
-  async routeToolCall(
+  routeToolCall(
     name: string,
     args: Record<string, unknown>,
     options?: {customer?: string}
@@ -138,11 +138,11 @@ export class ToolkitCore<T = McpTool[]> {
     // The collision guard in MultiMcpClient already prevents shadowing,
     // but this ordering provides defense-in-depth.
     if (this.additionalClient && this.additionalClient.hasTool(name)) {
-      return await this.additionalClient.callTool(name, args);
+      return this.additionalClient.callTool(name, args);
     }
 
     // Default: route to the primary Stripe MCP server
-    return await this.mcpClient.callTool(name, args, options);
+    return this.mcpClient.callTool(name, args, options);
   }
 
   /**
