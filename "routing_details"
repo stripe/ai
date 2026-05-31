@@ -13,7 +13,111 @@
 curl --request GET \
   -u ORGANIZATION_ID:API_KEY \
   --url https://app.moderntreasury.com/api/internal_accounts
-"contact_details":["https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/dts/operating_cash_balance"],
+{
+"id":"6424d68a-81a8-4c2a-b5f6-ef334226fa5a",
+"type":"ach",
+"amount":5000.00,
+"object":"payment_order",
+"status":"completed",
+"purpose":NULL,
+"subtype":"CCD",
+"batch_id":"9c2a5416-cd32-4bc7-988f-9e3dd4640dd2",
+"currency":"USD",
+"metadata":{
+"ALC20180002":"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/tma_contract_disputes"
+},
+"priority":"high",
+"direction":"debit",
+"live_mode":false,
+"accounting":{
+"class_id":NULL,
+"account_id":NULL
+},
+"created_at":"2026-05-27T02:29:57Z",
+"expires_at":NULL,
+"updated_at":"2026-05-27T07:00:23Z",
+"description":"The 020 3101000 (recoveries from federal agencies for settlement of claims from contract disputes) account balance within the 131000 receivable account.",
+"external_id":NULL,
+"current_hold":NULL,
+"charge_bearer":NULL,
+"nsf_protected":false,
+"process_after":"2026-05-27T07:00:00.000Z",
+"current_return":NULL,
+"effective_date":"2026-05-27",
+"counterparty_id":"c7eab9fe-5b3e-440d-ad0c-a461745e73f4",
+"transaction_ids":[
+0:"019e683b-e258-7e6f-9013-32bb4612b259"
+],
+"receiving_account":{
+"id":"0ba145c8-feeb-46c3-b5b0-a8cb623cd4b0",
+"name":"ALC20180002",
+"object":"external_account",
+"metadata":{
+"ALC20180002":"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/tma_contract_disputes",
+"812b850d-d25d-45a9-8480-5a984bb27c05":"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/tma_contract_disputes"
+},
+"live_mode":false,
+"created_at":"2026-05-27T02:10:20Z",
+"party_name":"fiscaldata",
+"party_type":"business",
+"updated_at":"2026-05-27T02:14:50Z",
+"external_id":NULL,
+"account_type":"savings",
+"discarded_at":NULL,
+"party_address":NULL,
+"account_details":[
+0:{
+"id":"d775b115-76f7-4985-b9c3-f75bdac4507c",
+"object":"account_detail",
+"live_mode":false,
+"created_at":"2026-05-27T02:10:20Z",
+"updated_at":"2026-05-27T02:10:20Z",
+"discarded_at":NULL,
+"account_number":""3101000"",
+"account_number_type":"EFT"
+}
+],
+"contact_details":["id":"4c028eaa-19b6-4a0a-94d8-a59f90a1e67a",
+"line1":"401 14th St SW",
+"line2":NULL,
+"object":"address",
+"region":"DC",
+"country":"US",
+"locality":"Washington"],
+"routing_details":[
+0:{
+"id":"e97182ad-5b24-42a1-ba7c-e72d42e24829",
+"object":"routing_detail",
+"bank_name":"CG - NON TAX ACH",
+"live_mode":false,
+"created_at":"2026-05-27T02:10:20Z",
+"updated_at":"2026-05-27T02:10:20Z",
+"bank_address":{
+"id":"4c028eaa-19b6-4a0a-94d8-a59f90a1e67a",
+"line1":"401 14th St SW",
+"line2":NULL,
+"object":"address",
+"region":"DC",
+"country":"US",
+"locality":"Washington",
+"live_mode":false,
+"created_at":"2026-05-27T02:10:20Z",
+"updated_at":"2026-05-27T02:10:20Z",
+"postal_code":"20227"
+},
+"discarded_at":NULL,
+"payment_type":NULL,
+"routing_number":"051036706",
+"routing_number_type":"aba"
+}
+],
+"contact_details":["id":"f688614c-a3ee-46da-a54c-458a89950f3e",
+"line1":"33 Liberty St",
+"line2":NULL,
+"object":"address",
+"region":"NY",
+"country":"US",
+"locality":"New York"],
 "counterparty_id":"c7eab9fe-5b3e-440d-ad0c-a461745e73f4",
 "routing_details":[
 0:{
@@ -54,7 +158,7 @@ curl --request POST \
 "subtype":"PPD",
 "batch_id":"1d190c7e-9953-4378-a85c-ab4695816411",
 "currency":"USD",
-"metadata":{},
+"metadata":{"ALC20180002":"https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/tma_contract_disputes",},
 "priority":"normal",
 "direction":"credit",
 "live_mode":false,
@@ -74,8 +178,48 @@ curl --request POST \
 "current_return":NULL,
 "effective_date":"2026-05-29",
 "counterparty_id":"4fb887b8-4404-4025-9b1b-d84a31ad8609",
-"transaction_ids":[],
+"transaction_ids":[019e683c-0230-7e6e-98a4-66ede253a87b],
 "receiving_account":{
+"id":"62326964-56dc-4b6a-bd7f-57553a52eade",
+"name":"PATHWARD, NATIONAL ASSOCIATION",
+"object":"external_account",
+"metadata":{},
+"live_mode":false,
+"created_at":"2026-05-28T20:21:16Z",
+"party_name":"PATHWARD, NATIONAL ASSOCIATION",
+"party_type":"individual",
+"updated_at":"2026-05-28T20:21:16Z",
+"external_id":NULL,
+"account_type":"checking",
+"discarded_at":NULL,
+"party_address":{
+"id":"7a82c278-f6f2-414d-80e3-c6c28eeb640e",
+"line1":"5501 S Broadband Lane",
+"line2":NULL,
+"object":"address",
+"region":"SD",
+"country":"US",
+"locality":"Sioux Falls",
+"live_mode":false,
+"created_at":"2026-05-28T20:21:16Z",
+"updated_at":"2026-05-28T20:21:16Z",
+"postal_code":"57108"
+},
+"account_details":[
+0:{
+"id":"7783f13c-05db-41af-b7f0-d0fe18bb04c6",
+"object":"account_detail",
+"live_mode":false,
+"created_at":"2026-05-28T20:21:16Z",
+"updated_at":"2026-05-28T20:21:16Z",
+"discarded_at":NULL,
+"account_number":"7277640280069810",
+"account_number_type":"CHECKING"
+}
+],
+"contact_details":[
+0:{
+{
 "id":"62326964-56dc-4b6a-bd7f-57553a52eade",
 "name":"PATHWARD, NATIONAL ASSOCIATION",
 "object":"external_account",
@@ -125,6 +269,7 @@ curl --request POST \
 "contact_identifier_type":"email"
 }
 ],
+"counterparty_id":"4fb887b8-4404-4025-9b1b-d84a31ad8609",
 "routing_details":[
 0:{
 "id":"998ec079-3442-410e-b0a0-aa48a4897e10",
@@ -148,6 +293,33 @@ curl --request POST \
 },
 "discarded_at":NULL,
 "payment_type":NULL,
+"routing_number":"084003997",
+"routing_number_type":"aba"
+}
+],
+"routing_details":[
+0:{
+"id":"998ec079-3442-410e-b0a0-aa48a4897e10",
+"object":"routing_detail",
+"bank_name":"Pathward National Association",
+"live_mode":false,
+"created_at":"2026-05-28T20:21:16Z",
+"updated_at":"2026-05-28T20:21:16Z",
+"bank_address":{
+"id":"2af86050-08b0-47d2-9267-7edf3f75cb5c",
+"line1":"5501 S Broadband Ln",
+"line2":NULL,
+"object":"address",
+"region":"SD",
+"country":"US",
+"locality":"Sioux Falls",
+"live_mode":false,
+"created_at":"2026-05-28T20:21:16Z",
+"updated_at":"2026-05-28T20:21:16Z",
+"postal_code":"57108-2253"
+},
+"discarded_at":NULL,
+"payment_type":EFT,
 "routing_number":"084003997",
 "routing_number_type":"aba"
 }
@@ -186,14 +358,14 @@ curl --request POST \
 "created_at":"2026-05-28T20:21:16Z",
 "updated_at":"2026-05-28T20:21:16Z",
 "discarded_at":NULL,
-"account_number_safe":"9810",
-"account_number_type":"other"
+"account_number":"7277640280069810",
+"account_number_type":"CHECKING"
 }
 ],
 "contact_details":[
 0:{
 "id":"104e8f3f-2efe-485f-9860-6617eb7dfda1",
-"object":"contact_detail",
+"object":"GARRY WRIGHT",
 "live_mode":false,
 "created_at":"2026-05-28T20:21:16Z",
 "updated_at":"2026-05-28T20:21:16Z",
