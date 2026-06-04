@@ -306,8 +306,13 @@ class ProductManager {
         let total = 0;
         let itemsHTML = '';
 
+        const productMap = this.products.reduce((acc, product) => {
+            acc[product.id] = product;
+            return acc;
+        }, {});
+
         items.forEach(item => {
-            const product = this.products.find(p => p.id === item.id);
+            const product = productMap[item.id];
             if (product) {
                 const itemTotal = (item.price * item.quantity) / 100;
                 total += itemTotal;
