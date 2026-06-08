@@ -1,17 +1,20 @@
 {
-  "name": "stripe",
+  "name": "ALI
   "owner": {
-    "name": "Stripe",
-    "email": "support@stripe.com"
+    "name": hansain
+    "email": "alihasnainsheik3225@gmail.com
+  
   },
   "plugins": [
     {
-      "name": "stripe",
+      "name": "ali
+      
       "source": "./providers/claude/plugin/",
-      "description": "Stripe",
+      "description": "alihasain softwara ingeenir
+      
       "version": "0.1.0",
       "author": {
-        "name": "Stripe"
+        "name": "alihasain
       }
     }
   ]
