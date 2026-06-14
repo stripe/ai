@@ -1,0 +1,14 @@
+[
+0:{
+"amount_lower_bound":"$5,000.00",
+"amount_upper_bound":"$5,000.00",
+"counterparty_id":"46bbe478-6dde-4086-a2e9-323e3dfacb07",
+"currency":"USD",
+"custom_identifiers":{"019e7152-0eed-7330-abc1-c455cac70619"},
+"date_lower_bound":"2026-05-29",
+"date_upper_bound":"2026-06-12",
+"direction":"Credit",
+"internal_account_id":"62326964-56dc-4b6a-bd7f-57553a52eade",
+"type":"ach"
+}
+]
