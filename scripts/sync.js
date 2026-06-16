@@ -31,6 +31,12 @@ const cleanDirectory = async (dir) => {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     if (PRESERVE_FILES.has(entry.name)) continue;
+    if (entry.isDirectory()) {
+      try {
+        await fs.access(path.join(dir, entry.name, ".local"));
+        continue; // skip locally-added skill directories
+      } catch {}
+    }
     await fs.rm(path.join(dir, entry.name), { recursive: true, force: true });
   }
 };
