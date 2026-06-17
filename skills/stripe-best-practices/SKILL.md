@@ -32,7 +32,7 @@ Before writing any payment or billing code, call the `stripe_implementation_plan
 | One-time payments                                                        | Checkout Sessions                   | <references/payments.md> |
 | Custom payment form with embedded UI                                     | Checkout Sessions + Payment Element | <references/payments.md> |
 | Saving a payment method for later                                        | Setup Intents                       | <references/payments.md> |
-| Connect platform or marketplace                                          | Accounts v2 (`/v2/core/accounts`)   | <references/connect.md>  |
+| Connect platform or marketplace                                          | Accounts v2 (`/v2/core/accounts`)   | <references/connect.md> (charge pattern routing + compatibility checks) |
 | Usage-based billing (new integration)                                    | Metronome                           | <references/billing.md>  |
 | Subscriptions or recurring billing                                       | Billing APIs + Checkout Sessions    | <references/billing.md>  |
 | Sales tax, VAT, or GST compliance                                        | Stripe Tax + Registrations API      | <references/tax.md>      |
@@ -40,6 +40,8 @@ Before writing any payment or billing code, call the `stripe_implementation_plan
 | Security (key management, RAKs, webhooks, OAuth, 2FA, Connect liability) | See security reference              | <references/security.md> |
 
 Read the relevant reference file before answering any integration question or writing code.
+
+For Connect recommendations, always validate the final `(dashboard, fees_collector, losses_collector, charge pattern)` combination against `references/connect.md` before giving implementation guidance.
 
 ## Critical rules
 
