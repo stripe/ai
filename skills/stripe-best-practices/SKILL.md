@@ -41,7 +41,17 @@ Before writing any payment or billing code, call the `stripe_implementation_plan
 
 Read the relevant reference file before answering any integration question or writing code.
 
-For Connect recommendations, always validate the final `(dashboard, fees_collector, losses_collector, charge pattern)` combination against `references/connect.md` before giving implementation guidance.
+### Connect platforms — critical constraints
+
+You MUST read `references/connect.md` before implementing or recommending any Connect integration. The reference contains the full compatibility matrix, charge pattern routing, fee economics, and account configuration examples. Do not rely on general knowledge alone — Connect has strict configuration constraints that are easy to violate.
+
+Key constraints (read the reference for full details):
+
+- ALWAYS use Accounts v2 (`/v2/core/accounts`) for new integrations — never legacy `type` parameter.
+- Charge pattern decision: multiple sellers per transaction = separate charges and transfers; single seller + seller runs checkout = direct; single seller + platform runs checkout = destination.
+- BLOCKED combinations (never recommend): `losses_collector: "stripe"` with destination or separate charges and transfers; `application_fee_amount` with separate charges and transfers.
+- Marketplace-style (destination/separate): use `configuration.recipient` with `stripe_transfers` capability.
+- SaaS-style (direct): use `configuration.merchant` with `card_payments` capability.
 
 ## Critical rules
 
