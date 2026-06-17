@@ -103,7 +103,7 @@ Blocked combinations to never recommend:
 Caution combinations:
 
 - `express` + `application` + `application` with destination charges or separate charges and transfers requires platform-run webhook recovery for refunds/disputes and transfer reversals.
-- Express dashboards have limited self-service payment-management controls for these charge types; the platform must own operational workflows.
+- Express dashboards have limited self-service payment-management controls for destination charges and separate charges and transfers; the platform must own operational workflows.
 
 Blessed paths:
 
