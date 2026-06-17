@@ -6,6 +6,7 @@ on:
       - 'skills/**'
       - '!skills/README.md'
       - 'providers/claude/plugin/skills/**'
+      - '!providers/claude/plugin/skills/connect-recommend/**'
       - 'providers/cursor/plugin/skills/**'
 
 jobs:
@@ -22,45 +23,8 @@ jobs:
           repositories: ${{ github.event.repository.name }}
           permission-pull-requests: write
 
-      - name: Check for synced skill changes
-        id: check
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: files } = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-            });
-
-            const skillPathPattern = /^(skills|providers\/[^/]+\/plugin\/skills)\/([^/]+)\//;
-            let hasSyncedChanges = false;
-
-            for (const file of files) {
-              const match = file.filename.match(skillPathPattern);
-              if (!match) continue;
-
-              const [, skillsRoot, skillName] = match;
-              try {
-                await github.rest.repos.getContent({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  path: `${skillsRoot}/${skillName}/.local`,
-                  ref: context.payload.pull_request.head.sha,
-                });
-                // .local exists — locally-managed skill, skip
-              } catch {
-                // No .local marker — this is a synced skill change
-                hasSyncedChanges = true;
-                break;
-              }
-            }
-
-            core.setOutput('has_synced_changes', hasSyncedChanges ? 'true' : 'false');
-
       - name: Build review body
         id: message
-        if: steps.check.outputs.has_synced_changes == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -80,7 +44,6 @@ jobs:
             core.setOutput('body', body);
 
       - name: Request changes on PR
-        if: steps.check.outputs.has_synced_changes == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
