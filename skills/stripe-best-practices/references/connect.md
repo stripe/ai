@@ -1,221 +1,175 @@
 # Connect / platforms
 
-## Table of contents
+## Critical rules (never violate)
 
-- Accounts v2 API
-- Account configuration dimensions
-- Business model to configuration mapping
-- Charge pattern selection
-- Compatibility matrix
-- Fee economics
-- Connected account configuration
-- Onboarding guidance
-- Traps to avoid
-- Integration guides
+1. **ALWAYS use Accounts v2 API** (`POST /v2/core/accounts`). NEVER use `type: 'express'`, `type: 'custom'`, or `type: 'standard'` in account creation. NEVER use `stripe.accounts.create({ type: ... })`. These are deprecated v1 patterns.
+2. **ALWAYS check v2 capability status** before processing. See "Go-live readiness" section below.
+3. **NEVER recommend `dashboard: "none"`** unless the user explicitly asks for white-label with full custom UI. Default to `express` for marketplaces and `full` for SaaS. The `none` option requires building custom onboarding remediation, refund/dispute flows, and payout surfaces — only advanced teams should consider it.
+4. **ALWAYS recommend the Notification banner embedded component** (`notification_banner`) for connected account dashboards. It keeps accounts healthy as requirements evolve.
+5. **NEVER use `application_fee_amount` with separate charges and transfers.** Use transfer-math fee retention instead. `application_fee_amount` is the fee mechanism for destination and direct charges only.
 
-## Accounts v2 API
+## Go-live readiness
 
-For new Connect platforms, ALWAYS use the [Accounts v2 API](https://docs.stripe.com/connect/accounts-v2.md) (`POST /v2/core/accounts`). This is Stripe's actively invested path and ensures long-term support.
+Before processing live payments or transfers, ALWAYS verify capability status using the v2 configuration path. Do NOT use deprecated v1 fields.
 
-Describe recommendations using explicit field values instead of legacy account-type labels:
+**For SaaS / Merchant accounts (direct charges):**
+- Check: `configuration.merchant.capabilities.card_payments.status === 'active'`
+- Do NOT use: `charges_enabled` (deprecated v1 field)
 
-- `dashboard` (`express`, `full`, `none`)
-- `defaults.responsibilities.fees_collector` (`stripe`, `application`)
-- `defaults.responsibilities.losses_collector` (`stripe`, `application`)
-- charge pattern (`direct`, `destination`, `separate charges and transfers`)
+**For Marketplace / Recipient accounts (destination or separate charges):**
+- Check: `configuration.recipient.capabilities.stripe_balance.stripe_transfers.status === 'active'`
+- Do NOT use: `payouts_enabled` or `charges_enabled` (deprecated v1 fields)
 
-**Traps to avoid:**
+Listen for `account.updated` webhooks to track capability state transitions.
 
-- Do not recommend `type: 'standard' | 'express' | 'custom'` in `POST /v1/accounts` for new integrations unless the user explicitly requests v1.
-- Do not describe new integrations only with legacy labels ("Standard", "Express", "Custom"). Use v2 field values.
+## Account configuration: v2 dimensions
 
-## Account configuration dimensions
-
-In Accounts v2, configure three independent dimensions:
+Configure connected accounts using three independent dimensions:
 
 | Dimension | Field | What it controls |
 | --- | --- | --- |
-| Dashboard access | `dashboard` | Whether connected accounts get Stripe-hosted dashboard access |
-| Fee collection | `defaults.responsibilities.fees_collector` | Who Stripe bills for fees (`stripe` or `application`) |
-| Negative balance liability | `defaults.responsibilities.losses_collector` | Who absorbs unresolved negative balances (`stripe` or `application`) |
+| Dashboard access | `dashboard` | Stripe-hosted dashboard for connected accounts |
+| Fee collection | `defaults.responsibilities.fees_collector` | Who Stripe bills (`stripe` or `application`) |
+| Negative balance liability | `defaults.responsibilities.losses_collector` | Who absorbs unresolved negative balances |
 
-Default direction by business shape:
+### Dashboard defaults (IMPORTANT)
 
-- Marketplace-style flow (platform runs checkout): `dashboard: "express"`, `fees_collector: "application"`, `losses_collector: "application"`
-- SaaS-style flow (seller runs checkout): `dashboard: "full"`, `fees_collector: "stripe"`, `losses_collector: "stripe"`
-- White-label / enterprise control: `dashboard: "none"`, `fees_collector: "application"`, `losses_collector: "application"`
+- **Marketplace** → `dashboard: "express"` — cobranded, lightweight, low maintenance
+- **SaaS platform** → `dashboard: "full"` — full Stripe Dashboard for independent businesses
+- **White-label (advanced only)** → `dashboard: "none"` — platform must build ALL UX including onboarding remediation, disputes, payouts
+
+If dashboard is `express` or `full`: recommend linking to the Stripe-provided dashboard from the platform UI, OR using embedded components to display payment/payout information.
+
+### SaaS vs. Marketplace responsibility defaults
+
+**SaaS (direct charges):**
+- `dashboard: "full"`
+- `fees_collector: "stripe"` — connected account pays Stripe fees directly
+- `losses_collector: "stripe"` — Stripe owns negative balance liability
+- Charge pattern: Direct charges (connected account is merchant of record)
+
+**Marketplace (destination charges):**
+- `dashboard: "express"`
+- `fees_collector: "application"` — platform owns pricing
+- `losses_collector: "application"` — platform owns negative balance liability (required for transfer reversals during disputes)
+- Charge pattern: Destination charges (platform is merchant of record)
 
 ## Business model to configuration mapping
 
-Use this as the primary routing table when a user asks for Connect setup guidance:
-
-| Business model | Dashboard | Fees | Losses | Charge pattern | Why |
+| Business model | Dashboard | Fees | Losses | Charge pattern | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Marketplace | `express` | `application` | `application` | Destination | Platform owns checkout and payment operations |
-| On-demand services | `express` | `application` | `application` | Destination | Fast seller onboarding, platform-operated checkout |
-| Professional services marketplace | `express` | `application` | `application` | Destination | Similar to marketplace flow |
-| SaaS platform with payments | `full` | `stripe` | `stripe` | Direct | Sellers are independent merchants of record |
-| Crowdfunding | `express` | `application` | `application` | Separate charges and transfers | Flexible split and delayed release flows |
-| Subscription platform (platform-run checkout) | `express` | `application` | `application` | Destination | Platform manages recurring checkout flow |
-| White-label commerce | `none` | `application` | `application` | Destination or direct | Platform controls UX and operations |
-| B2B platform with multi-party allocation | `none` | `application` | `application` | Separate charges and transfers | Complex split and approval workflows |
+| Marketplace | `express` | `application` | `application` | Destination | Platform owns checkout |
+| On-demand services | `express` | `application` | `application` | Destination | Fast seller onboarding |
+| SaaS platform with payments | `full` | `stripe` | `stripe` | Direct | Sellers run own businesses/stores, own customer relationship |
+| AI/API platform (SaaS) | `full` | `stripe` | `stripe` | Direct | Providers own payment relationship |
+| E-commerce enabler (Shopify-like) | `full` | `stripe` | `stripe` | Direct | Sellers create own online stores, accept own payments |
+| Crowdfunding | `express` | `application` | `application` | Separate charges and transfers | Hold-and-release / delayed payouts |
+| Subscription platform | `express` | `application` | `application` | Destination | Platform manages recurring checkout |
+| Multi-seller cart | `express` | `application` | `application` | Separate charges and transfers | Multiple sellers per transaction |
+| White-label commerce | `none` | `application` | `application` | Destination or direct | Advanced: platform controls all UX |
+
+## Connected account capabilities (v2)
+
+### Marketplace / Recipient accounts
+
+Create with `configuration.recipient` requesting `stripe_transfers` on `stripe_balance`:
+
+```
+configuration.recipient.capabilities.stripe_balance.stripe_transfers.requested = true
+```
+
+Do NOT request `configuration.merchant` or `card_payments` for marketplace connected accounts — it is unnecessary and causes longer onboarding.
+
+### SaaS / Merchant accounts
+
+Create with `configuration.merchant` requesting `card_payments` (and other needed LPMs):
+
+```
+configuration.merchant.capabilities.card_payments.requested = true
+```
+
+The Merchant configuration is REQUIRED for any connected account that needs to be merchant of record and accept direct charges.
 
 ## Charge pattern selection
 
-Use one charge pattern per primary flow. Only use hybrid patterns when there is a clear need and the user accepts additional operational complexity.
+**First determine: who owns the customer relationship?**
+
+- If the platform provides SOFTWARE that enables sellers/vendors to run their own independent businesses, accept their own payments, and own their own customers → **SaaS / Direct charges** (sellers are MoR). Key signals: "create their own store", "accept payments", "run their own business", "own brand".
+- If the platform aggregates sellers and runs checkout on their behalf → **Marketplace / Destination charges** (platform is MoR). Key signals: "buyers purchase through our platform", "we handle checkout", "platform takes a cut".
+- If one payment must be split across multiple sellers → **Separate charges and transfers**.
 
 ```
-How many sellers per transaction?
-|- Multiple sellers -> Separate charges and transfers
-`- One seller
-   |- Seller runs checkout and is merchant of record -> Direct charges
-   `- Platform runs checkout and is merchant of record -> Destination charges
+Who owns the customer relationship?
+├── Sellers own it (their own store/brand/checkout) → Direct charges (SaaS)
+├── Platform owns it (single checkout for buyers) → Destination charges (Marketplace)
+└── Multiple sellers per transaction → Separate charges and transfers
 ```
 
-Detailed rules:
-
-- Choose **destination charges** for the common marketplace flow where the platform owns checkout, customer support, and payment operations.
-- Choose **direct charges** when each connected account independently owns the payment relationship and should appear on statements.
-- Choose **separate charges and transfers** for hold-and-release timing, delivery-gated payouts, or one payment split across multiple connected accounts.
-- Do not describe destination charges as hold-and-release behavior; destination transfers happen automatically when payment succeeds.
-- `on_behalf_of` is out of scope for this guide. If required, direct users to [Connect charges docs](https://docs.stripe.com/connect/charges.md) or [Stripe sales](https://stripe.com/contact/sales).
-
-## Compatibility matrix
-
-Validate `(dashboard, fees_collector, losses_collector)` against charge pattern before finalizing a recommendation:
-
-| Dashboard | Fees collector | Losses collector | Direct | Destination | Separate charges and transfers |
-| --- | --- | --- | --- | --- | --- |
-| `full` | `stripe` | `stripe` | ALLOWED | BLOCKED | BLOCKED |
-| `express` | `application` | `application` | ALLOWED | CAUTION | CAUTION |
-| `express` | `stripe` | `stripe` | BLOCKED | BLOCKED | BLOCKED |
-| `express` | `application` | `stripe` | BLOCKED | BLOCKED | BLOCKED |
-| `none` | `stripe` | `stripe` | ALLOWED | BLOCKED | BLOCKED |
-| `none` | `application` | `stripe` | ALLOWED | BLOCKED | BLOCKED |
-| `none` | `application` | `application` | ALLOWED | ALLOWED | ALLOWED |
-
-Blocked combinations to never recommend:
-
-- `losses_collector: "stripe"` with destination charges or separate charges and transfers
-- Express configurations where losses are Stripe-owned (`losses_collector: "stripe"`)
-- `application_fee_amount` with separate charges and transfers
-
-Caution combinations:
-
-- `express` + `application` + `application` with destination charges or separate charges and transfers requires platform-run webhook recovery for refunds/disputes and transfer reversals.
-- Express dashboards have limited self-service payment-management controls for destination charges and separate charges and transfers; the platform must own operational workflows.
-
-Recommended configurations:
-
-| Business shape | Dashboard | Fees | Losses | Charge pattern |
-| --- | --- | --- | --- | --- |
-| Marketplace | `express` | `application` | `application` | Destination |
-| SaaS platform | `full` | `stripe` | `stripe` | Direct |
-| Enterprise / white-label | `none` | `application` | `application` | Direct, destination, or separate |
+- **Direct charges** (SaaS): Charge created on connected account. Connected account is merchant of record. Use `application_fee_amount` for platform revenue. Requires `configuration.merchant` + `dashboard: "full"` + `losses_collector: "stripe"`.
+- **Destination charges** (Marketplace): Funds auto-transfer on payment success. Platform is MoR. Use `application_fee_amount` to collect platform fees. NOT for hold-and-release.
+- **Separate charges and transfers**: Platform controls transfer timing. Collect fees by transferring less than the charge amount. Do NOT use `application_fee_amount`.
 
 ## Fee economics
 
-Who pays Stripe processing fees depends on charge pattern and responsibilities:
+For **destination charges and direct charges**: use `application_fee_amount` on the PaymentIntent. This is the standard fee mechanism.
+- If platform fee is low (< ~4%), recommend including estimated Stripe fees in `application_fee_amount` to preserve margin
+- Link to stripe.com/pricing for region-specific rates
 
-| Pattern | Who pays Stripe processing fees | Platform net framing |
-| --- | --- | --- |
-| Direct charges + `fees_collector: "stripe"` | Connected account | Platform usually keeps full `application_fee_amount` |
-| Direct charges + `fees_collector: "application"` | Platform | `application_fee_amount - Stripe_fees` |
-| Destination charges | Platform | `application_fee_amount - Stripe_fees` |
-| Separate charges and transfers | Platform | `charge_amount - total_transfers - Stripe_fees` |
+For **separate charges and transfers**: collect fees by transferring less than the charge amount (transfer_amount = charge - platform_fee - stripe_fees). NEVER use `application_fee_amount`.
 
-Guidance:
+## Webhooks
 
-- For destination charges and separate charges and transfers, do not say "seller pays Stripe fees." Platform economics must account for Stripe fees.
-- If margin is low or uncertain, recommend fee logic that preserves margin (for destination flows, include Stripe fee estimates in fee calculation).
-- Never use `application_fee_amount` for separate charges and transfers; use transfer-math fee retention.
-- Recommend [Platform Pricing Tool](https://dashboard.stripe.com/settings/connect/platform_pricing) when platform-owned pricing is required.
-- Advise users to check current region-specific rates at [stripe.com/pricing](https://stripe.com/pricing) and monitor margin reporting.
+Always use webhooks for reliable payment confirmation. Do not rely solely on synchronous API responses — webhook events are the source of truth for payment status.
 
-## Connected account configuration
+## Subscriptions with Connect (v2)
 
-Match account configuration to charge pattern.
+For subscription platforms or any platform collecting recurring payments from or on behalf of connected accounts:
+- The connected account MUST have v2 customer configuration
+- Pass `customer_account` on SetupIntent and Subscription API calls to associate the subscription with the connected account
+- Do NOT create a separate v1 Customer object to bill connected accounts — use the v2 Accounts customer configuration instead
 
-Marketplace-style accounts (destination or separate charges and transfers):
+## Embedded components
 
-```javascript
-const account = await stripe.v2.core.accounts.create({
-  dashboard: 'express',
-  identity: { country: 'us', entity_type: 'individual' },
-  configuration: {
-    recipient: {
-      capabilities: {
-        stripe_balance: { stripe_transfers: { requested: true } },
-      },
-    },
-  },
-  defaults: {
-    responsibilities: {
-      fees_collector: 'application',
-      losses_collector: 'application',
-    },
-  },
-});
-```
+Always recommend these baseline components:
+- `account_onboarding` — onboard connected accounts
+- `notification_banner` — REQUIRED: keeps accounts healthy as requirements evolve
+- `account_management` — account settings and info
 
-SaaS-style accounts (direct charges):
+Additional components based on needs:
+- Payments/transactions → `payments`, `payment_details`
+- Disputes → included with `payments` or standalone `disputes_list`
+- Payouts/earnings → `payouts`
+- Reporting → `balance_report`, `payout_reconciliation_report`
 
-```javascript
-const account = await stripe.v2.core.accounts.create({
-  dashboard: 'full',
-  identity: { country: 'us', entity_type: 'individual' },
-  configuration: {
-    merchant: {
-      capabilities: {
-        card_payments: { requested: true },
-      },
-    },
-  },
-  defaults: {
-    responsibilities: {
-      fees_collector: 'stripe',
-      losses_collector: 'stripe',
-    },
-  },
-});
-```
+## Onboarding
 
-Readiness checks before processing payments/transfers:
+Default to embedded onboarding (account_onboarding component or account links). Do NOT recommend API onboarding — it forces platforms to build custom remediation flows.
 
-- Marketplace flow: verify `configuration.recipient.capabilities.stripe_balance.stripe_transfers.status === 'active'` before transferring funds.
-- SaaS flow: verify `configuration.merchant.capabilities.card_payments.status === 'active'` before creating direct charges.
+## Compatibility constraints
 
-## Onboarding guidance
+**BLOCKED combinations (never recommend):**
+- `losses_collector: "stripe"` with destination charges or separate charges and transfers
+- `application_fee_amount` with separate charges and transfers
+- Express dashboard with `losses_collector: "stripe"` (API rejection)
+- `dashboard: "full"` with destination or separate charges (limited functionality)
 
-Default to [embedded onboarding](https://docs.stripe.com/connect/embedded-onboarding.md). It reduces compliance burden and keeps users in-app.
-
-Alternative paths:
-
-- Stripe-hosted onboarding is acceptable when embedded UX is not required.
-- API-based custom onboarding should be recommended only for advanced teams with dedicated compliance resources.
-
-If users choose `dashboard: "none"` without embedded components, warn that they must build and maintain:
-
-- onboarding and ongoing requirement remediation
-- refund and dispute workflows
-- payout and earnings management surfaces
+**CAUTION:**
+- Express + destination/separate requires platform-run webhook recovery for disputes and transfer reversals
 
 ## Traps to avoid
 
-- Recommending legacy account types (`standard`, `express`, `custom`) for new integrations
-- Recommending Charges API for Connect fund flows instead of PaymentIntents/Checkout
-- Using `losses_collector: "stripe"` with destination charges or separate charges and transfers
-- Recommending destination charges for hold-and-release payout requirements
-- Using `application_fee_amount` with separate charges and transfers
-- Ignoring dispute transfer-reversal logic for destination/separate flows
-- Recommending OAuth account-connection patterns as the default self-serve onboarding path
+- Using legacy account types (`type: 'standard'`, `type: 'express'`, `type: 'custom'`) — use v2 dimensions instead
+- Using `charges_enabled` or `payouts_enabled` — use v2 capability status paths
+- Recommending Charges API for Connect — use PaymentIntents or Checkout Sessions
+- Recommending `dashboard: "none"` without explicit white-label requirement
+- Recommending destination charges for hold-and-release (use separate charges and transfers)
 - Recommending `on_behalf_of` for standard marketplace flows
-- Recommending `dashboard: "none"` without warning about full operational scope
+- Creating v1 Customer objects to bill connected accounts (use v2 customer configuration)
+- Requesting Merchant configuration / card_payments for marketplace recipient accounts
 
 ## Integration guides
 
 - [SaaS platforms and marketplaces guide](https://docs.stripe.com/connect/saas-platforms-and-marketplaces.md)
 - [Interactive platform guide](https://docs.stripe.com/connect/interactive-platform-guide.md)
 - [Design an integration](https://docs.stripe.com/connect/design-an-integration.md)
-- [How charges work in Connect](https://docs.stripe.com/connect/charges.md)
 - [Connected account configuration (v2)](https://docs.stripe.com/connect/accounts-v2/connected-account-configuration.md)
