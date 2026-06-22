@@ -45,7 +45,7 @@ jobs:
           !github.event.repository.fork
         shell: bash
         run: |
-          git add ':(glob)**/skills/**'
+          git add ':(glob)**/skills/**' .claude-plugin/marketplace.json providers/claude/plugin/.claude-plugin/plugin.json .cursor-plugin/marketplace.json providers/cursor/plugin/.cursor-plugin/plugin.json
 
           # Skip if nothing changed
           if git diff --staged --quiet; then

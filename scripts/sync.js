@@ -39,12 +39,62 @@ const cleanDirectory = async (dir) => {
   }
 };
 
+const REPO_ROOT = path.join(__dirname, "..");
+
 const SKILLS_DIR = path.join(__dirname, "../skills");
 const PLUGIN_SKILLS_DIRS = [
   path.join(__dirname, "../providers/claude/plugin/skills"),
   path.join(__dirname, "../providers/cursor/plugin/skills"),
 ];
 const ALL_OUTPUT_DIRS = [SKILLS_DIR, ...PLUGIN_SKILLS_DIRS];
+
+const VERSION_FILES = [
+  path.join(__dirname, "../.claude-plugin/marketplace.json"),
+  path.join(__dirname, "../providers/claude/plugin/.claude-plugin/plugin.json"),
+  path.join(__dirname, "../.cursor-plugin/marketplace.json"),
+  path.join(__dirname, "../providers/cursor/plugin/.cursor-plugin/plugin.json"),
+];
+
+const bumpVersion = (version, type) => {
+  const [major, minor, patch] = version.split(".").map(Number);
+  if (type === "minor") return `${major}.${minor + 1}.0`;
+  return `${major}.${minor}.${patch + 1}`;
+};
+
+const updateVersionFile = async (filePath, bumpType) => {
+  const raw = await fs.readFile(filePath, "utf8");
+  const content = JSON.parse(raw);
+  if (content.version) {
+    content.version = bumpVersion(content.version, bumpType);
+  }
+  if (content.plugins) {
+    for (const plugin of content.plugins) {
+      if (plugin.version) plugin.version = bumpVersion(plugin.version, bumpType);
+    }
+  }
+  await fs.writeFile(filePath, JSON.stringify(content, null, 2) + "\n", "utf8");
+  console.log(`  Bumped version in: ${path.relative(REPO_ROOT, filePath)}`);
+};
+
+// Returns { added, deleted, modified } by inspecting git working-tree status
+// for the canonical skills directory after files have been written.
+const getGitSkillChanges = () => {
+  const skillsRel = path.relative(REPO_ROOT, SKILLS_DIR);
+  try {
+    const output = execSync(`git status --porcelain -- "${skillsRel}"`, {
+      cwd: REPO_ROOT,
+      encoding: "utf8",
+    });
+    const lines = output.trim().split("\n").filter(Boolean);
+    // porcelain format: "XY path" where X=index, Y=worktree; "??" = untracked
+    const added = lines.some((l) => l.startsWith("??"));
+    const deleted = lines.some((l) => l[1] === "D");
+    const modified = lines.some((l) => !l.startsWith("??") && l[1] !== "D");
+    return { added, deleted, modified };
+  } catch {
+    return { added: false, deleted: false, modified: false };
+  }
+};
 
 const run = async () => {
   const manifest = fetchManifest();
@@ -83,6 +133,17 @@ const run = async () => {
 
   if (errors > 0) {
     throw new Error(`Sync completed with ${errors} error(s)`);
+  }
+
+  const { added, deleted, modified } = getGitSkillChanges();
+  if (added || deleted || modified) {
+    const bumpType = added || deleted ? "minor" : "patch";
+    console.log(`Skills changed (type: ${bumpType}), bumping plugin versions`);
+    for (const versionFile of VERSION_FILES) {
+      await updateVersionFile(versionFile, bumpType);
+    }
+  } else {
+    console.log("No skill changes detected, skipping version bump");
   }
 };
 
