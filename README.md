@@ -182,6 +182,9 @@ See the [Stripe MCP](https://docs.stripe.com/mcp) docs for a list of supported m
 [api-keys]: https://dashboard.stripe.com/account/apikeys
 [restricted-keys]: https://docs.stripe.com/keys#create-restricted-api-keys
 
+## Multi-Agent Deployments
+
+For agent identity verification and per-tool authorization patterns when running multiple agents, see [docs/AGENT-IDENTITY.md](docs/AGENT-IDENTITY.md).
 ## License
 
 [MIT](LICENSE)
