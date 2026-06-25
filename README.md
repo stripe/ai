@@ -15,7 +15,8 @@ Stripe hosts a remote MCP server at `https://mcp.stripe.com`. This allows secure
 
 ## Agent skills
 
-[Agent skills](https://agentskills.io/home) are instructions that agents can use to build faster and more accurately. Stripe offers a collection of skills that help your agents use the latest best practices when building with Stripe. They are stored in this repo.
+[Agent skills](https://agentskills.io/home) are instructions that agents can use to build faster and more accurately. Stripe offers a collection of skills that help your agents use the latest best practices when building with Stripe.
+
 If you use one of these popular agent harnesses, we recommend installing the official Stripe plugins, which include additional agent tools and update automatically.
 
 ### Claude Code
