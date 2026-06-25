@@ -13,6 +13,8 @@ It contains a collection of SDKs to help you integrate Stripe with LLMs and agen
 
 Stripe hosts a remote MCP server at `https://mcp.stripe.com`. This allows secure MCP client access via OAuth. View the docs [here](https://docs.stripe.com/mcp#connect).
 
+You can also [build autonomous agents](https://docs.stripe.com/mcp#agents) with MCP as well.
+
 ## Agent skills
 
 [Agent skills](https://agentskills.io/home) are instructions that agents can use to build faster and more accurately. Stripe offers a collection of skills that help your agents use the latest best practices when building with Stripe.
