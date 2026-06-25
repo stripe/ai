@@ -77,7 +77,7 @@ async def main():
     await toolkit.close()
 ```
 
-Examples for OpenAI's Agent SDK,LangChain, and CrewAI are included in [/examples](/tools/python/examples).
+Examples for OpenAI's Agent SDK, LangChain, and CrewAI are included in [/examples](/tools/python/examples).
 
 ##### Context
 
