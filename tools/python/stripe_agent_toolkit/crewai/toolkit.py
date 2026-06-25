@@ -27,16 +27,14 @@ class StripeTool(BaseTool):
         if loop.is_running():
             # If we're already in an async context, create a new loop
             import concurrent.futures
+
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 future = pool.submit(
-                    asyncio.run,
-                    self.run_tool(self.method, kwargs)
+                    asyncio.run, self.run_tool(self.method, kwargs)
                 )
                 return future.result()
         else:
-            return loop.run_until_complete(
-                self.run_tool(self.method, kwargs)
-            )
+            return loop.run_until_complete(self.run_tool(self.method, kwargs))
 
     async def _arun(self, **kwargs: Any) -> str:
         """Async execution via MCP."""
@@ -57,9 +55,7 @@ class StripeAgentToolkit(ToolkitCore[List[StripeTool]]):
     """
 
     def __init__(
-        self,
-        secret_key: str,
-        configuration: Optional[Configuration] = None
+        self, secret_key: str, configuration: Optional[Configuration] = None
     ):
         super().__init__(secret_key, configuration)
 
@@ -67,26 +63,25 @@ class StripeAgentToolkit(ToolkitCore[List[StripeTool]]):
         """Return empty list of tools."""
         return []
 
-    def _convert_tools(
-        self,
-        mcp_tools: List[McpTool]
-    ) -> List[StripeTool]:
+    def _convert_tools(self, mcp_tools: List[McpTool]) -> List[StripeTool]:
         """Convert MCP tools to CrewAI StripeTool instances."""
         tools = []
         for mcp_tool in mcp_tools:
             # Convert JSON Schema to Pydantic model
             args_schema = json_schema_to_pydantic_model(
                 mcp_tool.get("inputSchema"),
-                model_name=f"{mcp_tool['name']}_args"
+                model_name=f"{mcp_tool['name']}_args",
             )
 
-            tools.append(StripeTool(
-                run_tool=self.run_tool,
-                method=mcp_tool["name"],
-                name=mcp_tool["name"],
-                description=mcp_tool.get("description", mcp_tool["name"]),
-                args_schema=args_schema,
-            ))
+            tools.append(
+                StripeTool(
+                    run_tool=self.run_tool,
+                    method=mcp_tool["name"],
+                    name=mcp_tool["name"],
+                    description=mcp_tool.get("description", mcp_tool["name"]),
+                    args_schema=args_schema,
+                )
+            )
         return tools
 
     @property
@@ -101,8 +96,7 @@ class StripeAgentToolkit(ToolkitCore[List[StripeTool]]):
 
 
 async def create_stripe_agent_toolkit(
-    secret_key: str,
-    configuration: Optional[Configuration] = None
+    secret_key: str, configuration: Optional[Configuration] = None
 ) -> StripeAgentToolkit:
     """
     Factory function to create and initialize a StripeAgentToolkit.
