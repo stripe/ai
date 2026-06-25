@@ -6,181 +6,54 @@ This repo is the one-stop shop for building AI-powered products and businesses o
 
 It contains a collection of SDKs to help you integrate Stripe with LLMs and agent frameworks, including: 
 
-* [`@stripe/agent-toolkit`](/tools/typescript) - for integrating Stripe APIs with popular agent frameworks through function calling—available in [Python](/tools/python) and [TypeScript](/tools/typescript).
 * [`@stripe/ai-sdk`](/llm/ai-sdk) - for integrating Stripe's billing infrastructure with Vercel's [`ai`](https://npm.im/ai) and [`@ai-sdk`](https://ai-sdk.dev/) libraries.
 * [`@stripe/token-meter`](/llm/token-meter) - for integrating Stripe's billing infrastructure with native SDKs from OpenAI, Anthropic, and Google Gemini, without any framework dependencies.
 
 ## Model Context Protocol (MCP)
 
-Stripe hosts a remote MCP server at `https://mcp.stripe.com`. This allows secure MCP client access via OAuth. View the docs [here](https://docs.stripe.com/mcp#remote).
+Stripe hosts a remote MCP server at `https://mcp.stripe.com`. This allows secure MCP client access via OAuth. View the docs [here](https://docs.stripe.com/mcp#connect).
 
-The Stripe Agent Toolkit also exposes tools in the [Model Context Protocol (MCP)](https://modelcontextprotocol.com/) format. Or, to run a local Stripe MCP server using npx, use the following command:
+## Agent skills
 
-```sh
-npx -y @stripe/mcp --api-key=YOUR_STRIPE_SECRET_KEY
+[Agent skills](https://agentskills.io/home) are instructions that agents can use to build faster and more accurately. Stripe offers a collection of skills that help your agents use the latest best practices when building with Stripe. They are stored in this repo.
+If you use one of these popular agent harnesses, we recommend installing the official Stripe plugins, which include additional agent tools and update automatically.
+
+### Claude Code
+
+Run this command in your project:
+
+```bash
+claude plugin install stripe@claude-plugins-official
 ```
 
-Tool permissions are controlled by your Restricted API Key (RAK). Create a RAK with the desired permissions at https://dashboard.stripe.com/apikeys
+### Codex
 
-See [MCP](/tools/modelcontextprotocol) for more details.
+Run this command in your project:
 
-## Agent toolkit
-
-Stripe's Agent Toolkit enables popular agent frameworks including OpenAI's Agent SDK, LangChain, CrewAI, and Vercel's AI SDK to integrate with Stripe APIs through function calling. The library is not exhaustive of the entire Stripe API. It includes support for Python and TypeScript, and is built directly on top of the Stripe [Python][python-sdk] and [Node][node-sdk] SDKs.
-
-Included below are basic instructions, but refer to [Python](/tools/python) and [TypeScript](/tools/typescript) packages for more information.
-
-### Python
-
-#### Installation
-
-You don't need this source code unless you want to modify the package. If you just
-want to use the package run:
-
-```sh
-pip install stripe-agent-toolkit
+```bash
+codex plugin add stripe@openai-curated
 ```
 
-##### Requirements
+### Cursor
 
-- Python 3.11+
+Run this command in your project:
 
-#### Usage
-
-The library needs to be configured with your account's secret key which is
-available in your [Stripe Dashboard][api-keys]. We strongly recommend using a [Restricted API Key][restricted-keys] (`rk_*`) for better security and granular permissions. Tool availability is determined by the permissions you configure on the restricted key.
-
-```python
-from stripe_agent_toolkit.openai.toolkit import create_stripe_agent_toolkit
-
-async def main():
-    toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
-    tools = toolkit.get_tools()
-    # ... use tools ...
-    await toolkit.close()  # Clean up when done
+```bash
+/add-plugin stripe
 ```
 
-The toolkit works with OpenAI's Agent SDK, LangChain, and CrewAI and can be passed as a list of tools. For example:
+You can also install through the [Cursor marketplace](https://cursor.com/marketplace/stripe).
 
-```python
-from agents import Agent
+## Manual installation
 
-async def main():
-    toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
+> Manually installed skills don’t auto-update. Run `npx skills update -y` to get the latest versions.
 
-    stripe_agent = Agent(
-        name="Stripe Agent",
-        instructions="You are an expert at integrating with Stripe",
-        tools=toolkit.get_tools()
-    )
-    # ... use agent ...
-    await toolkit.close()
+Run this command in your project:
+
+```bash
+npx skills add https://docs.stripe.com
 ```
 
-Examples for OpenAI's Agent SDK,LangChain, and CrewAI are included in [/examples](/tools/python/examples).
-
-##### Context
-
-In some cases you will want to provide values that serve as defaults when making requests. Currently, the `account` context value enables you to make API calls for your [connected accounts](https://docs.stripe.com/connect/authentication).
-
-```python
-toolkit = await create_stripe_agent_toolkit(
-    secret_key="rk_test_...",
-    configuration={
-        "context": {
-            "account": "acct_123"
-        }
-    }
-)
-```
-
-### TypeScript
-
-#### Installation
-
-You don't need this source code unless you want to modify the package. If you just
-want to use the package run:
-
-```sh
-npm install @stripe/agent-toolkit
-```
-
-##### Requirements
-
-- Node 18+
-
-##### Migrating from v0.8.x
-
-If you're upgrading from v0.8.x, see the [Migration Guide](/tools/typescript/MIGRATION.md) for breaking changes.
-
-#### Usage
-
-The library needs to be configured with your account's secret key which is available in your [Stripe Dashboard][api-keys]. We strongly recommend using a [Restricted API Key][restricted-keys] (`rk_*`) for better security and granular permissions. Tool availability is determined by the permissions you configure on the restricted key.
-
-```typescript
-import { createStripeAgentToolkit } from "@stripe/agent-toolkit/langchain";
-
-const toolkit = await createStripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {},
-});
-
-const tools = toolkit.getTools();
-// ... use tools ...
-
-await toolkit.close(); // Clean up when done
-```
-
-##### Tools
-
-The toolkit works with LangChain and Vercel's AI SDK and can be passed as a list of tools. For example:
-
-```typescript
-import { AgentExecutor, createStructuredChatAgent } from "langchain/agents";
-import { createStripeAgentToolkit } from "@stripe/agent-toolkit/langchain";
-
-const toolkit = await createStripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {},
-});
-
-const tools = toolkit.getTools();
-
-const agent = await createStructuredChatAgent({
-  llm,
-  tools,
-  prompt,
-});
-
-const agentExecutor = new AgentExecutor({
-  agent,
-  tools,
-});
-```
-
-##### Context
-
-In some cases you will want to provide values that serve as defaults when making requests. Currently, the `account` context value enables you to make API calls for your [connected accounts](https://docs.stripe.com/connect/authentication).
-
-```typescript
-const toolkit = await createStripeAgentToolkit({
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  configuration: {
-    context: {
-      account: "acct_123",
-    },
-  },
-});
-```
-
-## Supported API methods
-
-See the [Stripe MCP](https://docs.stripe.com/mcp) docs for a list of supported methods.
-
-[python-sdk]: https://github.com/stripe/stripe-python
-[node-sdk]: https://github.com/stripe/stripe-node
-[api-keys]: https://dashboard.stripe.com/account/apikeys
-[restricted-keys]: https://docs.stripe.com/keys#create-restricted-api-keys
 
 ## License
 
