@@ -1,0 +1,78 @@
+version: "1"
+description: "Stripe MCP — strict policy. Default deny. Only explicitly allowed tools are accessible."
+default: deny
+
+tools:
+  # Read-only tools — explicitly allowed
+  list_customers:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  list_products:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  list_prices:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  list_invoices:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  list_subscriptions:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  list_payment_intents:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  list_charges:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  list_disputes:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  list_coupons:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  retrieve_balance:
+    rules:
+      - action: allow
+        rate_limit: "10/minute"
+
+  get_stripe_account_info:
+    rules:
+      - action: allow
+        rate_limit: "10/minute"
+
+  search_stripe_resources:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  fetch_stripe_resources:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  search_stripe_documentation:
+    rules:
+      - action: allow
+        rate_limit: "30/minute"
+
+  # Everything else blocked by default: deny
+  # To allow writes, copy rules from recommended.yaml
