@@ -72,15 +72,21 @@ Check if a project is already initialized:
 stripe projects status --json
 ```
 
-If not initialized:
+If not initialized, run a preflight check first to surface all blockers at once:
 
 ```bash
-stripe projects init --yes
+stripe projects init --preflight --json
 ```
 
-(don’t use ‘–json’ for this command)
+If preflight reports `BROWSER_AUTH_REQUIRED` or `ACCOUNT_NOT_ELIGIBLE`, stop immediately and tell the user to run `stripe login` in their own terminal. You cannot complete browser authentication — do not retry.
 
-If the CLI output indicates a browser was opened for authentication, stop and clearly tell the user to complete sign-in in their browser. Don’t run further commands until they confirm they’re done.
+If all preflight checks pass (or the only failure is `TOS_ACCEPTANCE_REQUIRED`), proceed:
+
+```bash
+stripe projects init --accept-tos --yes
+```
+
+If the CLI opens a browser for authentication, wait — it will poll and continue automatically once the user completes sign-in. If the CLI exits with `BROWSER_AUTH_REQUIRED`, the user must run `stripe login` manually before you can proceed.
 
 **Important:** `stripe projects init` installs the `stripe-projects-cli` skill locally at `.claude/skills/stripe-projects-cli`. This skill contains the full post-init command reference.
 
@@ -92,7 +98,7 @@ Verify the skill was installed:
 test -f .claude/skills/stripe-projects-cli/SKILL.md && echo "OK" || echo "MISSING"
 ```
 
-If `MISSING`: re-run `stripe projects init --yes` — the skill is bundled with the Projects plugin and installed during init.
+If `MISSING`: re-run `stripe projects init --accept-tos --yes` — the skill is bundled with the Projects plugin and installed during init.
 
 If `OK`: use the locally-installed `stripe-projects-cli` skill (invoke using the Skill tool with name `stripe-projects-cli`) to continue the workflow — adding services, managing credentials, and configuring the project.
 
@@ -126,7 +132,11 @@ Only inspect `.projects/` or `.env` directly if the user explicitly asks you to 
 
 | Error code | Cause | Recovery |
 | --- | --- | --- |
-| `PROVIDER_NOT_LINKED` | Provider requires OAuth linking | Run `stripe projects link <provider>` — this may open a browser |
+| `BROWSER_AUTH_REQUIRED` | No auth session and browser needed | Tell user to run `stripe login` — you cannot fix this |
+| `ACCOUNT_NOT_ELIGIBLE` | Account not onboarded for Projects | Tell user to run `stripe login` or visit https://projects.dev |
+| `TOS_ACCEPTANCE_REQUIRED` | Developer or provider terms not accepted | Re-run with `--accept-tos` |
+| `PROVIDER_NOT_LINKED` | Provider requires OAuth linking | Run `stripe projects link <provider>` — may open a browser |
+| `PLAN_REQUIRED` | Deployable needs a plan provisioned first | Provision the plan listed in the error, then retry |
 | `UNKNOWN_ERROR` | Unexpected failure | Show the full error message to the user and suggest running with `--debug` for diagnostics |
 | Service not in catalog | Query returned 0 results | Inform user; suggest `stripe projects catalog --json` to browse alternatives |
 | CLI not found | Stripe CLI not installed | Install using Homebrew (macOS) or follow https://docs.stripe.com/stripe-cli/install |
