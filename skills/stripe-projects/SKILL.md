@@ -78,7 +78,13 @@ If not initialized, run a preflight check first to surface all blockers at once:
 stripe projects init --preflight --json
 ```
 
-If preflight reports `BROWSER_AUTH_REQUIRED` or `ACCOUNT_NOT_ELIGIBLE`, stop immediately and tell the user to run `stripe login` in their own terminal. You cannot complete browser authentication — do not retry.
+If preflight reports `ACCOUNT_NOT_ELIGIBLE`, stop immediately and tell the user to run `stripe login` in their own terminal or visit https://projects.dev. You cannot fix this — do not retry.
+
+If preflight shows the user is not yet authenticated (`Stripe session authenticated` check fails), tell the user:
+
+> "I need to open your browser for Stripe authentication. The CLI will wait for you to complete sign-in. OK to proceed?"
+
+Wait for the user to confirm before running the init command. If the user declines, stop.
 
 If all preflight checks pass (or the only failure is `TOS_ACCEPTANCE_REQUIRED`), proceed:
 
@@ -86,7 +92,7 @@ If all preflight checks pass (or the only failure is `TOS_ACCEPTANCE_REQUIRED`),
 stripe projects init --accept-tos --yes
 ```
 
-If the CLI opens a browser for authentication, wait — it will poll and continue automatically once the user completes sign-in. If the CLI exits with `BROWSER_AUTH_REQUIRED`, the user must run `stripe login` manually before you can proceed.
+The CLI will open the browser automatically and poll for completion. If it exits with `BROWSER_AUTH_REQUIRED`, the user must run `stripe login` manually before you can proceed.
 
 **Important:** `stripe projects init` installs the `stripe-projects-cli` skill locally at `.claude/skills/stripe-projects-cli`. This skill contains the full post-init command reference.
 
