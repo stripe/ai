@@ -1,7 +1,7 @@
 {
   "name": "stripe",
   "description": "Stripe plugin for Cursor to help with Stripe integrations including best practices, API/SDK upgrade guidance, and the Stripe MCP server.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "author": {
     "name": "Stripe",
     "url": "https://stripe.com"
@@ -9,11 +9,5 @@
   "homepage": "https://docs.stripe.com",
   "repository": "https://github.com/stripe/ai",
   "license": "MIT",
-  "keywords": [
-    "stripe",
-    "payments",
-    "webhooks",
-    "api",
-    "security"
-  ]
+  "keywords": ["stripe", "payments", "webhooks", "api", "security"]
 }
