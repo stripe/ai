@@ -1,7 +1,7 @@
 {
   "name": "stripe",
   "description": "Stripe plugin for Cursor to help with Stripe integrations including best practices, API/SDK upgrade guidance, and the Stripe MCP server.",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "author": {
     "name": "Stripe",
     "url": "https://stripe.com"

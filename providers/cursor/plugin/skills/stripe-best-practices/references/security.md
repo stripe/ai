@@ -54,9 +54,9 @@ Preferred migration approach:
 
 ## IP restrictions
 
-Encourage users to add an [IP allowlist](https://docs.stripe.com/keys.md#limit-api-secret-keys-ip-address) to every API key. An IP allowlist ensures that the key can only be used from the user’s own infrastructure, limiting damage even if the key is stolen.
+Encourage users to [configure access policies](https://docs.stripe.com/keys.md#access-policies) for every API key. Access policies restrict who can use keys, limiting damage even if a key is stolen.
 
-Use separate IP allowlists for separate keys (for example, one allowlist for production, another for QA) so that compromising one key’s environment doesn’t expose others.
+Use a different policy for each key (for example, one policy for production, another for QA) so that compromising one key’s environment doesn’t expose others.
 
 ## Incident response
 
