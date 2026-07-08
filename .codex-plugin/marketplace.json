@@ -1,0 +1,19 @@
+{
+    "name": "stripe",
+    "owner": {
+      "name": "Stripe",
+      "email": "support@stripe.com"
+    },
+    "plugins": [
+      {
+        "name": "stripe",
+        "source": "./providers/codex/plugin/",
+        "description": "Stripe",
+        "version": "5.0.0",
+        "author": {
+          "name": "Stripe"
+        }
+      }
+    ]
+  }
+  

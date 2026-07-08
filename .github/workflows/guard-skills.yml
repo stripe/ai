@@ -7,6 +7,7 @@ on:
       - '!skills/README.md'
       - 'providers/claude/plugin/skills/**'
       - '!providers/claude/plugin/skills/connect-recommend/**'
+      - 'providers/codex/plugin/skills/**'
       - 'providers/cursor/plugin/skills/**'
 
 jobs:
