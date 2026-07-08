@@ -8,6 +8,7 @@ on:
       - 'providers/claude/plugin/skills/**'
       - '!providers/claude/plugin/skills/connect-recommend/**'
       - 'providers/codex/plugin/skills/**'
+      - '!providers/codex/plugin/skills/connect-recommend/**'
       - 'providers/cursor/plugin/skills/**'
 
 jobs:
