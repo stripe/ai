@@ -27,7 +27,7 @@
       "Use Stripe to help with this task"
     ],
     "screenshots": [],
-    "composerIcon": "./assets/app-icon.png",
-    "logo": "./assets/app-icon.png"
+    "composerIcon": "./assets/parallelogram.png",
+    "logo": "./assets/parallelogram.png"
   }
 }
