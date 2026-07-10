@@ -7,12 +7,17 @@
     "plugins": [
       {
         "name": "stripe",
-        "source": "./providers/codex/plugin/",
-        "description": "Stripe",
-        "version": "5.0.0",
-        "author": {
-          "name": "Stripe"
-        }
+        "source": {
+            "source": "git-subdir",
+            "url": "https://github.com/stripe/ai.git",
+            "path": "providers/codex/plugin",
+            "ref": "main"
+        },
+        "policy": {
+            "installation": "AVAILABLE",
+            "authentication": "ON_INSTALL"
+        },
+        "category": "Finance"
       }
     ]
   }

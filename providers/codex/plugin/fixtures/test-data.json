@@ -1,0 +1,158 @@
+{
+  "_meta": {
+    "template_version": 0
+  },
+  "fixtures": [
+    {
+      "name": "product_hypergrow",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "HyperGrowAI Growth"
+      }
+    },
+    {
+      "name": "price_annual",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${product_hypergrow:id}",
+        "unit_amount": 9990,
+        "currency": "usd",
+        "recurring": {
+          "interval": "year"
+        },
+        "nickname": "Annual"
+      }
+    },
+    {
+      "name": "price_monthly",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${product_hypergrow:id}",
+        "unit_amount": 999,
+        "currency": "usd",
+        "recurring": {
+          "interval": "month"
+        },
+        "nickname": "Monthly"
+      }
+    },
+    {
+      "name": "customer_allison",
+      "path": "/v1/customers",
+      "method": "post",
+      "params": {
+        "name": "Ben Stiedemann",
+        "email": "Allison26@hotmail.com"
+      }
+    },
+    {
+      "name": "customer_billie",
+      "path": "/v1/customers",
+      "method": "post",
+      "params": {
+        "name": "Juanita Haley",
+        "email": "Billie_Beier@yahoo.com",
+        "source": "tok_visa"
+      }
+    },
+    {
+      "name": "customer_chaim",
+      "path": "/v1/customers",
+      "method": "post",
+      "params": {
+        "name": "Chaim Fisher-Towne",
+        "email": "Chaim.Fisher-Towne45@gmail.com",
+        "source": "tok_visa"
+      }
+    },
+    {
+      "name": "customer_george",
+      "path": "/v1/customers",
+      "method": "post",
+      "params": {
+        "name": "George Abernathy",
+        "email": "Jocelyn.Boyer@hotmail.com",
+        "source": "tok_visa"
+      }
+    },
+    {
+      "name": "charge_billie",
+      "path": "/v1/charges",
+      "method": "post",
+      "params": {
+        "amount": 9990,
+        "currency": "usd",
+        "customer": "${customer_billie:id}",
+        "source": "tok_visa"
+      }
+    },
+    {
+      "name": "charge_chaim",
+      "path": "/v1/charges",
+      "method": "post",
+      "params": {
+        "amount": 9999,
+        "currency": "usd",
+        "customer": "${customer_chaim:id}",
+        "source": "tok_visa"
+      }
+    },
+    {
+      "name": "refund_billie",
+      "path": "/v1/refunds",
+      "method": "post",
+      "params": {
+        "charge": "${charge_billie:id}",
+        "reason": "requested_by_customer"
+      }
+    },
+    {
+      "name": "refund_chaim",
+      "path": "/v1/refunds",
+      "method": "post",
+      "params": {
+        "charge": "${charge_chaim:id}",
+        "reason": "requested_by_customer"
+      }
+    },
+    {
+      "name": "subscription_billie",
+      "path": "/v1/subscriptions",
+      "method": "post",
+      "params": {
+        "customer": "${customer_billie:id}",
+        "items": [
+          {
+            "price": "${price_annual:id}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "subscription_george",
+      "path": "/v1/subscriptions",
+      "method": "post",
+      "params": {
+        "customer": "${customer_george:id}",
+        "items": [
+          {
+            "price": "${price_annual:id}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "cancel_billie",
+      "path": "/v1/subscriptions/${subscription_billie:id}/cancel",
+      "method": "post"
+    },
+    {
+      "name": "cancel_george",
+      "path": "/v1/subscriptions/${subscription_george:id}/cancel",
+      "method": "post"
+    }
+  ]
+}

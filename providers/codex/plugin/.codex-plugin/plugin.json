@@ -7,9 +7,9 @@
     "url": "https://stripe.com"
   },
   "homepage": "https://stripe.com",
-  "repository": "https://github.com/openai/plugins",
+  "repository": "https://github.com/stripe/ai",
   "license": "MIT",
-  "keywords": [],
+  "keywords": ["paymments", "subscriptions", "cards", "invoices", "marketplace", "platform"],
   "skills": "./skills/",
   "apps": "./.app.json",
   "interface": {
