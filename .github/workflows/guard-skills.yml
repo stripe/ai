@@ -10,6 +10,7 @@ on:
       - 'providers/codex/plugin/skills/**'
       - '!providers/codex/plugin/skills/connect-recommend/**'
       - 'providers/cursor/plugin/skills/**'
+      - '!providers/cursor/plugin/skills/connect-recommend/**'
 
 jobs:
   block:
