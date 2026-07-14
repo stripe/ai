@@ -47,6 +47,24 @@ Run this command in your project:
 
 You can also install through the [Cursor marketplace](https://cursor.com/marketplace/stripe).
 
+### Grok Build
+
+Point a marketplace source at this repo and install the `stripe` plugin from `providers/grok/plugin` (SHA-pinned). Example catalog entry:
+
+```json
+{
+  "name": "stripe",
+  "source": {
+    "source": "url",
+    "url": "https://github.com/stripe/ai.git",
+    "sha": "<commit sha>",
+    "path": "providers/grok/plugin"
+  }
+}
+```
+
+Or for local testing, add a path plugin source to `~/.grok/config.toml` pointing at `providers/grok/plugin` in a checkout of this repo.
+
 ## Manual installation
 
 > Manually installed skills don’t auto-update. Run `npx skills update -y` to get the latest versions.

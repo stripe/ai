@@ -46,6 +46,7 @@ const PLUGIN_SKILLS_DIRS = [
   path.join(__dirname, "../providers/claude/plugin/skills"),
   path.join(__dirname, "../providers/codex/plugin/skills"),
   path.join(__dirname, "../providers/cursor/plugin/skills"),
+  path.join(__dirname, "../providers/grok/plugin/skills"),
 ];
 const ALL_OUTPUT_DIRS = [SKILLS_DIR, ...PLUGIN_SKILLS_DIRS];
 
@@ -55,6 +56,8 @@ const VERSION_FILES = [
   path.join(__dirname, "../providers/codex/plugin/.codex-plugin/plugin.json"),
   path.join(__dirname, "../.cursor-plugin/marketplace.json"),
   path.join(__dirname, "../providers/cursor/plugin/.cursor-plugin/plugin.json"),
+  path.join(__dirname, "../.grok-plugin/marketplace.json"),
+  path.join(__dirname, "../providers/grok/plugin/.grok-plugin/plugin.json"),
 ];
 
 const bumpVersion = (version, type) => {
