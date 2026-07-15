@@ -40,10 +40,10 @@ Test cases are pre-filled from the upload. Before handing off the test account, 
 ```bash
 curl -sL https://raw.githubusercontent.com/stripe/ai/main/providers/codex/plugin/fixtures/test-data.json \
   -o /tmp/stripe-mcp-test-data.json \
-&& npx stripe@latest --api-key ... fixtures /tmp/stripe-mcp-test-data.json
+&& npx @stripe/cli@latest --api-key ... fixtures /tmp/stripe-mcp-test-data.json
 ```
 
-The form should already have this with a valid API key, but you can get one from our test account if necessary.
+The submission form should already have this with a valid API key, but you can get one from our test account if necessary.
 
 ### 6. Global
 

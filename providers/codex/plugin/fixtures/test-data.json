@@ -54,8 +54,7 @@
       "method": "post",
       "params": {
         "name": "Juanita Haley",
-        "email": "Billie_Beier@yahoo.com",
-        "source": "tok_visa"
+        "email": "Billie_Beier@yahoo.com"
       }
     },
     {
@@ -64,8 +63,7 @@
       "method": "post",
       "params": {
         "name": "Chaim Fisher-Towne",
-        "email": "Chaim.Fisher-Towne45@gmail.com",
-        "source": "tok_visa"
+        "email": "Chaim.Fisher-Towne45@gmail.com"
       }
     },
     {
@@ -74,30 +72,59 @@
       "method": "post",
       "params": {
         "name": "George Abernathy",
-        "email": "Jocelyn.Boyer@hotmail.com",
-        "source": "tok_visa"
+        "email": "Jocelyn.Boyer@hotmail.com"
       }
     },
     {
-      "name": "charge_billie",
-      "path": "/v1/charges",
+      "name": "pm_billie",
+      "path": "/v1/payment_methods/pm_card_visa/attach",
+      "method": "post",
+      "params": {
+        "customer": "${customer_billie:id}"
+      }
+    },
+    {
+      "name": "pm_chaim",
+      "path": "/v1/payment_methods/pm_card_visa/attach",
+      "method": "post",
+      "params": {
+        "customer": "${customer_chaim:id}"
+      }
+    },
+    {
+      "name": "pm_george",
+      "path": "/v1/payment_methods/pm_card_visa/attach",
+      "method": "post",
+      "params": {
+        "customer": "${customer_george:id}"
+      }
+    },
+    {
+      "name": "pi_billie",
+      "path": "/v1/payment_intents",
       "method": "post",
       "params": {
         "amount": 9990,
         "currency": "usd",
         "customer": "${customer_billie:id}",
-        "source": "tok_visa"
+        "payment_method": "${pm_billie:id}",
+        "payment_method_types": ["card"],
+        "confirm": true,
+        "off_session": true
       }
     },
     {
-      "name": "charge_chaim",
-      "path": "/v1/charges",
+      "name": "pi_chaim",
+      "path": "/v1/payment_intents",
       "method": "post",
       "params": {
         "amount": 9999,
         "currency": "usd",
         "customer": "${customer_chaim:id}",
-        "source": "tok_visa"
+        "payment_method": "${pm_chaim:id}",
+        "payment_method_types": ["card"],
+        "confirm": true,
+        "off_session": true
       }
     },
     {
@@ -105,7 +132,7 @@
       "path": "/v1/refunds",
       "method": "post",
       "params": {
-        "charge": "${charge_billie:id}",
+        "payment_intent": "${pi_billie:id}",
         "reason": "requested_by_customer"
       }
     },
@@ -114,7 +141,7 @@
       "path": "/v1/refunds",
       "method": "post",
       "params": {
-        "charge": "${charge_chaim:id}",
+        "payment_intent": "${pi_chaim:id}",
         "reason": "requested_by_customer"
       }
     },
@@ -128,7 +155,8 @@
           {
             "price": "${price_annual:id}"
           }
-        ]
+        ],
+        "default_payment_method": "${pm_billie:id}"
       }
     },
     {
@@ -141,18 +169,19 @@
           {
             "price": "${price_annual:id}"
           }
-        ]
+        ],
+        "default_payment_method": "${pm_george:id}"
       }
     },
     {
       "name": "cancel_billie",
-      "path": "/v1/subscriptions/${subscription_billie:id}/cancel",
-      "method": "post"
+      "path": "/v1/subscriptions/${subscription_billie:id}",
+      "method": "delete"
     },
     {
       "name": "cancel_george",
-      "path": "/v1/subscriptions/${subscription_george:id}/cancel",
-      "method": "post"
+      "path": "/v1/subscriptions/${subscription_george:id}",
+      "method": "delete"
     }
   ]
 }
