@@ -93,12 +93,12 @@ Options:
 - "Just scan my codebase" — skip to Step 2, rely on codebase signals only
 - "Skip — ask me questions instead" — skip to Step 3 with full questionnaire
 
-**1c. Research the business** — spawn the Company Researcher subagent:
+**1c. Research the business** — spawn the `company-researcher` subagent:
 
 Use the `Task` tool (Grok Build: `spawn_subagent`) with:
-- `subagent_type`: `"Company Researcher"` (if that type is unavailable or ambiguous, use `"stripe:Company Researcher"`)
+- `subagent_type`: `"company-researcher"` (if that type is unavailable or ambiguous, use `"stripe:company-researcher"`)
 - `description`: short label, e.g. `"Research company for Connect shape"`
-- `prompt`: include the company URL and/or business description the user provided. Do **not** ask the subagent to read agent definition files — its system prompt is already the Company Researcher agent. Do **not** use `general-purpose` for this step.
+- `prompt`: include the company URL and/or business description the user provided. Do **not** ask the subagent to read agent definition files — its system prompt is already the company-researcher agent. Do **not** use `general-purpose` for this step.
 
 The agent is tool-scoped to research only (read/search/web). It returns a structured analysis with confidence levels (HIGH/MEDIUM/LOW) for each decision dimension.
 

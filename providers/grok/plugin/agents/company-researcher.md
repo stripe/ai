@@ -1,5 +1,5 @@
 ---
-name: Company Researcher
+name: company-researcher
 description: "Research a company from its URL or description to infer Stripe Connect integration shape"
 tools:
   - Read
