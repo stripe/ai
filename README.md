@@ -49,21 +49,11 @@ You can also install through the [Cursor marketplace](https://cursor.com/marketp
 
 ### Grok Build
 
-Point a marketplace source at this repo and install the `stripe` plugin from `providers/grok/plugin` (SHA-pinned). Example catalog entry:
+Run this command in your project:
 
-```json
-{
-  "name": "stripe",
-  "source": {
-    "source": "url",
-    "url": "https://github.com/stripe/ai.git",
-    "sha": "<commit sha>",
-    "path": "providers/grok/plugin"
-  }
-}
+```bash
+grok plugin install stripe --trust
 ```
-
-Or for local testing, add a path plugin source to `~/.grok/config.toml` pointing at `providers/grok/plugin` in a checkout of this repo.
 
 ## Manual installation
 
