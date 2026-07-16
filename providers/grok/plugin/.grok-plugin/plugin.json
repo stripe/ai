@@ -1,6 +1,6 @@
 {
   "name": "stripe",
-  "description": "Stripe development plugin for Grok Build: best-practice skills, Connect recommendation, and the hosted Stripe MCP server.",
+  "description": "Stripe development plugin for Grok Build: best practices, API/SDK upgrade guidance, and the Stripe MCP server.",
   "version": "0.1.0",
   "author": {
     "name": "Stripe",
