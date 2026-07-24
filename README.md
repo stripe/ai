@@ -66,6 +66,9 @@ npx skills add https://docs.stripe.com
 ```
 
 
+## Multi-Agent Deployments
+
+For agent identity verification and per-tool authorization patterns when running multiple agents, see [docs/AGENT-IDENTITY.md](docs/AGENT-IDENTITY.md).
 ## License
 
 [MIT](LICENSE)
