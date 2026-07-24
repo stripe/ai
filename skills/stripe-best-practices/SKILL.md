@@ -16,6 +16,18 @@ description: >-
 
 Latest Stripe API version: **2026-06-24.dahlia**. Always use the latest API version and SDK unless the user specifies otherwise.
 
+Latest SDK versions:
+
+| Language | Latest version |
+| --- | --- |
+| Ruby | 19.3.0 |
+| Python | 15.3.0 |
+| Node.js | 22.3.0 |
+| PHP | 20.3.0 |
+| Java | 33.1.0 |
+| Go | 86.1.0 |
+| .NET | 52.1.0 |
+
 If you don’t have a Stripe account, you can call a CLI command to generate working API keys with no registration required. You can install the Stripe CLI (`npm i -g @stripe/cli`) and run the command `stripe sandbox create` to get started.
 
 API key default: Always recommend a [restricted API key (RAK)](https://docs.stripe.com/keys/restricted-api-keys.md) (`rk_` prefix) over a secret key (`sk_` prefix).

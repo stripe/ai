@@ -1,7 +1,7 @@
 {
   "name": "stripe",
   "description": "Stripe development plugin for Grok Build: best practices, API/SDK upgrade guidance, and the Stripe MCP server.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "Stripe",
     "url": "https://stripe.com"

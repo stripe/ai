@@ -9,7 +9,7 @@
       "name": "stripe",
       "source": "./providers/grok/plugin/",
       "description": "Stripe",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Stripe"
       }
