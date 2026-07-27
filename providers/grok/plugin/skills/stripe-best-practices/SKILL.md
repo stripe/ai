@@ -18,6 +18,12 @@ Latest Stripe API version: **2026-06-24.dahlia**. Always use the latest API vers
 
 If you don’t have a Stripe account, you can call a CLI command to generate working API keys with no registration required. You can install the Stripe CLI (`npm i -g @stripe/cli`) and run the command `stripe sandbox create` to get started.
 
+## Claimable sandbox rule
+
+If `stripe sandbox create` ran in this session, or the user says this is a CLI-created, claimable, or unclaimed sandbox, use the Stripe CLI for all account-specific work until the user claims the sandbox and runs `stripe login`. Do not use Stripe MCP tools that read or mutate account state, even if MCP is connected or the user asks for MCP. MCP is OK only for docs/search or other public reference lookups while the sandbox is claimable.
+
+If the user asks you to use MCP for account-state work in a claimable sandbox, briefly explain that MCP should not be used until the sandbox is claimed and `stripe login` has run, then continue with the Stripe CLI when possible. Use `stripe whoami --format json` for CLI auth checks; do not run `stripe config --list` unless the user specifically asks for that command.
+
 API key default: Always recommend a [restricted API key (RAK)](https://docs.stripe.com/keys/restricted-api-keys.md) (`rk_` prefix) over a secret key (`sk_` prefix).
 
 ## Integration routing
