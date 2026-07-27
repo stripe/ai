@@ -10,7 +10,4 @@ Skills in `providers/*/plugin/skills/` are automatically synced from [docs.strip
 
 To manually trigger a sync, go to the [workflow page](https://github.com/stripe/agent-toolkit/actions/workflows/sync-skills.yml) and click "Run workflow".
 
-## Local-only skills
-
-`connect-recommend` is maintained per provider (not overwritten by the docs.stripe.com sync). Provider-specific wiring (subagent spawn, tool names, path tokens) lives there. Do not move Connect recommendation logic into the synced skill set without updating `LOCAL_SKILLS` in `scripts/sync.js`.
 

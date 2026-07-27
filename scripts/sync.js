@@ -26,15 +26,11 @@ const fetchManifest = () => {
 
 const PRESERVE_FILES = new Set(["README.md", ".gitkeep"]);
 const OMIT_FILES = new Set(["metadata.yaml"]);
-// Skills that are locally managed and should not be removed during sync.
-// Add skill directory names here to protect them from being cleaned up.
-const LOCAL_SKILLS = new Set(["connect-recommend"]);
 
 const cleanDirectory = async (dir) => {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     if (PRESERVE_FILES.has(entry.name)) continue;
-    if (entry.isDirectory() && LOCAL_SKILLS.has(entry.name)) continue;
     await fs.rm(path.join(dir, entry.name), { recursive: true, force: true });
   }
 };
