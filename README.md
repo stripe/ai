@@ -2,6 +2,8 @@
 
 # Stripe AI
 
+[![MCP Toplist](https://mcptoplist.com/badge/com.stripe%2Fmcp.svg)](https://mcptoplist.com/server/com.stripe%2Fmcp)
+
 This repo is the one-stop shop for building AI-powered products and businesses on top of Stripe. 
 
 It contains a collection of SDKs to help you integrate Stripe with LLMs and agent frameworks, including: 
