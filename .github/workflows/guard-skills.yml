@@ -6,7 +6,9 @@ on:
       - 'skills/**'
       - '!skills/README.md'
       - 'providers/claude/plugin/skills/**'
+      - 'providers/codex/plugin/skills/**'
       - 'providers/cursor/plugin/skills/**'
+      - 'providers/grok/plugin/skills/**'
 
 jobs:
   block:

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "tools":{},
+  "test_cases": [
+    {
+      "description": "Get refunded payments and their reason",
+      "user_prompt": "Get refunded payments and their reason",
+      "tools_triggered": "search",
+      "expected_output": "Below are all your payments that have been refunded and the reason for the refund\n\nAmount: $99.90 USD\nCustomer: Billie_Beier@yahoo.com\nPayment Date: [date fixtures were run]\nRefunded Date: [date fixtures were run]\nRefund Reason: Customer request\n\nAmount: $99.99 USD\nCustomer: Chaim.Fisher-Towne45@gmail.com\nPayment Date: [date fixtures were run]\nRefunded Date: [date fixtures were run]\nRefund Reason: Customer request\n\n*Test data is created by running fixtures/test-data.json against the test account.*"
+    },
+    {
+      "description": "Find the customer with the email Allison26@hotmail.com",
+      "user_prompt": "Find the customer with the email Allison26@hotmail.com",
+      "tools_triggered": "stripe_api_search stripe_api_details stripe_api_read",
+      "expected_output": "Customer Details for Allison26@hotmail.com\n\nFull Name: Ben Stiedemann\nStripe Email: Allison26@hotmail.com\nStripe Customer ID: [assigned at fixture creation]\n\n*Customer is created by running fixtures/test-data.json against the test account.*"
+    },
+    {
+      "description": "Show cancelled subscriptions",
+      "user_prompt": "Show cancelled subscriptions",
+      "tools_triggered": "stripe_api_search stripe_api_details stripe_api_read",
+      "expected_output": "Below is a list of all subscriptions in the Stripe account that have been canceled (including those scheduled for future cancellation).\n\nGeorge Abernathy\nEmail: Jocelyn.Boyer@hotmail.com\nPlan: HyperGrowAI Growth (Annual)\nCancellation Date: [date fixtures were run]\n\nJuanita Haley\nEmail: Billie_Beier@yahoo.com\nPlan: HyperGrowAI Growth (Annual)\nCancellation Date: [date fixtures were run]\n\n*Subscriptions are created and cancelled by running fixtures/test-data.json against the test account.*"
+    },
+    {
+      "description": "Show my stripe account information",
+      "user_prompt": "Show my stripe account information",
+      "tools_triggered": "get_stripe_account_info",
+      "expected_output": "Here's what I can see for your Stripe account 👇\n\nStripe account details\nAccount ID: acct_1TrfPUDaGV12u0NB\nAPI keys & settings: https://dashboard.stripe.com/acct_1TrfPUDaGV12u0NB/apikeys\n\nIf you want, I can also: Check your current balance, List customers, List subscriptions, and more."
+    },
+    {
+      "description": "List prices I have in the system",
+      "user_prompt": "List prices I have in the system",
+      "tools_triggered": "stripe_api_search stripe_api_details stripe_api_read",
+      "expected_output": "Here is the list of your prices\n\nHyperGrowAI Growth — Annual\nPrice: $99.90 / year\nPrice ID: [assigned at fixture creation]\n\nHyperGrowAI Growth — Monthly\nPrice: $9.99 / month\nPrice ID: [assigned at fixture creation]\n\n*Prices are created by running fixtures/test-data.json against the test account.*"
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Review the Stripe integration code in this file and suggest improvements to error handling",
+      "user_prompt": "Review the Stripe integration code in this file and suggest improvements to error handling"
+    },
+    {
+      "description": "Write documentation explaining how to set up Stripe webhooks in our application",
+      "user_prompt": "Write documentation explaining how to set up Stripe webhooks in our application"
+    },
+    {
+      "description": "My Stripe webhook endpoint is returning a 500 error in local development. Help me debug what's wrong with the code.",
+      "user_prompt": "My Stripe webhook endpoint is returning a 500 error in local development. Help me debug what's wrong with the code."
+    }
+  ]
+}

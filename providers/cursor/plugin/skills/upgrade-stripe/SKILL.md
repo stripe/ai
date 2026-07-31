@@ -4,7 +4,7 @@ description: Guide for upgrading Stripe API versions and SDKs
 
 ---
 
-The latest Stripe API version is 2026-04-22.dahlia - use this version when upgrading unless the user specifies a different target version.
+The latest Stripe API version is 2026-07-29.dahlia - use this version when upgrading unless the user specifies a different target version.
 
 # Upgrading Stripe Versions
 
@@ -12,7 +12,7 @@ This guide covers upgrading Stripe API versions, server-side SDKs, Stripe.js, an
 
 ## Understanding Stripe API Versioning
 
-Stripe uses date-based API versions (e.g., `2026-04-22.dahlia`, `2025-08-27.basil`, `2024-12-18.acacia`). Your account’s API version determines request/response behavior.
+Stripe uses date-based API versions (e.g., `2026-07-29.dahlia`, `2025-08-27.basil`, `2024-12-18.acacia`). Your account’s API version determines request/response behavior.
 
 ### Types of Changes
 
@@ -44,16 +44,16 @@ These SDKs offer flexible version control:
 
 ```python
 import stripe
-stripe.api_version = '2026-04-22.dahlia'
+stripe.api_version = '2026-07-29.dahlia'
 ```
 
 ```ruby
-Stripe.api_version = '2026-04-22.dahlia'
+Stripe.api_version = '2026-07-29.dahlia'
 ```
 
 ```javascript
 const stripe = require('stripe')('sk_test_xxx', {
-  apiVersion: '2026-04-22.dahlia'
+  apiVersion: '2026-07-29.dahlia'
 });
 ```
 
@@ -62,7 +62,7 @@ const stripe = require('stripe')('sk_test_xxx', {
 ```python
 stripe.Customer.create(
   email="customer@example.com",
-  stripe_version='2026-04-22.dahlia'
+  stripe_version='2026-07-29.dahlia'
 )
 ```
 
@@ -77,7 +77,7 @@ Always specify the API version you’re integrating against in your code instead
 ```javascript
 // Good: Explicit version
 const stripe = require('stripe')('sk_test_xxx', {
-  apiVersion: '2026-04-22.dahlia'
+  apiVersion: '2026-07-29.dahlia'
 });
 
 // Avoid: Relying on account default
@@ -110,7 +110,7 @@ Major npm versions correspond to specific Stripe.js versions.
 
 Each Stripe.js version automatically pairs with its corresponding API version. For instance:
 
-- Dahlia Stripe.js uses `2026-04-22.dahlia` API
+- Dahlia Stripe.js uses `2026-07-29.dahlia` API
 - Acacia Stripe.js uses `2024-12-18.acacia` API
 
 You can’t override this association.
@@ -118,9 +118,9 @@ You can’t override this association.
 ### Migrating from v3
 
 1. Identify your current API version in code
-1. Review the changelog for relevant changes
-1. Consider gradually updating your API version before switching Stripe.js versions
-1. Stripe continues supporting v3 indefinitely
+2. Review the changelog for relevant changes
+3. Consider gradually updating your API version before switching Stripe.js versions
+4. Stripe continues supporting v3 indefinitely
 
 ## Mobile SDK Versioning
 
@@ -150,14 +150,14 @@ All mobile SDKs work with any Stripe API version you use on your backend unless 
 ## Upgrade Checklist
 
 1. Review the [API Changelog](https://docs.stripe.com/changelog.md) for changes between your current and target versions
-1. Check [Upgrades Guide](https://docs.stripe.com/upgrades.md) for migration guidance
-1. Update server-side SDK package version (e.g., `npm update stripe`, `pip install --upgrade stripe`)
-1. Update the `apiVersion` parameter in your Stripe client initialization
-1. Test your integration against the new API version using the `Stripe-Version` header
-1. Update webhook handlers to handle new event structures
-1. Update Stripe.js script tag or npm package version if needed
-1. Update mobile SDK versions in your package manager if needed
-1. Store Stripe object IDs in databases that accommodate up to 255 characters (case-sensitive collation)
+2. Check [Upgrades Guide](https://docs.stripe.com/upgrades.md) for migration guidance
+3. Update server-side SDK package version (e.g., `npm update stripe`, `pip install --upgrade stripe`)
+4. Update the `apiVersion` parameter in your Stripe client initialization
+5. Test your integration against the new API version using the `Stripe-Version` header
+6. Update webhook handlers to handle new event structures
+7. Update Stripe.js script tag or npm package version if needed
+8. Update mobile SDK versions in your package manager if needed
+9. Store Stripe object IDs in databases that accommodate up to 255 characters (case-sensitive collation)
 
 ## Testing API Version Changes
 
@@ -166,14 +166,14 @@ Use the `Stripe-Version` header to test your code against a new version without 
 ```bash
 curl https://api.stripe.com/v1/customers \
   -u sk_test_xxx: \
-  -H "Stripe-Version: 2026-04-22.dahlia"
+  -H "Stripe-Version: 2026-07-29.dahlia"
 ```
 
 Or in code:
 
 ```javascript
 const stripe = require('stripe')('sk_test_xxx', {
-  apiVersion: '2026-04-22.dahlia'  // Test with new version
+  apiVersion: '2026-07-29.dahlia'  // Test with new version
 });
 ```
 
