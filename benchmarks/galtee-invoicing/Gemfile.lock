@@ -38,6 +38,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-25
+  x86_64-linux-gnu
 
 DEPENDENCIES
   byebug (= 11.1.3)
