@@ -4,11 +4,12 @@ on:
   pull_request:
     paths:
       - 'skills/**'
-      - '!skills/README.md'
       - 'providers/claude/plugin/skills/**'
       - 'providers/codex/plugin/skills/**'
       - 'providers/cursor/plugin/skills/**'
       - 'providers/grok/plugin/skills/**'
+    paths-ignore:
+      - 'skills/README.md'
 
 jobs:
   block:
