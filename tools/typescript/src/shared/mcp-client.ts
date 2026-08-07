@@ -113,7 +113,13 @@ export class StripeMcpClient {
       const result = await this.client.listTools();
       this.tools = result.tools as McpTool[];
     } catch (error) {
-      // Clean up on failure
+      // Close the active connection before clearing references to avoid leaking
+      // the underlying transport if connect() succeeded but listTools() failed.
+      try {
+        if (this.client) await this.client.close();
+      } catch {
+        // Ignore close errors during cleanup
+      }
       this.client = null;
       this.transport = null;
 
