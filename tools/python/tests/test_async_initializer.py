@@ -90,6 +90,7 @@ class TestAsyncInitializer:
 
     async def test_initialize_propagates_error(self, initializer):
         """Errors during initialization should propagate."""
+
         async def failing_init():
             raise ValueError("Init failed")
 
