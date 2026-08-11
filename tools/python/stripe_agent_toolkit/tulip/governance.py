@@ -63,13 +63,44 @@ records (a created-but-uncaptured payment intent, a draft invoice) stay
 low-risk. This is a starting policy, not a claim of completeness --
 without a live catalog to validate against, it should be treated as a
 reasoned first cut, not an authoritative list.
+
+**Optional inference-based advisory layer, escalate-only.** All three
+bugs above were the same failure mode: a fixed set of keyword rules is
+brittle against natural-language descriptions it doesn't control. A
+real model-based classifier (`clusiana-admit-v4`, tulip's own, tested
+separately against this exact catalog) got the same 11 cases right
+without needing the per-bug patches above -- it read the operation's
+actual meaning instead of pattern-matching its boilerplate. `classify()`
+itself stays a fixed, dependency-free rule engine on purpose (this
+package shouldn't force every consumer of `stripe/ai` to stand up a
+model server just to install it), but `GovernedToolkitMixin` accepts an
+optional `advisory` callable that can *escalate* a call the rules
+called low-risk -- never the reverse. That asymmetry is deliberate and
+matches how tulip-agents treats every advisory classifier: it can only
+raise the bar, never lower it, and an advisory that errors, times out,
+or returns `None` (no opinion) always falls back to the rule verdict
+rather than weakening it. See `AdvisoryClassifier` and
+`examples/tulip/clusiana_advisory.py` for a real, working one.
 """
 
 from __future__ import annotations
 
+import logging
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from tulip.control import Action, AuditTrail, ControlPolicy, admit
+
+logger = logging.getLogger(__name__)
+
+# `(method, args, description) -> True` to escalate this call to
+# high-risk, `False`/`None` to leave the rule-based verdict alone. Must
+# never be trusted to *lower* risk -- see module docstring. Raising,
+# timing out, or returning anything else is treated as "no opinion" by
+# `GovernedToolkitMixin.run_tool()`, not as a denial or an allow.
+AdvisoryClassifier = Callable[
+    [str, dict[str, Any], str], Awaitable[bool | None]
+]
 
 # Keyword markers against the tool's real method name + description
 # (both provided by the live MCP server, not known statically here --
@@ -206,11 +237,13 @@ class GovernedToolkitMixin:
         *args: Any,
         policy: ControlPolicy | None = None,
         trail: AuditTrail | None = None,
+        advisory: AdvisoryClassifier | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._policy_override = policy
         self._trail = trail if trail is not None else AuditTrail()
+        self._advisory = advisory
 
     def audit_trail(self) -> AuditTrail:
         """The tamper-evident record of every decision this instance has
@@ -232,6 +265,35 @@ class GovernedToolkitMixin:
                     break
 
         action = classify(method, args, description)
+
+        # Advisory inference layer: can only ESCALATE a rule-based
+        # low-risk verdict to high-risk, never soften a high-risk one
+        # back down. Any failure of the advisory itself (exception,
+        # timeout, off-schema response) falls back to the rule verdict
+        # rather than either blocking or silently trusting it -- an
+        # unavailable model must never become an outage for governance,
+        # and it must never become a bypass either.
+        if self._advisory is not None and "high-risk" not in action.tags:
+            try:
+                escalate = await self._advisory(method, args, description)
+            except Exception:
+                logger.warning(
+                    "tulip advisory classifier failed for %r; "
+                    "falling back to the rule-based verdict",
+                    method,
+                    exc_info=True,
+                )
+                escalate = None
+            if escalate:
+                action = Action(
+                    name=action.name,
+                    asset=action.asset,
+                    blast_radius=5,
+                    environment=action.environment,
+                    kind="stripe-financial-action",
+                    tags=frozenset({"high-risk", "advisory-escalated"}),
+                )
+
         policy = self._policy_override or (
             _HIGH_RISK_POLICY
             if "high-risk" in action.tags

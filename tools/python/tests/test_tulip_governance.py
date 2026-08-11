@@ -50,11 +50,14 @@ class _GovernedTestToolkit(GovernedToolkitMixin, _MinimalToolkit):
     pass
 
 
-def _toolkit(policy: Any | None = None) -> _GovernedTestToolkit:
+def _toolkit(
+    policy: Any | None = None, advisory: Any | None = None
+) -> _GovernedTestToolkit:
     toolkit = _GovernedTestToolkit(
         secret_key="rk_test_123",
         configuration=Configuration(),
         policy=policy,
+        advisory=advisory,
     )
     # Bypass real MCP connect(): mark both the toolkit's own initializer
     # and the underlying StripeMcpClient's (a separate AsyncInitializer
@@ -218,3 +221,84 @@ class TestGovernedToolkitMixin(IsolatedAsyncioTestCase):
         trail = toolkit.audit_trail()
         self.assertEqual(len(trail.records()), 2)
         self.assertTrue(trail.verify())
+
+
+class TestAdvisoryClassifier(IsolatedAsyncioTestCase):
+    """The optional inference-based advisory layer (see governance.py's
+    module docstring): escalate-only, and fails safe to the rule-based
+    verdict on any advisory error -- never the reverse in either case."""
+
+    async def test_advisory_escalates_a_rule_classified_low_risk_call(
+        self,
+    ) -> None:
+        async def advisory(method, args, description):
+            return True  # "I think this is high-risk", overriding classify()
+
+        toolkit = _toolkit(advisory=advisory)
+
+        with self.assertRaises(AdmissionError) as excinfo:
+            # list_customers alone classifies low-risk by the rules.
+            await toolkit.run_tool("list_customers", {})
+
+        self.assertEqual(excinfo.exception.decision.outcome, "require_human")
+        toolkit._mcp_client.call_tool.assert_not_awaited()
+
+    async def test_advisory_saying_no_leaves_low_risk_call_allowed(
+        self,
+    ) -> None:
+        async def advisory(method, args, description):
+            return False
+
+        toolkit = _toolkit(advisory=advisory)
+        toolkit._mcp_client.call_tool.return_value = "{}"
+
+        result = await toolkit.run_tool("list_customers", {})
+
+        self.assertEqual(result, "{}")
+        toolkit._mcp_client.call_tool.assert_awaited_once()
+
+    async def test_advisory_never_consulted_for_already_high_risk_call(
+        self,
+    ) -> None:
+        calls: list[str] = []
+
+        async def advisory(method, args, description):
+            calls.append(method)
+            return False  # would be ignored even if it fired
+
+        toolkit = _toolkit(advisory=advisory)
+
+        with self.assertRaises(AdmissionError):
+            await toolkit.run_tool("create_refund", {"id": "ch_1"})
+
+        # capture_payment_intent/create_refund is already high-risk by
+        # the rules -- the advisory must never get a chance to soften it.
+        self.assertEqual(calls, [])
+
+    async def test_advisory_failure_falls_back_to_rule_verdict(
+        self,
+    ) -> None:
+        async def broken_advisory(method, args, description):
+            raise RuntimeError("model endpoint unreachable")
+
+        toolkit = _toolkit(advisory=broken_advisory)
+        toolkit._mcp_client.call_tool.return_value = "{}"
+
+        # Must not raise the advisory's own exception -- an unavailable
+        # model must never become an outage for a low-risk call.
+        result = await toolkit.run_tool("list_customers", {})
+
+        self.assertEqual(result, "{}")
+
+    async def test_advisory_off_schema_response_falls_back_to_rule_verdict(
+        self,
+    ) -> None:
+        async def off_schema_advisory(method, args, description):
+            return None  # "no opinion", not a verdict
+
+        toolkit = _toolkit(advisory=off_schema_advisory)
+        toolkit._mcp_client.call_tool.return_value = "{}"
+
+        result = await toolkit.run_tool("list_customers", {})
+
+        self.assertEqual(result, "{}")

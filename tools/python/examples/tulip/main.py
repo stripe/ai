@@ -11,6 +11,12 @@ docstring for why this toolkit's catalog can't be enumerated statically).
     cp .env.template .env   # fill in a real Stripe test-mode key
     python main.py
 
+Optionally also set `TULIP_ADVISORY_URL` to a reachable Clusiana (or any
+OpenAI-chat-compatible) model endpoint to exercise the escalate-only
+inference layer described in `tulip/governance.py`'s module docstring --
+without it, this demo runs the rule-based `classify()` alone, which is
+the default and requires no model dependency at all.
+
 For a credential-free correctness check of the governance logic itself
 (mocked MCP session, no network), see `../../tests/test_tulip_governance.py`.
 """
@@ -20,6 +26,7 @@ import json
 import os
 
 from agents.run_context import RunContextWrapper
+from clusiana_advisory import make_clusiana_advisory
 from dotenv import load_dotenv
 
 from stripe_agent_toolkit.openai.toolkit import (
@@ -63,7 +70,19 @@ async def main() -> None:
         )
         return
 
-    toolkit = GovernedStripeAgentToolkit(secret_key=secret_key)
+    advisory = make_clusiana_advisory()
+    print(
+        "advisory inference layer: "
+        + (
+            f"ON ({os.environ.get('TULIP_ADVISORY_URL')})"
+            if advisory
+            else "off (set TULIP_ADVISORY_URL to enable -- optional, "
+            "rule-based classify() alone is the default)"
+        )
+    )
+    toolkit = GovernedStripeAgentToolkit(
+        secret_key=secret_key, advisory=advisory
+    )
     await toolkit.initialize()
 
     try:
