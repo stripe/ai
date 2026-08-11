@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+      "stripe": {
+        "type": "http",
+        "url": "https://mcp.stripe.com"
+      }
+    }
+  }
+  
