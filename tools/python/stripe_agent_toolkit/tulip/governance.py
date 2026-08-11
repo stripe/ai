@@ -103,6 +103,27 @@ _HIGH_RISK_POLICY = ControlPolicy(
 
 _DISPATCHER_METHODS = frozenset({"stripe_api_write", "stripe_api_read"})
 
+# Meta/informational tools that look up, search, or plan around Stripe
+# operations without ever executing one themselves -- found to need this
+# via a third real, live bug (see classify()'s docstring): these tools'
+# own descriptions legitimately need to mention illustrative operation
+# examples ("payout methods", "PostRefunds") to explain what they search
+# or describe, and that example text was tripping the same markers a
+# tool that actually performs an action would trigger. Distinguished by
+# what the tool structurally *does* (search/describe/plan/give feedback,
+# never mutate a Stripe resource), not by curating against today's
+# wording -- matches the same category-based reasoning already applied
+# to the dispatcher split above, not a per-tool special case.
+_INFORMATIONAL_METHODS = frozenset(
+    {
+        "stripe_api_search",
+        "stripe_api_details",
+        "stripe_implementation_planner",
+        "search_stripe_documentation",
+        "send_stripe_mcp_feedback",
+    }
+)
+
 
 def classify(
     method: str, args: dict[str, Any], description: str = ""
@@ -135,13 +156,24 @@ def classify(
        verb "DELETE" -- so matching description text against these two
        dispatcher tools blanket-flagged *every* call high-risk,
        including a harmless `PostCustomers` create.
+    3. Found by a real frontier model actually driving the toolkit (not
+       a hand-written test case): `stripe_api_search`'s own description
+       legitimately mentions "payout methods" as an example search
+       phrase, which matched the `payout` marker and blanket-flagged
+       this read-only search tool as high-risk on every call, blocking
+       a completely harmless documentation lookup before it could even
+       find the real operation to call.
 
-    Fix: for the two dispatcher methods, classify on the operation id
-    instead of the (uninformative, misleading) tool description; for
-    every other, individually-named tool, keep matching on the tool's
-    own name + real description as before.
+    Fix: dispatcher methods classify on the operation id (bug 1+2, see
+    `_DISPATCHER_METHODS` above); informational methods that never
+    execute a Stripe operation themselves always classify low-risk,
+    regardless of description content (bug 3, see
+    `_INFORMATIONAL_METHODS` above); every other, individually-named
+    tool keeps matching on its own name + real description as before.
     """
-    if method in _DISPATCHER_METHODS:
+    if method in _INFORMATIONAL_METHODS:
+        haystack = ""
+    elif method in _DISPATCHER_METHODS:
         operation_id = str(args.get("stripe_api_operation_id", ""))
         haystack = f"{method} {operation_id}".lower()
     else:

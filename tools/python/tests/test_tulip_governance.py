@@ -104,6 +104,26 @@ class TestClassify(TestCase):
         )
         self.assertNotIn("high-risk", action.tags)
 
+    def test_informational_tool_ignores_example_text_in_description(
+        self,
+    ) -> None:
+        """Regression test for a third real bug, found by a real
+        frontier model actually driving the toolkit (not a hand-written
+        case): `stripe_api_search`'s own description legitimately
+        mentions "payout methods" as an example search phrase, which
+        matched the `payout` marker and blanket-flagged this read-only
+        search tool as high-risk on every call -- blocking a harmless
+        documentation lookup before it could even find the real
+        operation to call."""
+        real_description = (
+            "Search for Stripe API operations by providing an intent "
+            "and a resource to operate on. For the resource, use a "
+            'specific, descriptive phrase (e.g. "issuing card '
+            'transactions", "payout methods", "outbound payments").'
+        )
+        action = classify("stripe_api_search", {}, real_description)
+        self.assertNotIn("high-risk", action.tags)
+
 
 class TestGovernedToolkitMixin(IsolatedAsyncioTestCase):
     async def test_low_risk_call_executes_for_real(self) -> None:
