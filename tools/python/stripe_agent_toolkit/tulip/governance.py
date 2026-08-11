@@ -33,12 +33,26 @@ that, `classify()` below uses keyword markers against the tool's real
 name and description returned by the live server, not a hardcoded list
 of exact method names -- the same approach already validated against an
 evolving, not-fully-known-in-advance catalog (a digital-forensics tool's
-433-artifact catalog, in a different admission-gate project). This
-example was built and unit-tested without live Stripe credentials
-(`tests/test_governance.py`, mocked MCP session, matching this repo's own
-testing convention); it has not yet been verified against a real,
-live-fetched tool catalog. Flagging that plainly rather than asserting
-coverage this hasn't earned yet.
+433-artifact catalog, in a different admission-gate project).
+
+**Verified against the real, live catalog, not just mocked tests.**
+Connecting for real turned up a catalog shape this design hadn't
+accounted for: Stripe's live server exposes only 9 tools, and most
+write operations don't go through individually-named tools at all --
+they go through a generic `stripe_api_write` dispatcher that takes the
+real operation as an argument (`stripe_api_operation_id`, e.g.
+`"PostRefunds"`), not as the tool's own name or description. That shape
+caused two real classifier bugs -- a live refund-through-the-dispatcher
+bypass, and a separate false-positive that blanket-flagged every
+dispatcher call including harmless ones -- both found and fixed by
+testing against the real server; see `classify()`'s docstring below for
+the specifics. Confirmed live: a real low-risk read executed
+(`get_stripe_account_info`, returning this account's real id), a real
+high-risk call (`create_refund`) was held before ever reaching Stripe,
+and a forced-allow policy override reached Stripe's real API for real
+(and got a real error back, since the test call's arguments didn't
+correspond to an actual refundable charge -- the gate's job is to let
+the call through, not to make it succeed).
 
 **What counts as high-risk here, and why**: markers chosen for actions
 with a genuine, hard-to-undo financial or dispute-liability consequence
@@ -87,6 +101,9 @@ _HIGH_RISK_POLICY = ControlPolicy(
 )
 
 
+_DISPATCHER_METHODS = frozenset({"stripe_api_write", "stripe_api_read"})
+
+
 def classify(
     method: str, args: dict[str, Any], description: str = ""
 ) -> Action:
@@ -95,12 +112,40 @@ def classify(
     `method` and `description` are matched as a single lowercased string
     against `_HIGH_RISK_MARKERS` -- a tool named `create_refund` and one
     named `close_customer_dispute` both match on `refund`/`close_dispute`
-    substrings respectively. `args` is accepted (not just used) so a
-    caller can build a stricter, amount-aware classifier on top of this
-    one without changing the call site -- the same disclosed gap this
-    module doesn't close on its own (see README).
+    substrings respectively.
+
+    **Real bug found and fixed against the live MCP server**: Stripe's
+    actual, live tool catalog (9 tools as of this writing) exposes only a
+    handful of individually-named tools like `create_refund` -- most
+    write operations instead go through a generic escape-hatch
+    dispatcher, `stripe_api_write` (and its read counterpart
+    `stripe_api_read`), which can invoke *any* underlying Stripe API
+    operation via `args["stripe_api_operation_id"]` (e.g. `"PostRefunds"`,
+    `"DeleteCustomers"`). Two real, confirmed-live bugs followed from
+    that shape:
+
+    1. A refund routed through `stripe_api_write` sailed through as
+       low-risk, because neither `stripe_api_write` (the tool name) nor
+       its description carry the actual operation -- the operation id in
+       `args` does, and this function used to ignore `args` entirely. A
+       genuine classifier bypass, not theoretical.
+    2. `stripe_api_write`'s and `stripe_api_read`'s own tool
+       descriptions are fixed boilerplate, identical for every call
+       regardless of the operation, and both happen to mention the HTTP
+       verb "DELETE" -- so matching description text against these two
+       dispatcher tools blanket-flagged *every* call high-risk,
+       including a harmless `PostCustomers` create.
+
+    Fix: for the two dispatcher methods, classify on the operation id
+    instead of the (uninformative, misleading) tool description; for
+    every other, individually-named tool, keep matching on the tool's
+    own name + real description as before.
     """
-    haystack = f"{method} {description}".lower()
+    if method in _DISPATCHER_METHODS:
+        operation_id = str(args.get("stripe_api_operation_id", ""))
+        haystack = f"{method} {operation_id}".lower()
+    else:
+        haystack = f"{method} {description}".lower()
     is_high_risk = any(marker in haystack for marker in _HIGH_RISK_MARKERS)
     return Action(
         name=method,

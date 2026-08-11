@@ -20,7 +20,10 @@ from tulip.control import AdmissionError
 
 from stripe_agent_toolkit.configuration import Configuration
 from stripe_agent_toolkit.shared.toolkit_core import ToolkitCore
-from stripe_agent_toolkit.tulip.governance import GovernedToolkitMixin
+from stripe_agent_toolkit.tulip.governance import (
+    GovernedToolkitMixin,
+    classify,
+)
 
 
 class _MinimalToolkit(ToolkitCore[list]):
@@ -116,6 +119,55 @@ async def test_customer_override_is_passed_through_on_allow() -> None:
     toolkit._mcp_client.call_tool.assert_awaited_once_with(
         "list_customers", {}, "cus_override"
     )
+
+
+def test_generic_dispatcher_write_classifies_on_operation_id() -> None:
+    """Regression test for a real bug found against the live MCP server:
+    Stripe's generic `stripe_api_write` dispatcher carries the actual
+    operation in `args["stripe_api_operation_id"]`, not in the tool name
+    or its (fixed, boilerplate) description. Before the fix, a refund
+    routed this way was misclassified low-risk -- a genuine bypass."""
+    action = classify(
+        "stripe_api_write",
+        {"stripe_api_operation_id": "PostRefunds", "parameters": {}},
+        "",  # no description available -- must not matter for the dispatcher
+    )
+    assert "high-risk" in action.tags
+
+
+def test_generic_dispatcher_ignores_boilerplate_description() -> None:
+    """Companion regression test: the dispatcher's own description is
+    identical for every call and happens to mention the HTTP verb
+    "DELETE" -- before the fix, that blanket-flagged even a harmless
+    write (creating a customer) as high-risk. The fix classifies
+    dispatcher calls on the operation id only, ignoring that
+    boilerplate."""
+    boilerplate = (
+        "Write data via any Stripe API POST/PATCH/PUT/DELETE operation..."
+    )
+    action = classify(
+        "stripe_api_write",
+        {"stripe_api_operation_id": "PostCustomers", "parameters": {}},
+        boilerplate,
+    )
+    assert "high-risk" not in action.tags
+
+
+async def test_refund_via_generic_dispatcher_is_held_not_executed() -> None:
+    """End-to-end version of the two classify() regression tests above,
+    through the real `run_tool()` override."""
+    toolkit = _toolkit()
+
+    with pytest.raises(AdmissionError):
+        await toolkit.run_tool(
+            "stripe_api_write",
+            {
+                "stripe_api_operation_id": "PostRefunds",
+                "parameters": {"charge": "ch_1"},
+            },
+        )
+
+    toolkit._mcp_client.call_tool.assert_not_awaited()
 
 
 async def test_audit_trail_survives_mixed_decisions_and_verifies() -> None:
