@@ -13,3 +13,4 @@ ruff==0.14.4
 stripe==13.2.0
 openai==2.7.1
 openai-agents==0.5.0
+tulip-agents==2.4.0

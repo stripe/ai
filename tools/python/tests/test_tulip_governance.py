@@ -10,12 +10,21 @@ point -- with `_mcp_client.call_tool` mocked directly, so these tests
 exercise the real `GovernedToolkitMixin.run_tool()` override and its
 MRO/`super()` chain against `ToolkitCore`'s real (unmodified) `run_tool()`
 body, not a reimplementation of it.
+
+**`unittest.TestCase`/`IsolatedAsyncioTestCase`, not bare pytest
+functions**: this repo's CI (`Makefile`'s `test` target) runs `python -m
+unittest discover tests`, which only collects `TestCase` subclasses --
+plain pytest-style classes/functions (as several other files in this
+directory use) are silently never executed under that invocation, a
+real, pre-existing gap in this repo confirmed by running `make test`
+locally. Written this way so these tests genuinely run in CI rather than
+passing by never being collected.
 """
 
 from typing import Any
+from unittest import IsolatedAsyncioTestCase, TestCase
 from unittest.mock import AsyncMock
 
-import pytest
 from tulip.control import AdmissionError
 
 from stripe_agent_toolkit.configuration import Configuration
@@ -41,9 +50,7 @@ class _GovernedTestToolkit(GovernedToolkitMixin, _MinimalToolkit):
     pass
 
 
-def _toolkit(
-    policy: Any | None = None,
-) -> _GovernedTestToolkit:
+def _toolkit(policy: Any | None = None) -> _GovernedTestToolkit:
     toolkit = _GovernedTestToolkit(
         secret_key="rk_test_123",
         configuration=Configuration(),
@@ -59,127 +66,135 @@ def _toolkit(
     return toolkit
 
 
-@pytest.fixture(autouse=True)
-def _reset() -> None:
-    yield
+class TestClassify(TestCase):
+    """Sync tests for `classify()` directly -- no toolkit needed."""
 
-
-async def test_low_risk_call_executes_for_real() -> None:
-    toolkit = _toolkit()
-    toolkit._mcp_client.call_tool.return_value = '{"id": "cus_123"}'
-
-    result = await toolkit.run_tool("list_customers", {})
-
-    assert result == '{"id": "cus_123"}'
-    toolkit._mcp_client.call_tool.assert_awaited_once_with(
-        "list_customers", {}, None
-    )
-    [record] = toolkit.audit_trail().records()
-    assert record.payload["outcome"] == "allow"
-
-
-async def test_high_risk_call_is_held_not_executed() -> None:
-    toolkit = _toolkit()
-
-    with pytest.raises(AdmissionError) as excinfo:
-        await toolkit.run_tool("capture_payment_intent", {"id": "pi_1"})
-
-    assert excinfo.value.decision.outcome == "require_human"
-    toolkit._mcp_client.call_tool.assert_not_awaited()
-
-    [record] = toolkit.audit_trail().records()
-    assert record.payload["outcome"] == "require_human"
-
-
-async def test_high_risk_uses_live_tool_description_when_available() -> None:
-    """A tool whose NAME alone doesn't match any marker, but whose real,
-    live-fetched description does, must still be flagged -- confirms
-    classify() genuinely uses the live catalog's description, not just
-    the method string."""
-    toolkit = _toolkit()
-    toolkit._mcp_client._tools = [
-        {
-            "name": "adjust_balance_txn",
-            "description": "Issue a refund adjustment on a balance transaction",
-        }
-    ]
-
-    with pytest.raises(AdmissionError):
-        await toolkit.run_tool("adjust_balance_txn", {})
-
-    toolkit._mcp_client.call_tool.assert_not_awaited()
-
-
-async def test_customer_override_is_passed_through_on_allow() -> None:
-    toolkit = _toolkit()
-    toolkit._mcp_client.call_tool.return_value = "{}"
-
-    await toolkit.run_tool("list_customers", {}, customer="cus_override")
-
-    toolkit._mcp_client.call_tool.assert_awaited_once_with(
-        "list_customers", {}, "cus_override"
-    )
-
-
-def test_generic_dispatcher_write_classifies_on_operation_id() -> None:
-    """Regression test for a real bug found against the live MCP server:
-    Stripe's generic `stripe_api_write` dispatcher carries the actual
-    operation in `args["stripe_api_operation_id"]`, not in the tool name
-    or its (fixed, boilerplate) description. Before the fix, a refund
-    routed this way was misclassified low-risk -- a genuine bypass."""
-    action = classify(
-        "stripe_api_write",
-        {"stripe_api_operation_id": "PostRefunds", "parameters": {}},
-        "",  # no description available -- must not matter for the dispatcher
-    )
-    assert "high-risk" in action.tags
-
-
-def test_generic_dispatcher_ignores_boilerplate_description() -> None:
-    """Companion regression test: the dispatcher's own description is
-    identical for every call and happens to mention the HTTP verb
-    "DELETE" -- before the fix, that blanket-flagged even a harmless
-    write (creating a customer) as high-risk. The fix classifies
-    dispatcher calls on the operation id only, ignoring that
-    boilerplate."""
-    boilerplate = (
-        "Write data via any Stripe API POST/PATCH/PUT/DELETE operation..."
-    )
-    action = classify(
-        "stripe_api_write",
-        {"stripe_api_operation_id": "PostCustomers", "parameters": {}},
-        boilerplate,
-    )
-    assert "high-risk" not in action.tags
-
-
-async def test_refund_via_generic_dispatcher_is_held_not_executed() -> None:
-    """End-to-end version of the two classify() regression tests above,
-    through the real `run_tool()` override."""
-    toolkit = _toolkit()
-
-    with pytest.raises(AdmissionError):
-        await toolkit.run_tool(
+    def test_generic_dispatcher_write_classifies_on_operation_id(
+        self,
+    ) -> None:
+        """Regression test for a real bug found against the live MCP
+        server: Stripe's generic `stripe_api_write` dispatcher carries
+        the actual operation in `args["stripe_api_operation_id"]`, not
+        in the tool name or its (fixed, boilerplate) description. Before
+        the fix, a refund routed this way was misclassified low-risk --
+        a genuine bypass."""
+        action = classify(
             "stripe_api_write",
+            {"stripe_api_operation_id": "PostRefunds", "parameters": {}},
+            "",  # no description available -- must not matter here
+        )
+        self.assertIn("high-risk", action.tags)
+
+    def test_generic_dispatcher_ignores_boilerplate_description(
+        self,
+    ) -> None:
+        """Companion regression test: the dispatcher's own description
+        is identical for every call and happens to mention the HTTP
+        verb "DELETE" -- before the fix, that blanket-flagged even a
+        harmless write (creating a customer) as high-risk. The fix
+        classifies dispatcher calls on the operation id only, ignoring
+        that boilerplate."""
+        boilerplate = (
+            "Write data via any Stripe API POST/PATCH/PUT/DELETE operation..."
+        )
+        action = classify(
+            "stripe_api_write",
+            {"stripe_api_operation_id": "PostCustomers", "parameters": {}},
+            boilerplate,
+        )
+        self.assertNotIn("high-risk", action.tags)
+
+
+class TestGovernedToolkitMixin(IsolatedAsyncioTestCase):
+    async def test_low_risk_call_executes_for_real(self) -> None:
+        toolkit = _toolkit()
+        toolkit._mcp_client.call_tool.return_value = '{"id": "cus_123"}'
+
+        result = await toolkit.run_tool("list_customers", {})
+
+        self.assertEqual(result, '{"id": "cus_123"}')
+        toolkit._mcp_client.call_tool.assert_awaited_once_with(
+            "list_customers", {}, None
+        )
+        [record] = toolkit.audit_trail().records()
+        self.assertEqual(record.payload["outcome"], "allow")
+
+    async def test_high_risk_call_is_held_not_executed(self) -> None:
+        toolkit = _toolkit()
+
+        with self.assertRaises(AdmissionError) as excinfo:
+            await toolkit.run_tool("capture_payment_intent", {"id": "pi_1"})
+
+        self.assertEqual(excinfo.exception.decision.outcome, "require_human")
+        toolkit._mcp_client.call_tool.assert_not_awaited()
+
+        [record] = toolkit.audit_trail().records()
+        self.assertEqual(record.payload["outcome"], "require_human")
+
+    async def test_high_risk_uses_live_tool_description_when_available(
+        self,
+    ) -> None:
+        """A tool whose NAME alone doesn't match any marker, but whose
+        real, live-fetched description does, must still be flagged --
+        confirms classify() genuinely uses the live catalog's
+        description, not just the method string."""
+        toolkit = _toolkit()
+        toolkit._mcp_client._tools = [
             {
-                "stripe_api_operation_id": "PostRefunds",
-                "parameters": {"charge": "ch_1"},
-            },
+                "name": "adjust_balance_txn",
+                "description": (
+                    "Issue a refund adjustment on a balance transaction"
+                ),
+            }
+        ]
+
+        with self.assertRaises(AdmissionError):
+            await toolkit.run_tool("adjust_balance_txn", {})
+
+        toolkit._mcp_client.call_tool.assert_not_awaited()
+
+    async def test_customer_override_is_passed_through_on_allow(
+        self,
+    ) -> None:
+        toolkit = _toolkit()
+        toolkit._mcp_client.call_tool.return_value = "{}"
+
+        await toolkit.run_tool("list_customers", {}, customer="cus_override")
+
+        toolkit._mcp_client.call_tool.assert_awaited_once_with(
+            "list_customers", {}, "cus_override"
         )
 
-    toolkit._mcp_client.call_tool.assert_not_awaited()
+    async def test_refund_via_generic_dispatcher_is_held_not_executed(
+        self,
+    ) -> None:
+        """End-to-end version of the two `TestClassify` regression tests
+        above, through the real `run_tool()` override."""
+        toolkit = _toolkit()
 
+        with self.assertRaises(AdmissionError):
+            await toolkit.run_tool(
+                "stripe_api_write",
+                {
+                    "stripe_api_operation_id": "PostRefunds",
+                    "parameters": {"charge": "ch_1"},
+                },
+            )
 
-async def test_audit_trail_survives_mixed_decisions_and_verifies() -> None:
-    toolkit = _toolkit()
-    toolkit._mcp_client.call_tool.return_value = "{}"
+        toolkit._mcp_client.call_tool.assert_not_awaited()
 
-    await toolkit.run_tool("list_customers", {})
-    try:
-        await toolkit.run_tool("create_refund", {"id": "ch_1"})
-    except AdmissionError:
-        pass
+    async def test_audit_trail_survives_mixed_decisions_and_verifies(
+        self,
+    ) -> None:
+        toolkit = _toolkit()
+        toolkit._mcp_client.call_tool.return_value = "{}"
 
-    trail = toolkit.audit_trail()
-    assert len(trail.records()) == 2
-    assert trail.verify() is True
+        await toolkit.run_tool("list_customers", {})
+        try:
+            await toolkit.run_tool("create_refund", {"id": "ch_1"})
+        except AdmissionError:
+            pass
+
+        trail = toolkit.audit_trail()
+        self.assertEqual(len(trail.records()), 2)
+        self.assertTrue(trail.verify())
