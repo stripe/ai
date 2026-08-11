@@ -18,7 +18,6 @@
     "platform"
   ],
   "skills": "./skills/",
-  "apps": "./.app.json",
   "interface": {
     "displayName": "Stripe",
     "developerName": "Stripe",
