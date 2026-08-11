@@ -70,36 +70,25 @@ def _toolkit(
 
 
 class TestClassify(TestCase):
-    """Sync tests for `classify()` directly -- no toolkit needed."""
+    """Sync tests for `classify()` directly -- no toolkit needed. Each
+    regresses a real bug found against the live server; see
+    `examples/tulip/VERIFICATION.md` for the full story on each."""
 
-    def test_generic_dispatcher_write_classifies_on_operation_id(
-        self,
-    ) -> None:
-        """Regression test for a real bug found against the live MCP
-        server: Stripe's generic `stripe_api_write` dispatcher carries
-        the actual operation in `args["stripe_api_operation_id"]`, not
-        in the tool name or its (fixed, boilerplate) description. Before
-        the fix, a refund routed this way was misclassified low-risk --
-        a genuine bypass."""
+    def test_write_dispatcher_classifies_on_operation_id(self) -> None:
+        """Bug 1: a refund routed through `stripe_api_write` used to be
+        misclassified low-risk, since the operation id -- not the tool
+        name or its generic description -- carries the actual action."""
         action = classify(
             "stripe_api_write",
             {"stripe_api_operation_id": "PostRefunds", "parameters": {}},
-            "",  # no description available -- must not matter here
+            "",  # description must not matter here
         )
         self.assertIn("high-risk", action.tags)
 
-    def test_generic_dispatcher_ignores_boilerplate_description(
-        self,
-    ) -> None:
-        """Companion regression test: the dispatcher's own description
-        is identical for every call and happens to mention the HTTP
-        verb "DELETE" -- before the fix, that blanket-flagged even a
-        harmless write (creating a customer) as high-risk. The fix
-        classifies dispatcher calls on the operation id only, ignoring
-        that boilerplate."""
-        boilerplate = (
-            "Write data via any Stripe API POST/PATCH/PUT/DELETE operation..."
-        )
+    def test_write_dispatcher_ignores_boilerplate_description(self) -> None:
+        """Bug 2: the dispatcher's fixed description mentions "DELETE",
+        which used to blanket-flag every write including harmless ones."""
+        boilerplate = "...POST/PATCH/PUT/DELETE operation..."
         action = classify(
             "stripe_api_write",
             {"stripe_api_operation_id": "PostCustomers", "parameters": {}},
@@ -110,21 +99,24 @@ class TestClassify(TestCase):
     def test_informational_tool_ignores_example_text_in_description(
         self,
     ) -> None:
-        """Regression test for a third real bug, found by a real
-        frontier model actually driving the toolkit (not a hand-written
-        case): `stripe_api_search`'s own description legitimately
-        mentions "payout methods" as an example search phrase, which
-        matched the `payout` marker and blanket-flagged this read-only
-        search tool as high-risk on every call -- blocking a harmless
-        documentation lookup before it could even find the real
-        operation to call."""
+        """Bug 3: `stripe_api_search`'s description mentions "payout
+        methods" as an example phrase, which used to blanket-flag this
+        harmless search tool."""
         real_description = (
-            "Search for Stripe API operations by providing an intent "
-            "and a resource to operate on. For the resource, use a "
-            'specific, descriptive phrase (e.g. "issuing card '
-            'transactions", "payout methods", "outbound payments").'
+            'Search for Stripe API operations... e.g. "payout methods"...'
         )
         action = classify("stripe_api_search", {}, real_description)
+        self.assertNotIn("high-risk", action.tags)
+
+    def test_read_dispatcher_ignores_operation_id_markers(self) -> None:
+        """Bug 4: `GetCharges` (a harmless read) used to match the
+        `charge` marker via substring in the operation id. GET can't
+        mutate, so the read dispatcher is always low-risk now."""
+        action = classify(
+            "stripe_api_read",
+            {"stripe_api_operation_id": "GetCharges", "parameters": {}},
+            "Read data from any Stripe API GET operation...",
+        )
         self.assertNotIn("high-risk", action.tags)
 
 

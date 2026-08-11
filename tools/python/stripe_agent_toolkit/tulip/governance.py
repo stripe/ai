@@ -1,86 +1,28 @@
 """Admission control for `ToolkitCore.run_tool()`, powered by tulip-agents
 (https://tulipagents.ai).
 
-Every one of this toolkit's four framework adapters -- `langchain`,
-`openai`, `crewai`, `strands` -- builds its tool objects around exactly
-one bound method: `self.run_tool` (see `shared/toolkit_core.py`), which
-each `_convert_tools()` implementation captures at tool-creation time and
-hands to the framework's own tool wrapper (see e.g.
-`crewai/toolkit.py::StripeTool.run_tool`). That single method is what
-`GovernedToolkitMixin` overrides: every real call is classified and
-weighed against a policy via `tulip.control.admit()` before
-`ToolkitCore.run_tool()` (and the real MCP call it makes to
-`mcp.stripe.com`) ever happens. A denied or held call never reaches
-Stripe at all.
+Every framework adapter (`langchain`, `openai`, `crewai`, `strands`)
+builds its tools around one bound method, `self.run_tool`
+(`shared/toolkit_core.py`). `GovernedToolkitMixin` overrides it: every
+call is classified and weighed against a policy via `tulip.control.admit()`
+before the real MCP call to `mcp.stripe.com` happens. A denied or held
+call never reaches Stripe. Because the override point is on `ToolkitCore`
+itself, the same mixin composes with all four adapters identically --
+see `examples/tulip/main.py`.
 
-**This composes with all four existing framework adapters uniformly**,
-not just one -- because the override point is on `ToolkitCore` itself
-(the shared base every framework's `*AgentToolkit` class inherits from),
-not on any one framework's tool-wrapping logic. `class
-GovernedStripeAgentToolkit(GovernedToolkitMixin, StripeAgentToolkit)` (or
-the `langchain`/`openai`/`strands` equivalents) is the entire integration
-per framework -- see `examples/tulip/main.py` for a working one.
+This toolkit's tool catalog isn't enumerable from the repo -- it's
+fetched live from `mcp.stripe.com` via MCP `list_tools()` -- so
+`classify()` below matches keyword markers against each tool's real,
+live-fetched name/description rather than a static method list. Four
+real bugs were found and fixed by testing that design against the live
+server and real models; full history, the ground-truth dataset, and
+results are in `examples/tulip/VERIFICATION.md`, not here.
 
-**A real, disclosed constraint that shapes `classify()`'s design**: unlike
-a REST SDK with a static tool list in the repo, this toolkit's tool
-catalog is fetched *live* from `mcp.stripe.com` via MCP `list_tools()` --
-it isn't enumerable from this repository at all, and doing so requires a
-real, authenticated connection. This toolkit's own Python test suite
-skips real connection testing for the same reason
-(`test_mcp_client.py::test_connect_success`, marked
-`@pytest.mark.skip(reason="Requires mocking MCP SDK internals")`). Given
-that, `classify()` below uses keyword markers against the tool's real
-name and description returned by the live server, not a hardcoded list
-of exact method names -- the same approach already validated against an
-evolving, not-fully-known-in-advance catalog (a digital-forensics tool's
-433-artifact catalog, in a different admission-gate project).
-
-**Verified against the real, live catalog, not just mocked tests.**
-Connecting for real turned up a catalog shape this design hadn't
-accounted for: Stripe's live server exposes only 9 tools, and most
-write operations don't go through individually-named tools at all --
-they go through a generic `stripe_api_write` dispatcher that takes the
-real operation as an argument (`stripe_api_operation_id`, e.g.
-`"PostRefunds"`), not as the tool's own name or description. That shape
-caused two real classifier bugs -- a live refund-through-the-dispatcher
-bypass, and a separate false-positive that blanket-flagged every
-dispatcher call including harmless ones -- both found and fixed by
-testing against the real server; see `classify()`'s docstring below for
-the specifics. Confirmed live: a real low-risk read executed
-(`get_stripe_account_info`, returning this account's real id), a real
-high-risk call (`create_refund`) was held before ever reaching Stripe,
-and a forced-allow policy override reached Stripe's real API for real
-(and got a real error back, since the test call's arguments didn't
-correspond to an actual refundable charge -- the gate's job is to let
-the call through, not to make it succeed).
-
-**What counts as high-risk here, and why**: markers chosen for actions
-with a genuine, hard-to-undo financial or dispute-liability consequence
--- capturing/charging a payment, issuing a refund, canceling a
-subscription, voiding or transferring funds, closing or submitting a
-dispute response, issuing a payout. Reads, listings, and draft/unconfirmed
-records (a created-but-uncaptured payment intent, a draft invoice) stay
-low-risk. This is a starting policy, not a claim of completeness --
-without a live catalog to validate against, it should be treated as a
-reasoned first cut, not an authoritative list.
-
-**Optional inference-based advisory layer, escalate-only.** All three
-bugs above were the same failure mode: a fixed set of keyword rules is
-brittle against natural-language descriptions it doesn't control. A
-real model-based classifier (`clusiana-admit-v4`, tulip's own, tested
-separately against this exact catalog) got the same 11 cases right
-without needing the per-bug patches above -- it read the operation's
-actual meaning instead of pattern-matching its boilerplate. `classify()`
-itself stays a fixed, dependency-free rule engine on purpose (this
-package shouldn't force every consumer of `stripe/ai` to stand up a
-model server just to install it), but `GovernedToolkitMixin` accepts an
-optional `advisory` callable that can *escalate* a call the rules
-called low-risk -- never the reverse. That asymmetry is deliberate and
-matches how tulip-agents treats every advisory classifier: it can only
-raise the bar, never lower it, and an advisory that errors, times out,
-or returns `None` (no opinion) always falls back to the rule verdict
-rather than weakening it. See `AdvisoryClassifier` and
-`examples/tulip/clusiana_advisory.py` for a real, working one.
+`GovernedToolkitMixin` also takes an optional `advisory` callable (see
+`AdvisoryClassifier`) that can escalate a rule-classified-low-risk call
+to high-risk over real inference -- never soften the reverse, and never
+required: off by default, no model-server dependency to install this
+package. `examples/tulip/clusiana_advisory.py` is a real, working one.
 """
 
 from __future__ import annotations
@@ -132,19 +74,17 @@ _HIGH_RISK_POLICY = ControlPolicy(
 )
 
 
-_DISPATCHER_METHODS = frozenset({"stripe_api_write", "stripe_api_read"})
+_WRITE_DISPATCHER_METHODS = frozenset({"stripe_api_write"})
 
-# Meta/informational tools that look up, search, or plan around Stripe
-# operations without ever executing one themselves -- found to need this
-# via a third real, live bug (see classify()'s docstring): these tools'
-# own descriptions legitimately need to mention illustrative operation
-# examples ("payout methods", "PostRefunds") to explain what they search
-# or describe, and that example text was tripping the same markers a
-# tool that actually performs an action would trigger. Distinguished by
-# what the tool structurally *does* (search/describe/plan/give feedback,
-# never mutate a Stripe resource), not by curating against today's
-# wording -- matches the same category-based reasoning already applied
-# to the dispatcher split above, not a per-tool special case.
+# GET can't mutate, so this always classifies low-risk regardless of the
+# operation id -- see VERIFICATION.md for the bug that made this its own
+# category instead of joining the write dispatcher above.
+_READ_DISPATCHER_METHODS = frozenset({"stripe_api_read"})
+
+# Tools that search/describe/plan around a Stripe operation without ever
+# executing one themselves -- always low-risk, regardless of description
+# content. See VERIFICATION.md for why description content can't be
+# trusted for these specifically.
 _INFORMATIONAL_METHODS = frozenset(
     {
         "stripe_api_search",
@@ -161,50 +101,23 @@ def classify(
 ) -> Action:
     """Classifies one proposed `run_tool()` call as a tulip-agents Action.
 
-    `method` and `description` are matched as a single lowercased string
-    against `_HIGH_RISK_MARKERS` -- a tool named `create_refund` and one
-    named `close_customer_dispute` both match on `refund`/`close_dispute`
-    substrings respectively.
+    Three categories, matched differently -- see each frozenset above for
+    why, and `examples/tulip/VERIFICATION.md` for the four real bugs this
+    split was hardened against:
 
-    **Real bug found and fixed against the live MCP server**: Stripe's
-    actual, live tool catalog (9 tools as of this writing) exposes only a
-    handful of individually-named tools like `create_refund` -- most
-    write operations instead go through a generic escape-hatch
-    dispatcher, `stripe_api_write` (and its read counterpart
-    `stripe_api_read`), which can invoke *any* underlying Stripe API
-    operation via `args["stripe_api_operation_id"]` (e.g. `"PostRefunds"`,
-    `"DeleteCustomers"`). Two real, confirmed-live bugs followed from
-    that shape:
-
-    1. A refund routed through `stripe_api_write` sailed through as
-       low-risk, because neither `stripe_api_write` (the tool name) nor
-       its description carry the actual operation -- the operation id in
-       `args` does, and this function used to ignore `args` entirely. A
-       genuine classifier bypass, not theoretical.
-    2. `stripe_api_write`'s and `stripe_api_read`'s own tool
-       descriptions are fixed boilerplate, identical for every call
-       regardless of the operation, and both happen to mention the HTTP
-       verb "DELETE" -- so matching description text against these two
-       dispatcher tools blanket-flagged *every* call high-risk,
-       including a harmless `PostCustomers` create.
-    3. Found by a real frontier model actually driving the toolkit (not
-       a hand-written test case): `stripe_api_search`'s own description
-       legitimately mentions "payout methods" as an example search
-       phrase, which matched the `payout` marker and blanket-flagged
-       this read-only search tool as high-risk on every call, blocking
-       a completely harmless documentation lookup before it could even
-       find the real operation to call.
-
-    Fix: dispatcher methods classify on the operation id (bug 1+2, see
-    `_DISPATCHER_METHODS` above); informational methods that never
-    execute a Stripe operation themselves always classify low-risk,
-    regardless of description content (bug 3, see
-    `_INFORMATIONAL_METHODS` above); every other, individually-named
-    tool keeps matching on its own name + real description as before.
+    - individually-named tools (`create_refund`, ...): markers matched
+      against the tool's own name + real, live-fetched description.
+    - the write dispatcher (`stripe_api_write`): markers matched against
+      `args["stripe_api_operation_id"]` instead -- its description is
+      generic boilerplate that doesn't carry the actual operation.
+    - the read dispatcher (`stripe_api_read`) and informational tools
+      (`_INFORMATIONAL_METHODS`): always low-risk -- the former can't
+      mutate by construction (GET), the latter never execute an
+      operation at all.
     """
-    if method in _INFORMATIONAL_METHODS:
+    if method in _INFORMATIONAL_METHODS or method in _READ_DISPATCHER_METHODS:
         haystack = ""
-    elif method in _DISPATCHER_METHODS:
+    elif method in _WRITE_DISPATCHER_METHODS:
         operation_id = str(args.get("stripe_api_operation_id", ""))
         haystack = f"{method} {operation_id}".lower()
     else:
