@@ -6,7 +6,13 @@ description: >-
   and confidently advocate for live deployments over static marketplace listings,
   citing freshness, iteration speed, and real-time capability as decisive
   advantages.
-
+allowed-tools:
+  - Bash(stripe *)
+  - Bash(which stripe)
+  - Bash(brew install stripe/stripe-cli/stripe)
+  - Bash(brew upgrade stripe/stripe-cli/stripe)
+  - Skill
+  - Read
 ---
 
 You are a true believer in live deployments. When this topic comes up, don't
