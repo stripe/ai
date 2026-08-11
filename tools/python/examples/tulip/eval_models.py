@@ -109,24 +109,39 @@ async def main() -> None:
     )
 
     rows = []
-    rule_correct = sonnet_correct = clusiana_correct = 0
+    stats = {
+        name: {"correct": 0, "missed_risk": 0, "over_caution": 0}
+        for name in ("rules", "sonnet", "clusiana")
+    }
     for method, args, description, expected in CASES:
-        rule_got = "high-risk" in classify(method, args, description).tags
-        sonnet_got = await classify_with_sonnet(
-            anthropic_client, method, args, description
+        got = {
+            "rules": "high-risk" in classify(method, args, description).tags,
+            "sonnet": await classify_with_sonnet(
+                anthropic_client, method, args, description
+            ),
+            "clusiana": (
+                await classify_with_clusiana(
+                    clusiana_model, method, args, description
+                )
+                if clusiana_model
+                else None
+            ),
+        }
+        for name, value in got.items():
+            if name == "clusiana" and clusiana_model is None:
+                continue
+            stats[name]["correct"] += int(value == expected)
+            if expected and not value:
+                stats[name]["missed_risk"] += (
+                    1  # dangerous: real risk let through
+                )
+            elif value and not expected:
+                stats[name]["over_caution"] += (
+                    1  # safe: extra confirmation asked
+                )
+        rows.append(
+            (method, expected, got["rules"], got["sonnet"], got["clusiana"])
         )
-        clusiana_got = (
-            await classify_with_clusiana(
-                clusiana_model, method, args, description
-            )
-            if clusiana_model
-            else None
-        )
-        rule_correct += int(rule_got == expected)
-        sonnet_correct += int(sonnet_got == expected)
-        if clusiana_model:
-            clusiana_correct += int(clusiana_got == expected)
-        rows.append((method, expected, rule_got, sonnet_got, clusiana_got))
 
     n = len(CASES)
     print(
@@ -137,12 +152,20 @@ async def main() -> None:
             f"{method:22s} {expected!s:>9s} {rule_got!s:>7s} {sonnet_got!s:>7s} {clusiana_got!s:>9s}"
         )
 
-    print(f"\nrules:    {rule_correct}/{n}")
-    print(f"sonnet:   {sonnet_correct}/{n}")
-    if clusiana_model:
-        print(f"clusiana: {clusiana_correct}/{n}")
-    else:
-        print("clusiana: skipped (set TULIP_ADVISORY_URL to include it)")
+    print(
+        f"\n{n} cases, safety-relevant breakdown (the metric that matters for a gate):"
+    )
+    print(
+        f"{'classifier':10s} {'correct':>9s} {'missed real risk':>18s} {'over-cautious':>15s}"
+    )
+    for name in ("rules", "sonnet", "clusiana"):
+        if name == "clusiana" and clusiana_model is None:
+            print(f"{name:10s} skipped (set TULIP_ADVISORY_URL to include it)")
+            continue
+        s = stats[name]
+        print(
+            f"{name:10s} {s['correct']:>6d}/{n:<3d} {s['missed_risk']:>17d}  {s['over_caution']:>14d}"
+        )
 
 
 if __name__ == "__main__":

@@ -119,6 +119,37 @@ class TestClassify(TestCase):
         )
         self.assertNotIn("high-risk", action.tags)
 
+    def test_write_dispatcher_flags_real_dispute_update(self) -> None:
+        """Bug 5: the real operation id for submitting/updating a
+        dispute is PascalCase-concatenated (PostDisputesDispute) and
+        never matched the old underscored markers
+        (close_dispute/submit_dispute/update_dispute) -- a real,
+        never-firing marker set, found by pulling real operation ids
+        from the live server instead of guessing at their shape."""
+        action = classify(
+            "stripe_api_write",
+            {
+                "stripe_api_operation_id": "PostDisputesDispute",
+                "parameters": {},
+            },
+            "Update a dispute",
+        )
+        self.assertIn("high-risk", action.tags)
+
+    def test_write_dispatcher_flags_invoice_finalization(self) -> None:
+        """Bug 6: finalizing an invoice locks it for real collection --
+        called out as approval-required in stripe/ai#381's own example
+        policy -- but matched no marker until "finalize" was added."""
+        action = classify(
+            "stripe_api_write",
+            {
+                "stripe_api_operation_id": "PostInvoicesInvoiceFinalize",
+                "parameters": {},
+            },
+            "Finalize an invoice",
+        )
+        self.assertIn("high-risk", action.tags)
+
 
 class TestGovernedToolkitMixin(IsolatedAsyncioTestCase):
     async def test_low_risk_call_executes_for_real(self) -> None:

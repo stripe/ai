@@ -13,10 +13,11 @@ see `examples/tulip/main.py`.
 This toolkit's tool catalog isn't enumerable from the repo -- it's
 fetched live from `mcp.stripe.com` via MCP `list_tools()` -- so
 `classify()` below matches keyword markers against each tool's real,
-live-fetched name/description rather than a static method list. Four
-real bugs were found and fixed by testing that design against the live
-server and real models; full history, the ground-truth dataset, and
-results are in `examples/tulip/VERIFICATION.md`, not here.
+live-fetched name/description rather than a static method list. Six
+real bugs were found and fixed by testing that design against a much
+larger, real operation catalog and real models; full history, the
+ground-truth dataset, and results are in `examples/tulip/VERIFICATION.md`,
+not here.
 
 `GovernedToolkitMixin` also takes an optional `advisory` callable (see
 `AdvisoryClassifier`) that can escalate a rule-classified-low-risk call
@@ -48,6 +49,17 @@ AdvisoryClassifier = Callable[
 # (both provided by the live MCP server, not known statically here --
 # see module docstring). Chosen for genuine financial/dispute-liability
 # consequence, not just superficially alarming words.
+#
+# "dispute" (bare, not "close_dispute"/"submit_dispute"/"update_dispute"):
+# real dispatcher operation ids are PascalCase-concatenated
+# (PostDisputesDispute), which never contained the underscored compound
+# markers this used to be -- a real bug, found only by pulling real
+# operation ids from the live server instead of guessing at their shape.
+#
+# "finalize": PostInvoicesInvoiceFinalize locks an invoice for real
+# collection -- explicitly called out as approval-required in stripe/ai
+# issue #381's own example policy -- and matched nothing here until
+# this was added, found the same way as the dispute marker above.
 _HIGH_RISK_MARKERS = (
     "capture",
     "charge",
@@ -57,9 +69,8 @@ _HIGH_RISK_MARKERS = (
     "payout",
     "transfer",
     "delete",
-    "close_dispute",
-    "submit_dispute",
-    "update_dispute",
+    "dispute",
+    "finalize",
 )
 
 _LOW_RISK_POLICY = ControlPolicy(
@@ -102,8 +113,8 @@ def classify(
     """Classifies one proposed `run_tool()` call as a tulip-agents Action.
 
     Three categories, matched differently -- see each frozenset above for
-    why, and `examples/tulip/VERIFICATION.md` for the four real bugs this
-    split was hardened against:
+    why, and `examples/tulip/VERIFICATION.md` for the six real bugs this
+    split (and `_HIGH_RISK_MARKERS`) was hardened against:
 
     - individually-named tools (`create_refund`, ...): markers matched
       against the tool's own name + real, live-fetched description.
