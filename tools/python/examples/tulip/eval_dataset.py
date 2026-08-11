@@ -1,25 +1,16 @@
-"""Ground-truth dataset for `classify()`, hand-derived from the real,
-live `mcp.stripe.com` catalog (not guessed at) -- run this to reproduce
-the results in `VERIFICATION.md`.
+"""Ground-truth dataset for admission classification -- hand-derived
+from the real, live `mcp.stripe.com` catalog (9 tools) plus the
+dispatcher-args cases a static description can't carry. Small and
+honestly labeled as such: 11 cases, not a claim of statistical
+coverage. Used by `eval_models.py` to score the rule-based `classify()`
+against two independent model-based classifiers on the same cases.
 
-    python eval_dataset.py
-
-Each case is `(method, args, description, expected_high_risk)`. The
-first 9 are the real catalog as observed live; the rest are the
-regressions the three bugs documented in `governance.py` were caught
-by, kept here so they can't silently regress again.
+Each case: `(method, args, description, expected_high_risk)`.
 """
 
 from __future__ import annotations
 
-import sys
-
-sys.path.insert(0, "../..")
-
-from stripe_agent_toolkit.tulip.governance import classify
-
 CASES: list[tuple[str, dict, str, bool]] = [
-    # -- the real, live-fetched catalog (9 tools, observed directly) --
     (
         "get_stripe_account_info",
         {},
@@ -53,7 +44,7 @@ CASES: list[tuple[str, dict, str, bool]] = [
             'descriptive phrase (e.g. "issuing card transactions", '
             '"payout methods", "outbound payments").'
         ),
-        False,  # bug #3: "payout methods" is example text, not a real payout
+        False,
     ),
     (
         "stripe_implementation_planner",
@@ -71,7 +62,7 @@ CASES: list[tuple[str, dict, str, bool]] = [
         "stripe_api_write",
         {"stripe_api_operation_id": "PostRefunds", "parameters": {}},
         "Write data via any Stripe API POST/PATCH/PUT/DELETE operation...",
-        True,  # bug #1: operation id, not the boilerplate description, decides this
+        True,
     ),
     (
         "stripe_api_read",
@@ -79,12 +70,11 @@ CASES: list[tuple[str, dict, str, bool]] = [
         "Read data from any Stripe API GET operation...",
         False,
     ),
-    # -- regressions the three real bugs were caught by --
     (
         "stripe_api_write",
         {"stripe_api_operation_id": "PostCustomers", "parameters": {}},
         "Write data via any Stripe API POST/PATCH/PUT/DELETE operation...",
-        False,  # bug #2: dispatcher boilerplate mentions "DELETE"; must not blanket-flag
+        False,
     ),
     (
         "stripe_api_write",
@@ -93,23 +83,3 @@ CASES: list[tuple[str, dict, str, bool]] = [
         True,
     ),
 ]
-
-
-def main() -> None:
-    correct = 0
-    print(
-        f"{'method':20s} {'operation/desc':45s} {'expected':>9s} {'got':>9s}"
-    )
-    for method, args, description, expected in CASES:
-        action = classify(method, args, description)
-        got = "high-risk" in action.tags
-        correct += int(got == expected)
-        op = args.get("stripe_api_operation_id", description[:40])
-        status = "OK" if got == expected else "MISMATCH"
-        print(f"{method:20s} {op:45s} {expected!s:>9s} {got!s:>9s} {status}")
-
-    print(f"\nrule-based classify() accuracy: {correct}/{len(CASES)}")
-
-
-if __name__ == "__main__":
-    main()

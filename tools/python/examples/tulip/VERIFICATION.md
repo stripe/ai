@@ -1,100 +1,51 @@
 # Verification
 
-Full history behind the code in `../../stripe_agent_toolkit/tulip/` — kept
-here, not in code comments or PR comments, so both stay short.
+Small and dataset-driven on purpose — a table you can rerun, not a claim.
 
-## How a call flows
+## Dataset
 
-```mermaid
-sequenceDiagram
-    participant Agent as Agent / LLM
-    participant Mixin as GovernedToolkitMixin
-    participant Rules as classify()
-    participant Advisory as advisory (optional)
-    participant Gate as tulip.control.admit()
-    participant Stripe as mcp.stripe.com
+`eval_dataset.py`: 11 cases, hand-labeled from the real, live
+`mcp.stripe.com` catalog (9 tools) plus the dispatcher-args cases a
+static description alone can't carry. Small, and honestly labeled as
+such — not a claim of statistical coverage.
 
-    Agent->>Mixin: run_tool(method, args)
-    Mixin->>Rules: classify(method, args, description)
-    Rules-->>Mixin: Action(tags={high-risk?})
-    opt advisory configured and rules said low-risk
-        Mixin->>Advisory: escalate?(method, args, description)
-        Advisory-->>Mixin: True (escalate) / False / None (no opinion)
-    end
-    Mixin->>Gate: admit(action, perform, policy)
-    alt allowed
-        Gate->>Stripe: perform() -- the real MCP call
-        Stripe-->>Gate: result
-        Gate-->>Agent: result
-    else held / denied
-        Gate--xStripe: never called
-        Gate-->>Agent: AdmissionError
-    end
-    Gate->>Gate: record decision on AuditTrail (hash-chained)
-```
+## Results
 
-The advisory step can only turn a rules `allow` into a `hold` — never the
-reverse — and any advisory failure is treated as "no opinion," falling
-back to the rules verdict.
-
-## Four real bugs, found by testing against the real thing
-
-All four were found by connecting to the real `mcp.stripe.com` server (or,
-for #3, a real model driving it) — not written as hypotheticals first.
-
-| # | What broke | Found by | Fixed by |
-|---|---|---|---|
-| 1 | A refund routed through the generic `stripe_api_write` dispatcher was misclassified low-risk — the operation id, not the tool name/description, carries the real action | Live connection, reading the actual catalog shape | Match on `args["stripe_api_operation_id"]` for the write dispatcher |
-| 2 | The dispatcher's own boilerplate description mentions "DELETE" (an HTTP verb), blanket-flagging every write including harmless ones | Same live connection | Stop matching dispatcher calls against their (uninformative) description |
-| 3 | `stripe_api_search`'s description mentions "payout methods" as an example phrase, blanket-flagging this harmless search tool | A real frontier model (Claude Sonnet 4.5) actually driving the toolkit — it hit this path, a hand-written test wouldn't have | Informational tools (search/details/planner/feedback) always classify low-risk |
-| 4 | `GetCharges` (a harmless read) matched the `charge` marker via substring in the operation id | Building the dataset below | Read dispatcher (`stripe_api_read`) always classifies low-risk — GET can't mutate |
-
-## Dataset and results
-
-`eval_dataset.py` is the ground truth — the real 9-tool live catalog plus
-the two dispatcher regressions each bug above needed. Run it yourself:
+Three independent classifiers scored against the same 11 cases, same
+policy, same action text: this package's rule-based `classify()`, and
+two real model-based classifiers given nothing classify() doesn't also
+get (method, operation id if any, live description).
 
 ```
-python eval_dataset.py
+ANTHROPIC_API_KEY=... TULIP_ADVISORY_URL=http://<clusiana-host>:8010 python eval_models.py
 ```
 
-```
-rule-based classify() accuracy: 11/11
-```
+| classifier | score | notes |
+|---|---|---|
+| `classify()` (rules) | 11/11 | hand-fixed on 4 of these cases — see below |
+| Claude Sonnet 4.5 | 11/11 | no fixing, reads the operation id + description directly |
+| `clusiana-admit-v4` | 10/11 | missed the `PostCustomers` case — over-indexed on the literal word "DELETE" in the dispatcher's boilerplate description even with the operation id present |
 
-Same 11 cases (plus the harder ones with descriptions stripped, forcing a
-read of the operation id alone) also run against `clusiana-admit-v4`
-(tulip's own model-based classifier) in `clusiana_advisory.py`'s
-underlying model, as an independent check that a model reading the real
-text agrees with the rules: **11/11**, without needing any of the four
-patches above — it read each operation's actual meaning instead of
-pattern-matching boilerplate.
+`classify()`'s 11/11 is real but not fully independent — the rules were
+patched specifically against 4 of these 11 cases (see below). Sonnet's
+and Clusiana's scores are the fairer signal: neither was tuned against
+this dataset at all.
 
-## Live, end-to-end confirmation
+## Four real bugs the rules needed patching for
 
-Real Stripe test-mode account, real `mcp.stripe.com` connection, nothing
-mocked:
+All four found by testing against the live server or a real model, not
+written as hypotheticals first:
 
-- Low-risk read (`get_stripe_account_info`) — executed for real, returned
-  the real account id.
-- High-risk write (`create_refund`) — held, never reached Stripe.
-- Same call, forced-allow policy override — genuinely reached Stripe's
-  real API and got a real error back (bad charge id, as expected — the
-  gate's job is to let the call through, not make it succeed).
-- The bug-1 bypass path (`stripe_api_write` / `PostRefunds`) — now
-  correctly held.
-- A harmless dispatcher write (`PostCustomers`) — correctly *not*
-  blanket-flagged, real test-mode customer created.
+1. A refund via the generic `stripe_api_write` dispatcher was misclassified low-risk — the operation id, not the tool name/description, carries the real action.
+2. The dispatcher's boilerplate description mentions "DELETE", blanket-flagging every write.
+3. `stripe_api_search`'s description mentions "payout methods" as an example, blanket-flagging this harmless tool — found by Claude Sonnet actually driving the toolkit, not a hand-written test.
+4. `GetCharges` (a harmless read) matched the `charge` marker via substring in the operation id.
 
-Then re-run with a real frontier model (Claude Sonnet 4.5) actually
-choosing the tool calls, and the real Clusiana advisory live and
-reachable throughout — both AI surfaces exercised in the same run:
+## Live, end-to-end (real Stripe test-mode account, nothing mocked)
 
-- Asked for the connected account → the model called
-  `get_stripe_account_info` itself, correctly allowed.
-- Asked to refund a disputed charge → the model called `stripe_api_write`
-  with operation id `PostRefunds` itself, unprompted beyond the
-  natural-language ask — correctly held before ever reaching Stripe.
-
-Audit trail on every run: hash chain verified intact (`.verify() ==
-True`).
+Real low-risk read executed; real `create_refund` held before reaching
+Stripe; forced-allow override genuinely reached Stripe's real API; the
+bug-1 bypass path is now genuinely held; Claude Sonnet, driving the
+toolkit itself (not scripted calls), chose to call `stripe_api_write`
+with `PostRefunds` on its own and was correctly held. Audit trail hash
+chain verified intact on every run.
