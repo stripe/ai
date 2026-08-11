@@ -10,7 +10,7 @@
         "source": {
             "source": "git-subdir",
             "url": "https://github.com/stripe/ai.git",
-            "path": "providers/codex/plugin",
+            "path": "../providers/codex/plugin",
             "ref": "codex-marketplace-test"
         },
         "policy": {
