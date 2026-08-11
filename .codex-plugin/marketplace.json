@@ -11,7 +11,7 @@
             "source": "git-subdir",
             "url": "https://github.com/stripe/ai.git",
             "path": "providers/codex/plugin",
-            "ref": "main"
+            "ref": "codex-marketplace-test"
         },
         "policy": {
             "installation": "AVAILABLE",
