@@ -39,6 +39,7 @@ class StripeAgentToolkit extends ToolkitCore<ChatCompletionTool[]> {
 
   /**
    * Processes a single OpenAI tool call by executing the requested function.
+   * Automatically routes to the correct MCP server (Stripe or additional).
    */
   async handleToolCall(
     toolCall: ChatCompletionMessageToolCall
@@ -46,10 +47,7 @@ class StripeAgentToolkit extends ToolkitCore<ChatCompletionTool[]> {
     this.ensureInitialized();
 
     const args = JSON.parse(toolCall.function.arguments);
-    const response = await this.mcpClient.callTool(
-      toolCall.function.name,
-      args
-    );
+    const response = await this.routeToolCall(toolCall.function.name, args);
     return {
       role: 'tool',
       tool_call_id: toolCall.id,
