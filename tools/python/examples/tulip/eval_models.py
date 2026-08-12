@@ -17,7 +17,7 @@ import sys
 sys.path.insert(0, "../..")
 
 import anthropic
-from eval_dataset import CASES
+from eval_dataset import CASES, REGRESSION_CASES
 from tulip.core.messages import Message
 from tulip.models.native.openai import OpenAIModel
 
@@ -108,12 +108,16 @@ async def main() -> None:
         else None
     )
 
+    # The 62 live-pulled cases plus the 10 hand-written #381 regression
+    # cases -- scored together, since a classifier that only holds on
+    # the set it was hardened against isn't a classifier.
+    ALL_CASES = CASES + REGRESSION_CASES
     rows = []
     stats = {
         name: {"correct": 0, "missed_risk": 0, "over_caution": 0}
         for name in ("rules", "sonnet", "clusiana")
     }
-    for method, args, description, expected in CASES:
+    for method, args, description, expected in ALL_CASES:
         got = {
             "rules": "high-risk" in classify(method, args, description).tags,
             "sonnet": await classify_with_sonnet(
@@ -143,7 +147,7 @@ async def main() -> None:
             (method, expected, got["rules"], got["sonnet"], got["clusiana"])
         )
 
-    n = len(CASES)
+    n = len(ALL_CASES)
     print(
         f"{'method':22s} {'expected':>9s} {'rules':>7s} {'sonnet':>7s} {'clusiana':>9s}"
     )

@@ -28,6 +28,7 @@ package. `examples/tulip/clusiana_advisory.py` is a real, working one.
 
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -72,6 +73,43 @@ _HIGH_RISK_MARKERS = (
     "dispute",
     "finalize",
 )
+
+# Every marker above is a reversal or destruction verb -- money leaving,
+# liability accepted, a record destroyed. None of them describe money
+# *arriving*, so nothing here matched the two tools issue #381 names
+# first: `create_payment_intent` (initiates a real charge on a card) and
+# `create_checkout_session` (stands up a live, payable page). Both
+# classified low-risk and executed. Seventh bug, and the one the
+# 62-case dataset couldn't catch: its labeling rule scoped risk to
+# money moving out, so no charge-initiating write was ever a case.
+#
+# `PostPaymentLinks` is included on the same reasoning -- a payment link
+# is a live payment surface with the same standing-charge consequence as
+# a checkout session, and the dataset's own note flagged that label as
+# the arguable one. It is now labeled True there, for this reason.
+_PAYMENT_SURFACE_STEMS = ("paymentintent", "checkoutsession", "paymentlink")
+
+# Stems alone would sweep in reads (`list_payment_intents`,
+# `GetCheckoutSessions`). Creation is the consequential half, so a stem
+# only counts alongside a creating verb -- `create_` on a named tool,
+# `Post` on a dispatcher operation id. Retrieval and listing stay
+# low-risk; see `test_payment_surface_reads_stay_low_risk`.
+_CREATION_VERBS = ("create", "post")
+
+
+def _initiates_payment(haystack: str) -> bool:
+    """True if `haystack` describes standing up a *new* payment surface.
+
+    Matched on a separator-stripped copy so that `create_payment_intent`
+    (named tool) and `PostPaymentIntents` (dispatcher operation id)
+    collapse to the same stem -- the shape bug that cost this design its
+    dispute and finalize markers earlier, per VERIFICATION.md.
+    """
+    squashed = haystack.replace("_", "").replace(" ", "").replace("-", "")
+    return any(stem in squashed for stem in _PAYMENT_SURFACE_STEMS) and any(
+        verb in squashed for verb in _CREATION_VERBS
+    )
+
 
 _LOW_RISK_POLICY = ControlPolicy(
     require_verification_score=0.0,
@@ -125,6 +163,11 @@ def classify(
       (`_INFORMATIONAL_METHODS`): always low-risk -- the former can't
       mutate by construction (GET), the latter never execute an
       operation at all.
+
+    Two independent things make a call high-risk: a `_HIGH_RISK_MARKERS`
+    hit (money leaving, liability accepted, a record destroyed) or
+    `_initiates_payment()` (money arriving through a newly created
+    charge or payment surface).
     """
     if method in _INFORMATIONAL_METHODS or method in _READ_DISPATCHER_METHODS:
         haystack = ""
@@ -133,7 +176,9 @@ def classify(
         haystack = f"{method} {operation_id}".lower()
     else:
         haystack = f"{method} {description}".lower()
-    is_high_risk = any(marker in haystack for marker in _HIGH_RISK_MARKERS)
+    is_high_risk = any(
+        marker in haystack for marker in _HIGH_RISK_MARKERS
+    ) or _initiates_payment(haystack)
     return Action(
         name=method,
         asset="stripe-account",
@@ -144,6 +189,28 @@ def classify(
         else "stripe-read-or-draft",
         tags=frozenset({"high-risk"}) if is_high_risk else frozenset(),
     )
+
+
+def _object_ref(result: str) -> dict[str, str]:
+    """Best-effort `{id, object}` of the Stripe object a call produced.
+
+    `ToolkitCore.run_tool()` documents a JSON string return, but it is
+    whatever `mcp.stripe.com` sent -- an error payload, a list, or plain
+    text are all reachable. Never raises and never blocks the call: an
+    unparseable result records `{}` and the decision record still stands
+    on its own.
+    """
+    try:
+        parsed = json.loads(result)
+    except (TypeError, ValueError):
+        return {}
+    if not isinstance(parsed, dict):
+        return {}
+    return {
+        key: str(parsed[key])
+        for key in ("id", "object")
+        if isinstance(parsed.get(key), str)
+    }
 
 
 class GovernedToolkitMixin:
@@ -225,8 +292,19 @@ class GovernedToolkitMixin:
         )
 
         async def _perform() -> str:
-            return await super(GovernedToolkitMixin, self).run_tool(
+            result = await super(GovernedToolkitMixin, self).run_tool(
                 method, args, customer
             )
+            # `admit()` writes the decision record *before* awaiting this,
+            # so appending here lands the outcome immediately after its
+            # own decision in the same hash chain. Without it the trail
+            # proves a charge was authorized but not which charge: the
+            # Stripe object id is the only key that joins a decision to
+            # the financial record it produced, which is what a dispute
+            # or an audit months later is actually reconciling against.
+            self._trail.record(
+                "stripe-object", {"action": method, **_object_ref(result)}
+            )
+            return result
 
         return await admit(action, _perform, policy=policy, trail=self._trail)
