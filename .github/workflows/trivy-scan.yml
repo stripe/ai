@@ -1,0 +1,29 @@
+name: Trivy security scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  trivy-scan:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v0.2.0
+        with:
+          scan-type: fs
+          format: table
+          severity: CRITICAL,HIGH,MEDIUM
+
+      - name: Show summary (always)
+        if: always()
+        run: |
+          echo "Trivy step finished. Check the job log for details."
