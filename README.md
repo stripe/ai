@@ -55,6 +55,11 @@ Run this command in your project:
 grok plugin install stripe --trust
 ```
 
+### Agent Plugins
+
+The portable [Agent Plugins](https://agent-plugins.org/) package is available at [`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin). It bundles Stripe's skills and MCP server configuration for compatible clients.
+
+
 ## Manual installation
 
 > Manually installed skills don’t auto-update. Run `npx skills update -y` to get the latest versions.

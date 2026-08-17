@@ -2,11 +2,15 @@
 
 This directory contains plugins for different AI code editors.
 
+## Layout
+
+Each provider can contain multiple plugins. Keep each plugin in its own subdirectory under `providers/<provider>/` so its manifest, skills, and other assets remain isolated as more plugins are added.
+
 ## Skills
 
 **Do not edit skill files in provider directories manually.**
 
-Skills in `providers/*/plugin/skills/` and `providers/agent-plugins/skills/` are automatically synced from [docs.stripe.com/.well-known/skills](https://docs.stripe.com/.well-known/skills) via the [sync-skills workflow](/.github/workflows/sync-skills.yml). Any manual changes will be overwritten.
+Skills in `providers/*/plugin/skills/` are automatically synced from [docs.stripe.com/.well-known/skills](https://docs.stripe.com/.well-known/skills) via the [sync-skills workflow](/.github/workflows/sync-skills.yml). Any manual changes will be overwritten.
 
 To manually trigger a sync, go to the [workflow page](https://github.com/stripe/agent-toolkit/actions/workflows/sync-skills.yml) and click "Run workflow".
 
