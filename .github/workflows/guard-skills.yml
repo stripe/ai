@@ -9,6 +9,7 @@ on:
       - 'providers/codex/plugin/skills/**'
       - 'providers/cursor/plugin/skills/**'
       - 'providers/grok/plugin/skills/**'
+      - 'providers/agent-plugins/skills/**'
 
 jobs:
   block:

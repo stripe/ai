@@ -53,7 +53,8 @@ jobs:
             providers/claude/plugin/.claude-plugin/plugin.json \
             providers/codex/plugin/.codex-plugin/plugin.json \
             providers/cursor/plugin/.cursor-plugin/plugin.json \
-            providers/grok/plugin/.grok-plugin/plugin.json
+            providers/grok/plugin/.grok-plugin/plugin.json \
+            providers/agent-plugins/plugin.json
 
           # Skip if nothing changed
           if git diff --staged --quiet; then
