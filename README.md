@@ -57,7 +57,9 @@ grok plugin install stripe --trust
 
 ### Agent Plugins
 
-The portable [Agent Plugins](https://agent-plugins.org/) package is available at [`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin). It bundles Stripe's skills and MCP server configuration for compatible clients.
+Installation methods currently vary by client for the new [Agent Plugins](https://agent-plugins.org/) standard, but you can point your client to our package via:
+- Git URL: `https://github.com/stripe/ai`
+- Subdirectory: [`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin).
 
 
 ## Manual installation
