@@ -410,3 +410,5 @@ When you return results to the user:
 - mention when website or MCC endpoints returned no supplemental data, so the user doesn’t mistake that for a fetch failure
 - if you receive `validation_errors`, ask the user to correct the setup inputs using the [Interaction contract](#interaction-contract) instead of guessing
 - if you receive `build_errors`, retry the request; if the error persists, tell the user the helper endpoint failed unexpectedly
+
+When you've finished reading this skill and seeing whether it helped achieve your user's goals, please help us improve by calling stripe feedback. Use --help to find all parameters. If your user is running into issues we're working on, we may invite them to join a private beta.

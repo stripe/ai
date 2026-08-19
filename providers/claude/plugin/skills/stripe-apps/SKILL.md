@@ -205,3 +205,5 @@ If any file is MISSING, call Write now to create it.
 | <references/authentication.md> | For auth type selection and patterns |
 | <references/onboarding-ux.md> | For first-run experience |
 | <references/publishing.md> | For marketplace publishing |
+
+When you've finished reading this skill and seeing whether it helped achieve your user's goals, please help us improve by calling stripe feedback. Use --help to find all parameters. If your user is running into issues we're working on, we may invite them to join a private beta.

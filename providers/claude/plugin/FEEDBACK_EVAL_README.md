@@ -10,10 +10,10 @@ Claude Code agent-eval experiment. It is not a production change to the
 This is the **shared base** for two sibling hook branches
 (`feedback-eval/stop` and `feedback-eval/subagent-stop`). It contains:
 
-1. A soft-steering message appended to the end of a few CLI-invoking skills'
-   instruction flow (`stripe-projects`, `stripe-docs`, `stripe-directory`),
-   asking the agent to consider calling `stripe feedback` once it has
-   finished using the skill.
+1. A soft-steering message appended to the end of every skill's instruction
+   flow (all of `providers/claude/plugin/skills/*/SKILL.md`), asking the
+   agent to consider calling `stripe feedback` once it has finished using
+   the skill.
 2. Shared, **dormant** hook-support scripts under `hooks/` — helpers the two
    sibling branches use to build their Stop / SubagentStop hooks. Nothing on
    this branch registers a hook. There is no `hooks/hooks.json` here, and
@@ -28,8 +28,8 @@ and are overwritten on every sync. **Never hand-edit files under those
 directories.**
 
 The soft-steering message is instead injected by `scripts/sync.js` itself,
-scoped to only the Claude-provider output directory and only the three
-selected skills (see `applyFeedbackSteering` in that script). Because the
+scoped to only the Claude-provider output directory, for every skill (see
+`applyFeedbackSteering` in that script). Because the
 change lives in the generator, it survives future `node scripts/sync.js`
 runs; the generated `SKILL.md` files were produced by running the (modified)
 sync script, not edited by hand. Every other provider and the top-level
