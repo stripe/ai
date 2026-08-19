@@ -1,0 +1,30 @@
+{
+  "description": "feedback-eval experiment: parent-agent Stop treatment for stripe feedback steering",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/feedback-stop.sh"],
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/feedback-sessionend.sh"],
+            "timeout": 1
+          }
+        ]
+      }
+    ]
+  }
+}
