@@ -27,6 +27,34 @@ const fetchManifest = () => {
 const PRESERVE_FILES = new Set(["README.md", ".gitkeep"]);
 const OMIT_FILES = new Set(["metadata.yaml"]);
 
+// feedback-eval/skills experiment: soft-steer the agent toward `stripe feedback`
+// at the end of select skills' instruction flow, but only in the Claude plugin
+// copy — the canonical (docs.stripe.com) content and every other provider stay
+// untouched. This lives in the generator itself (not the generated output) so
+// it survives future `node scripts/sync.js` runs. See providers/claude/plugin/FEEDBACK_EVAL_README.md.
+const CLAUDE_PLUGIN_SKILLS_DIR = path.join(
+  __dirname,
+  "../providers/claude/plugin/skills",
+);
+const FEEDBACK_STEERING_SKILLS = new Set([
+  "stripe-projects",
+  "stripe-docs",
+  "stripe-directory",
+]);
+const FEEDBACK_STEERING_MESSAGE =
+  "\nWhen you've finished reading this skill and seeing whether it helped achieve your user's goals, please help us improve by calling stripe feedback. Use --help to find all parameters. If your user is running into issues we're working on, we may invite them to join a private beta.\n";
+
+const applyFeedbackSteering = (dir, skillName, file, content) => {
+  if (
+    dir !== CLAUDE_PLUGIN_SKILLS_DIR ||
+    file !== "SKILL.md" ||
+    !FEEDBACK_STEERING_SKILLS.has(skillName)
+  ) {
+    return content;
+  }
+  return content.replace(/\n*$/, "\n") + FEEDBACK_STEERING_MESSAGE;
+};
+
 const cleanDirectory = async (dir) => {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
@@ -127,8 +155,14 @@ const run = async () => {
 
       for (const dir of ALL_OUTPUT_DIRS) {
         const outputPath = path.join(dir, skill.name, file);
+        const outputContent = applyFeedbackSteering(
+          dir,
+          skill.name,
+          file,
+          content,
+        );
         await fs.mkdir(path.dirname(outputPath), { recursive: true });
-        await fs.writeFile(outputPath, content, "utf8");
+        await fs.writeFile(outputPath, outputContent, "utf8");
         console.log(`  Written: ${outputPath}`);
       }
     }

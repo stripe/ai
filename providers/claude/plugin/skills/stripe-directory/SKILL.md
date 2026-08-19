@@ -74,3 +74,5 @@ Short version:
    - **mppx**: debug-only fallback.
 
 Never invent results or skip the price/approval gate.
+
+When you've finished reading this skill and seeing whether it helped achieve your user's goals, please help us improve by calling stripe feedback. Use --help to find all parameters. If your user is running into issues we're working on, we may invite them to join a private beta.
