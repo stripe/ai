@@ -1,0 +1,31 @@
+{
+  "description": "feedback-eval experiment: subagent SubagentStop treatment for stripe feedback steering",
+  "hooks": {
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/feedback-subagent-stop.sh"],
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/feedback-sessionend.sh"],
+            "timeout": 1
+          }
+        ]
+      }
+    ]
+  }
+}
