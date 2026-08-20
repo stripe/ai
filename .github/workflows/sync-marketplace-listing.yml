@@ -1,0 +1,72 @@
+name: Sync marketplace listing
+
+# Keeps an external marketplace manifest's listing for a plugin in sync with
+# the plugin's manifest in this repo. Runs daily, and opens a pull request
+# on the target repo whenever the source manifest's version has been
+# incremented since the last sync.
+#
+# Requires a `MARKETPLACE_SYNC_TOKEN` secret: a personal access token with
+# `public_repo` scope (classic) or, for fine-grained tokens, "Contents:
+# write" and "Pull requests: write" on the target repo. The token's user
+# will fork the target repo and open pull requests from that fork.
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Run daily at 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      source_plugin_dir:
+        description: 'Path to the plugin source directory in this repo'
+        required: false
+        default: 'providers/agent-plugins/plugin'
+      source_manifest_path:
+        description: 'Path to the plugin manifest file in this repo'
+        required: false
+        default: 'providers/agent-plugins/plugin/plugin.json'
+      target_repo:
+        description: 'Target repo hosting the marketplace manifest (owner/repo)'
+        required: false
+        default: 'github/awesome-copilot'
+      target_manifest_path:
+        description: 'Path to the marketplace manifest in the target repo'
+        required: false
+        default: '.github/plugin/marketplace.json'
+      plugin_entry_name:
+        description: 'The "name" field of the listing entry to keep in sync'
+        required: false
+        default: 'stripe'
+      dry_run:
+        description: 'Print the computed update instead of opening a PR'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Sync marketplace listing
+        env:
+          GH_TOKEN: ${{ secrets.MARKETPLACE_SYNC_TOKEN }}
+          SOURCE_PLUGIN_DIR: ${{ inputs.source_plugin_dir || 'providers/agent-plugins/plugin' }}
+          SOURCE_MANIFEST_PATH: ${{ inputs.source_manifest_path || 'providers/agent-plugins/plugin/plugin.json' }}
+          SOURCE_REPO: ${{ github.repository }}
+          TARGET_REPO: ${{ inputs.target_repo || 'github/awesome-copilot' }}
+          TARGET_MANIFEST_PATH: ${{ inputs.target_manifest_path || '.github/plugin/marketplace.json' }}
+          PLUGIN_ENTRY_NAME: ${{ inputs.plugin_entry_name || 'stripe' }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: node scripts/sync-marketplace-listing.js
