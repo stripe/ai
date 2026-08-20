@@ -6,8 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/feedback-stop.sh"],
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/feedback-stop.sh",
             "timeout": 5
           }
         ]
@@ -19,8 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/feedback-subagent-stop.sh"],
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/feedback-subagent-stop.sh",
             "timeout": 5
           }
         ]
@@ -32,8 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/feedback-sessionend.sh"],
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/feedback-sessionend.sh",
             "timeout": 1
           }
         ]
