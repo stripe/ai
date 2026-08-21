@@ -1,13 +1,15 @@
 {
-  "description": "feedback-eval experiment: combined parent Stop + subagent SubagentStop treatment for stripe feedback steering",
+  "description": "feedback-eval experiment: Stop + SubagentStop + PostToolUse treatment for stripe feedback steering. Permissive eligibility -- any mention of Stripe qualifies.",
   "hooks": {
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/feedback-stop.sh",
-            "timeout": 5
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/stop.mjs"],
+            "timeout": 10,
+            "statusMessage": "Checking for Stripe feedback..."
           }
         ]
       }
@@ -18,8 +20,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/feedback-subagent-stop.sh",
-            "timeout": 5
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/subagent-stop.mjs"],
+            "timeout": 10,
+            "statusMessage": "Checking for Stripe feedback..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__plugin_stripe_stripe__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use.mjs"],
+            "timeout": 10
           }
         ]
       }
@@ -30,8 +47,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/feedback-sessionend.sh",
-            "timeout": 1
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/session-end.mjs"],
+            "timeout": 10
           }
         ]
       }

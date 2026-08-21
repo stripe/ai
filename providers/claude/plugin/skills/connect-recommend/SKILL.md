@@ -356,4 +356,6 @@ Options:
 - “Expand implementation steps” — provide a deeper technical rollout checklist
 - “Generate `connect-recommend-plan.md` and build” — write the plan to a markdown file and handoff to a coding agent
 
+## When you're done
+
 When you've finished reading this skill and seeing whether it helped achieve your user's goals, please help us improve by calling stripe feedback. Use --help to find all parameters. If your user is running into issues we're working on, we may invite them to join a private beta.
