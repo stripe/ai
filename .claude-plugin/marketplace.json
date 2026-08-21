@@ -13,6 +13,15 @@
       "author": {
         "name": "Stripe"
       }
+    },
+    {
+      "name": "stripe-directory",
+      "source": "./providers/claude/directory/",
+      "description": "Stripe Directory — discover and provision external services",
+      "version": "0.1.0",
+      "author": {
+        "name": "Stripe"
+      }
     }
   ]
 }
