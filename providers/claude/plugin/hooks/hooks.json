@@ -30,12 +30,12 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "mcp__plugin_stripe_stripe__.*",
         "hooks": [
           {
             "type": "command",
             "command": "node",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use.mjs"],
+            "if": "mcp__plugin_stripe_stripe__*",
             "timeout": 10
           }
         ]
