@@ -55,11 +55,90 @@ Run this command in your project:
 grok plugin install stripe --trust
 ```
 
+### Gemini CLI
+
+Run this command in your project:
+
+```bash
+gemini extensions install https://github.com/stripe/ai
+```
+
+### Kimi CLI
+
+Kimi CLI doesn't yet support installable agent plugins, but you can add our
+remote MCP server directly:
+
+```bash
+kimi mcp add --transport http stripe https://mcp.stripe.com --auth oauth
+```
+
 ### Agent Plugins
 
-Installation methods currently vary by client for the new [Agent Plugins](https://agent-plugins.org/) standard, but you can point your client to our package via:
+The [Agent Plugins](https://agent-plugins.org/) standard (formerly known as
+Open Plugins) defines a portable package format for skills and MCP servers,
+but leaves distribution and installation up to each client. This repo
+publishes a conformant package at
+[`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin) and a
+marketplace listing at [`.github/plugin/marketplace.json`](/.github/plugin/marketplace.json)
+that clients can use to install it directly from this repo, without waiting
+for a curated marketplace listing.
+
+If your client isn't listed below, you can generally still point it at:
 - Git URL: `https://github.com/stripe/ai`
 - Subdirectory: [`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin).
+
+#### GitHub Copilot CLI
+
+Run these commands in your project:
+
+```bash
+copilot plugin marketplace add stripe/ai
+copilot plugin install stripe@stripe
+```
+
+#### VS Code
+
+Add this repo as a plugin marketplace in your `settings.json`, then install
+`stripe@stripe` from the Agent Plugins view in the Extensions sidebar:
+
+```json
+"chat.plugins.marketplaces": ["stripe/ai"]
+```
+
+#### OpenClaw
+
+Run these commands in your project:
+
+```bash
+openclaw plugins marketplace list stripe/ai
+openclaw plugins install stripe --marketplace stripe/ai
+```
+
+#### Hermes Agent
+
+Run these commands in your project:
+
+```bash
+hermes plugins install stripe/ai --no-enable
+hermes plugins enable stripe
+```
+
+#### NanoClaw
+
+NanoClaw only stamps templates from a local directory, so copy the package in
+before creating a group:
+
+```bash
+git clone --depth 1 https://github.com/stripe/ai /tmp/stripe-ai
+cp -r /tmp/stripe-ai/providers/agent-plugins/plugin templates/stripe
+ncl groups create --template stripe --name "Stripe Agent" --yes
+```
+
+#### Kiro
+
+Kiro already lists Stripe in its curated registry. Browse to
+[kiro.dev/powers](https://kiro.dev/powers), find Stripe, and select
+**Add to Kiro** — no manual installation is required.
 
 
 ## Manual installation
