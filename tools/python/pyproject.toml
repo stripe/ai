@@ -19,11 +19,13 @@ openai = ["openai>=1.0.0", "agents>=0.0.84"]
 langchain = ["langchain>=0.1.0"]
 crewai = ["crewai>=0.1.0"]
 strands = ["strands>=0.1.0"]
+mcp-payments = ["stripe>=7.0.0"]
 all = [
     "stripe-agent-toolkit[openai]",
     "stripe-agent-toolkit[langchain]",
     "stripe-agent-toolkit[crewai]",
     "stripe-agent-toolkit[strands]",
+    "stripe-agent-toolkit[mcp-payments]",
 ]
 dev = [
     "pytest>=7.0.0",
