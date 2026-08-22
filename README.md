@@ -63,8 +63,6 @@ Run this command in your project:
 gemini extensions install https://github.com/stripe/ai
 ```
 
-Source: [Gemini CLI extensions docs](https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/index.md).
-
 ### Kimi CLI
 
 Kimi CLI plugins use their own manifest format rather than the Agent Plugins
@@ -75,12 +73,6 @@ this command in your project:
 ```text
 /plugins install https://github.com/stripe/ai
 ```
-
-Sources: [Kimi Code CLI plugin docs](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/plugins)
-([mirror source](https://github.com/MoonshotAI/kimi-code/blob/main/docs/en/customization/plugins.md)),
-and Kimi's own [`marketplace.json` example](https://github.com/MoonshotAI/kimi-code/blob/main/plugins/marketplace.json),
-which confirms Kimi's manifest fields (`plugins[].id`, `source`, `displayName`)
-rather than the Agent Plugins `plugin.json` shape used elsewhere in this repo.
 
 ### Agent Plugins
 
@@ -98,35 +90,6 @@ If your client isn't listed below, you can generally still point it at:
 - Git URL: `https://github.com/stripe/ai`
 - Subdirectory: [`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin).
 
-The clients below are drawn from the Agent Plugins spec's own
-[compatible clients list](https://agent-plugins.org/compatible-clients)
-([source](https://github.com/agentplugins/agent-plugins-site/blob/main/lib/compatible-clients.ts)).
-
-A few of these clients look for a bare, root-level `marketplace.json` (or a
-`.claude-plugin/marketplace.json`/`.cursor-plugin/marketplace.json` fallback),
-but they don't all parse the same schema. For example:
-- Claude Code's format requires a top-level `owner` object and per-plugin
-  `description`/`version`/`author` fields — see the
-  [Claude Code marketplace docs](https://docs.claude.com/en/docs/claude-code/plugin-marketplaces).
-- Codex checks four candidate paths (`.agents/plugins/marketplace.json`,
-  `.agents/plugins/api_marketplace.json`, `.claude-plugin/marketplace.json`,
-  and `.cursor-plugin/marketplace.json` — notably *not* `.codex-plugin/marketplace.json`)
-  and additionally expects a Codex-specific `policy.installation`/
-  `policy.authentication` object and optional `category` per plugin, per the
-  `RawMarketplaceManifest`/`RawMarketplaceManifestPlugin` types in
-  [`codex-rs/core-plugins/src/marketplace.rs`](https://github.com/openai/codex/blob/main/codex-rs/core-plugins/src/marketplace.rs).
-- GitHub Copilot CLI checks `.github/plugin/marketplace.json` first, then
-  falls back to `.claude-plugin/marketplace.json`, and documents itself as
-  compatible with the Claude Code schema plus optional "Open Plugin Spec"
-  extensions — see the
-  [Copilot CLI plugin reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference).
-
-In short: several clients converge on (or fall back to) the schema Claude
-Code originated, but Codex's variant adds required fields Claude's doesn't
-have, and Cursor and Kimi use their own dedicated formats — so a listing
-built for one client isn't guaranteed to validate on another without checking
-that client's own docs or source first.
-
 #### GitHub Copilot CLI
 
 Run these commands in your project:
@@ -136,8 +99,6 @@ copilot plugin marketplace add stripe/ai
 copilot plugin install stripe@stripe
 ```
 
-Source: [Copilot CLI plugin reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference).
-
 #### VS Code
 
 Add this repo as a plugin marketplace in your `settings.json`, then install
@@ -146,8 +107,6 @@ Add this repo as a plugin marketplace in your `settings.json`, then install
 ```json
 "chat.plugins.marketplaces": ["stripe/ai"]
 ```
-
-Source: [VS Code Agent Plugins docs](https://code.visualstudio.com/docs/agent-customization/agent-plugins).
 
 #### OpenClaw
 
@@ -159,10 +118,6 @@ publishes the former for Claude Code. Run these commands in your project:
 openclaw plugins marketplace list stripe/ai
 openclaw plugins install stripe --marketplace stripe/ai
 ```
-
-Sources: [OpenClaw plugin bundles docs](https://docs.openclaw.ai/plugins/bundles)
-and the `MARKETPLACE_MANIFEST_CANDIDATES` constant in
-[`src/plugins/marketplace.ts`](https://github.com/openclaw/openclaw/blob/main/src/plugins/marketplace.ts).
 
 #### Hermes Agent
 
@@ -178,12 +133,6 @@ hermes plugins list
 hermes plugins enable stripe
 ```
 
-Sources: [Hermes Agent plugin docs](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages),
-and the subdirectory-shorthand parsing in
-[`hermes_cli/plugin_packs.py`](https://github.com/NousResearch/hermes-agent/blob/main/hermes_cli/plugin_packs.py)
-and the `--enable`/`--no-enable` prompt-skip flags in
-[`hermes_cli/subcommands/plugins.py`](https://github.com/NousResearch/hermes-agent/blob/main/hermes_cli/subcommands/plugins.py).
-
 #### NanoClaw
 
 NanoClaw only stamps templates from a local directory, so copy the package in
@@ -195,15 +144,11 @@ cp -r /tmp/stripe-ai/providers/agent-plugins/plugin templates/stripe
 ncl groups create --template stripe --name "Stripe Agent" --yes
 ```
 
-Source: [NanoClaw templates docs](https://github.com/nanocoai/nanoclaw/blob/main/docs/templates.md).
-
 #### Kiro
 
 Kiro already lists Stripe in its curated registry. Browse to
 [kiro.dev/powers](https://kiro.dev/powers), find Stripe, and select
 **Add to Kiro** — no manual installation is required.
-
-Source: [Kiro powers docs](https://kiro.dev/docs/powers/).
 
 
 ## Manual installation
