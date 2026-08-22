@@ -65,11 +65,13 @@ gemini extensions install https://github.com/stripe/ai
 
 ### Kimi CLI
 
-Kimi CLI doesn't yet support installable agent plugins, but you can add our
-remote MCP server directly:
+Kimi CLI plugins use their own manifest format rather than the Agent Plugins
+standard, so this repo also publishes a [`.kimi-plugin/plugin.json`](/.kimi-plugin/plugin.json)
+manifest at its root that points at our existing skills and MCP server. Run
+this command in your project:
 
-```bash
-kimi mcp add --transport http stripe https://mcp.stripe.com --auth oauth
+```text
+/plugins install https://github.com/stripe/ai
 ```
 
 ### Agent Plugins
@@ -78,10 +80,11 @@ The [Agent Plugins](https://agent-plugins.org/) standard (formerly known as
 Open Plugins) defines a portable package format for skills and MCP servers,
 but leaves distribution and installation up to each client. This repo
 publishes a conformant package at
-[`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin) and a
-marketplace listing at [`.github/plugin/marketplace.json`](/.github/plugin/marketplace.json)
-that clients can use to install it directly from this repo, without waiting
-for a curated marketplace listing.
+[`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin) plus a
+[`.github/plugin/marketplace.json`](/.github/plugin/marketplace.json) listing
+that clients checking that path (for example GitHub Copilot CLI) can use to
+install it directly from this repo, without waiting for a curated marketplace
+listing.
 
 If your client isn't listed below, you can generally still point it at:
 - Git URL: `https://github.com/stripe/ai`
@@ -107,7 +110,9 @@ Add this repo as a plugin marketplace in your `settings.json`, then install
 
 #### OpenClaw
 
-Run these commands in your project:
+OpenClaw resolves marketplaces from a repo's `.claude-plugin/marketplace.json`,
+which this repo already publishes for Claude Code. Run these commands in your
+project:
 
 ```bash
 openclaw plugins marketplace list stripe/ai
@@ -116,10 +121,15 @@ openclaw plugins install stripe --marketplace stripe/ai
 
 #### Hermes Agent
 
-Run these commands in your project:
+Hermes's installer accepts an `owner/repo/<subdirectory>` shorthand, so you can
+point it directly at the package subdirectory. Portable Agent Plugins packages
+always install disabled — `--no-enable` just skips the interactive prompt so
+the command is non-interactive — so you'll need to enable it explicitly after
+reviewing it:
 
 ```bash
-hermes plugins install stripe/ai --no-enable
+hermes plugins install stripe/ai/providers/agent-plugins/plugin --no-enable
+hermes plugins list
 hermes plugins enable stripe
 ```
 
