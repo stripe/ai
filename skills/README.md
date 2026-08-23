@@ -9,4 +9,4 @@ Stripe has:
 - MCP Prompts
 - Agent skills
 
-This folder is a collection of [agent skills](https://agentskills.io) to steer your agents to build optimal Stripe integrations. These are synced automatically from [docs.stripe.com/.well-known/skills](https://docs.stripe.com/.well-known/skills) via the [sync-skills workflow](/.github/workflows/sync-skills.yml).
+This folder is a collection of [agent skills](https://agentskills.io) to steer your agents to build optimal Stripe integrations. These are synced automatically from [docs.stripe.com/.well-known/skills/index.json](https://docs.stripe.com/.well-known/skills/index.json) via the [sync-skills workflow](/.github/workflows/sync-skills.yml).
