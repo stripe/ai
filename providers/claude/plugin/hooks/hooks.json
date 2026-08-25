@@ -30,6 +30,19 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "^Skill(stripe:.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use.mjs"],
+            "if": "mcp__plugin_stripe_stripe__*",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__stripe__.*",
         "hooks": [
           {
             "type": "command",
