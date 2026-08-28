@@ -1,7 +1,7 @@
 {
   "name": "stripe",
   "description": "Stripe development plugin for Claude",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "author": {
     "name": "Stripe",
     "url": "https://stripe.com"
