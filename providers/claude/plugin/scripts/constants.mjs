@@ -1,0 +1,3 @@
+export const CLI_COMMAND_TIMEOUT_MS = 3_000;
+export const POST_TOOL_USE_FEEDBACK_SAMPLE_RATE = 0.1;
+export const STOP_FEEDBACK_SAMPLE_RATE = 0.01;

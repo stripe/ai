@@ -1,0 +1,225 @@
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import {
+  before as beforeAll,
+  describe,
+  it,
+} from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { CLI_NOT_INSTALLED_MESSAGE } from './cli.mjs';
+import {
+  POST_TOOL_USE_FEEDBACK_SAMPLE_RATE,
+  STOP_FEEDBACK_SAMPLE_RATE,
+} from './constants.mjs';
+import {
+  STOP_FEEDBACK_MESSAGE,
+  TOOL_FEEDBACK_MESSAGE,
+} from './feedback.mjs';
+
+const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const STRIPE_MCP_TOOL_PREFIXES = [
+  'mcp__plugin_stripe_stripe__',
+  'mcp__stripe__',
+];
+
+function parseEventStream(stdout) {
+  const events = [];
+  for (const line of stdout.split(/\r?\n/)) {
+    try {
+      events.push(JSON.parse(line));
+    } catch {
+      // Claude can print local startup notices before the JSON event stream.
+    }
+  }
+  return events;
+}
+
+function hookContext(event) {
+  try {
+    return JSON.parse(event.output).hookSpecificOutput?.additionalContext;
+  } catch {
+    return undefined;
+  }
+}
+
+describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
+  let events;
+  let stripeMcpStatuses;
+  let transcript;
+
+  beforeAll(() => {
+    const claudePath = spawnSync('which', ['claude'], {
+      encoding: 'utf8',
+    }).stdout.trim();
+    assert.ok(claudePath, 'Claude CLI is not installed');
+
+    const sessionId = randomUUID();
+    const result = spawnSync(
+      claudePath,
+      [
+        '--vanilla',
+        '--plugin-dir',
+        PLUGIN_ROOT,
+        '--session-id',
+        sessionId,
+        '--name',
+        'stripe-feedback-hooks-integration-test',
+        '-p',
+        'First use the stripe:stripe-docs skill. Then use ToolSearch if needed and call one tool from the Stripe MCP server to search Stripe documentation for Checkout. After both calls finish, reply with only DONE.',
+        '--allowedTools',
+        'Skill(stripe:*),ToolSearch,mcp__plugin_stripe_stripe__*,mcp__stripe__*',
+        '--tools',
+        'Skill,ToolSearch',
+        '--output-format',
+        'stream-json',
+        '--include-hook-events',
+        '--max-budget-usd',
+        '0.10',
+        '--model',
+        'haiku',
+        '--effort',
+        'low',
+        '--verbose',
+      ],
+      {
+        cwd: PLUGIN_ROOT,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+            'Math.random = () => 0.05',
+          )}`,
+        },
+        maxBuffer: 16 * 1024 * 1024,
+        timeout: 90_000,
+      },
+    );
+
+    assert.ifError(result.error);
+    assert.equal(
+      result.status,
+      0,
+      `Claude session failed.\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+    );
+
+    events = parseEventStream(result.stdout);
+    const initialized = events.find(
+      (event) => event.type === 'system' && event.subtype === 'init',
+    );
+    assert.ok(
+      initialized?.plugins?.some(
+        (plugin) =>
+          plugin.name === 'stripe' && plugin.path === PLUGIN_ROOT,
+      ),
+      'Claude did not load the Stripe plugin from this checkout',
+    );
+    stripeMcpStatuses = initialized.mcp_servers
+      ?.filter((server) => server.name.includes('stripe'))
+      .map((server) => `${server.name}: ${server.status}`);
+
+    const projectsDirectory = dirname(
+      dirname(initialized.memory_paths.auto),
+    );
+    const projectDirectory = PLUGIN_ROOT.replaceAll('/', '-');
+    const transcriptPath = join(
+      projectsDirectory,
+      projectDirectory,
+      `${sessionId}.jsonl`,
+    );
+    assert.ok(
+      existsSync(transcriptPath),
+      `Claude did not persist the transcript at ${transcriptPath}`,
+    );
+    transcript = readFileSync(transcriptPath, 'utf8');
+  });
+
+  it('uses the intended feedback frequencies', () => {
+    assert.equal(POST_TOOL_USE_FEEDBACK_SAMPLE_RATE, 0.1);
+    assert.equal(STOP_FEEDBACK_SAMPLE_RATE, 0.01);
+    assert.ok(!transcript.includes(STOP_FEEDBACK_MESSAGE));
+  });
+
+  it('checks the Stripe CLI at SessionStart', () => {
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'system' &&
+          event.subtype === 'hook_started' &&
+          event.hook_name === 'SessionStart:startup',
+      ),
+      'The SessionStart hook did not run',
+    );
+    assert.ok(
+      !events.some(
+        (event) =>
+          event.hook_event === 'SessionStart' &&
+          hookContext(event) === CLI_NOT_INSTALLED_MESSAGE,
+      ),
+      'The SessionStart hook incorrectly reported the Stripe CLI as missing',
+    );
+  });
+
+  it('suggests sharing feedback after a Stripe skill', () => {
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'assistant' &&
+          event.message?.content?.some(
+            (content) =>
+              content.type === 'tool_use' &&
+              content.name === 'Skill' &&
+              content.input?.skill === 'stripe:stripe-docs',
+          ),
+      ),
+      'Claude did not invoke the Stripe skill',
+    );
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'system' &&
+          event.subtype === 'hook_response' &&
+          event.hook_event === 'PostToolUse' &&
+          event.hook_name === 'PostToolUse:Skill' &&
+          hookContext(event) === TOOL_FEEDBACK_MESSAGE,
+      ),
+      'The PostToolUse hook did not emit Stripe feedback',
+    );
+    assert.ok(transcript.includes(TOOL_FEEDBACK_MESSAGE));
+  });
+
+  it('suggests sharing feedback after a Stripe MCP tool', () => {
+    const mcpToolCall = events
+      .filter((event) => event.type === 'assistant')
+      .flatMap((event) => event.message?.content ?? [])
+      .find(
+        (content) =>
+          content.type === 'tool_use' &&
+          STRIPE_MCP_TOOL_PREFIXES.some((prefix) =>
+            content.name.startsWith(prefix),
+          ),
+      );
+    assert.ok(
+      mcpToolCall,
+      `Claude did not invoke a Stripe MCP tool (${stripeMcpStatuses?.join(
+        ', ',
+      ) ?? 'server status unknown'})`,
+    );
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'system' &&
+          event.subtype === 'hook_response' &&
+          event.hook_event === 'PostToolUse' &&
+          event.hook_name === `PostToolUse:${mcpToolCall.name}` &&
+          hookContext(event) === TOOL_FEEDBACK_MESSAGE,
+      ),
+      'The PostToolUse hook did not emit feedback after the Stripe MCP tool',
+    );
+
+    const completed = events.find((event) => event.type === 'result');
+    assert.equal(completed?.result, 'DONE');
+  });
+});
