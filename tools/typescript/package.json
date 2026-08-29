@@ -4,7 +4,7 @@
   "homepage": "https://github.com/stripe/ai",
   "scripts": {
     "build": "tsup",
-    "clean": "rm -rf langchain ai-sdk modelcontextprotocol openai",
+    "clean": "rm -rf langchain ai-sdk modelcontextprotocol openai customer-billing",
     "lint": "eslint \"./**/*.ts*\"",
     "prettier": "prettier './**/*.{js,ts,md,html,css}' --write",
     "prettier-check": "prettier './**/*.{js,ts,md,html,css}' --check",
@@ -31,6 +31,11 @@
       "types": "./modelcontextprotocol/index.d.ts",
       "require": "./modelcontextprotocol/index.js",
       "import": "./modelcontextprotocol/index.mjs"
+    },
+    "./customer-billing": {
+      "types": "./customer-billing/index.d.ts",
+      "require": "./customer-billing/index.js",
+      "import": "./customer-billing/index.mjs"
     }
   },
   "packageManager": "pnpm@9.11.0",
@@ -97,6 +102,7 @@
     "langchain/**/*",
     "modelcontextprotocol/**/*",
     "openai/**/*",
+    "customer-billing/**/*",
     "LICENSE",
     "README.md",
     "VERSION",

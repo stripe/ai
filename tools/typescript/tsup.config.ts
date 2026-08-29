@@ -40,4 +40,12 @@ export default defineConfig([
     sourcemap: true,
     ...sharedConfig,
   },
+  {
+    entry: ['src/customer-billing/index.ts'],
+    outDir: 'customer-billing',
+    format: ['cjs', 'esm'],
+    dts: true,
+    sourcemap: true,
+    ...sharedConfig,
+  },
 ]);
