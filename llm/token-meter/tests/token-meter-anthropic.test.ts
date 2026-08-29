@@ -3,6 +3,7 @@
  */
 
 import Stripe from 'stripe';
+import {Stream as AnthropicStream} from '@anthropic-ai/sdk/streaming';
 import {createTokenMeter} from '../token-meter';
 import type {MeterConfig} from '../types';
 
@@ -231,6 +232,71 @@ describe('TokenMeter - Anthropic Provider', () => {
   });
 
   describe('Messages - Streaming', () => {
+    it('does not consume the source before the returned stream is read', async () => {
+      const meter = createTokenMeter(TEST_API_KEY, config);
+      let pulls = 0;
+
+      async function* chunks() {
+        pulls += 1;
+        yield {
+          type: 'message_start',
+          message: {
+            id: 'msg_lazy',
+            model: 'claude-3-5-sonnet-20241022',
+            usage: {input_tokens: 10, output_tokens: 0},
+          },
+        };
+      }
+
+      const source = new AnthropicStream(chunks, new AbortController());
+      const wrapped = meter.trackUsageStreamAnthropic(source as any, 'cus_123');
+
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(pulls).toBe(0);
+      expect(wrapped).toBeInstanceOf(AnthropicStream);
+    });
+
+    it('closes the source when the returned stream is abandoned', async () => {
+      const meter = createTokenMeter(TEST_API_KEY, config);
+      let finalized = false;
+      let release!: () => void;
+      const blocked = new Promise<void>(resolve => {
+        release = resolve;
+      });
+
+      async function* chunks() {
+        try {
+          yield {
+            type: 'message_start',
+            message: {
+              id: 'msg_cancel',
+              model: 'claude-3-5-sonnet-20241022',
+              usage: {input_tokens: 10, output_tokens: 0},
+            },
+          };
+          await blocked;
+          yield {type: 'message_stop'};
+        } finally {
+          finalized = true;
+        }
+      }
+
+      const source = new AnthropicStream(chunks, new AbortController());
+      const wrapped = meter.trackUsageStreamAnthropic(source as any, 'cus_123');
+
+      try {
+        for await (const _chunk of wrapped) {
+          break;
+        }
+        await new Promise(resolve => setImmediate(resolve));
+
+        expect(finalized).toBe(true);
+      } finally {
+        release();
+      }
+    });
+
     it('should track usage from basic streaming message', async () => {
       const meter = createTokenMeter(TEST_API_KEY, config);
 
