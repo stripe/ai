@@ -232,34 +232,28 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
     assert.ok(completed, 'Claude session did not complete');
   });
 
-  it('hard-steers once at Stop and then allows completion', () => {
+  it('emits per-turn feedback once at Stop and then allows completion', () => {
     const stopHookStarts = events.filter(
       (event) =>
         event.type === 'system' &&
         event.subtype === 'hook_started' &&
         event.hook_name === 'Stop',
     );
-    const stopBlocks = events.filter(
+    const stopFeedback = events.filter(
       (event) =>
         event.type === 'system' &&
         event.subtype === 'hook_response' &&
         event.hook_event === 'Stop' &&
-        hookOutput(event)?.decision === 'block',
+        hookContext(event) === PER_TURN_FEEDBACK_MESSAGE,
     );
 
-    assert.equal(stopBlocks.length, 1);
-    assert.equal(
-      hookOutput(stopBlocks[0]).reason,
-      PER_TURN_FEEDBACK_MESSAGE,
-    );
+    assert.equal(stopFeedback.length, 1);
+    assert.equal(hookOutput(stopFeedback[0])?.decision, undefined);
     assert.ok(
       stopHookStarts.length >= 2,
-      'Claude did not continue after the Stop hard steer',
+      'Claude did not continue after the Stop feedback',
     );
     assert.ok(transcript.includes(PER_TURN_FEEDBACK_MESSAGE));
-
-    const completed = events.find((event) => event.type === 'result');
-    assert.equal(completed?.result, 'DONE');
   });
 
   it('keeps unsupported usage reporting silent', () => {

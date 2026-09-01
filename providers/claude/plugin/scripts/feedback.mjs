@@ -1,4 +1,3 @@
-import { emitHardSteer } from './hookHelpers.mjs';
 import { lastTurnMentioned } from './transcriptHelpers.mjs';
 
 export const PER_TOOL_FEEDBACK_MESSAGE =
@@ -49,8 +48,4 @@ export function getStripeSkillName(event, argumentsValue) {
 
 export function shouldEmitPerTurnFeedback(event) {
   return lastTurnMentioned(/stripe/i, event);
-}
-
-export function emitPerTurnFeedbackSteer() {
-  emitHardSteer(PER_TURN_FEEDBACK_MESSAGE);
 }

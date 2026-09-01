@@ -63,7 +63,7 @@ function writeExecutable(directory, name, contents) {
   chmodSync(executablePath, 0o755);
 }
 
-test('sampled Stripe Stop blocks once with feedback rationale', (t) => {
+test('sampled Stripe Stop emits soft context once', (t) => {
   const transcriptPath = writeTranscript(t, 'Help me integrate Stripe');
   const event = {
     hook_event_name: 'Stop',
@@ -77,12 +77,14 @@ test('sampled Stripe Stop blocks once with feedback rationale', (t) => {
     )}`,
   };
 
-  const blocked = runLifecycle('lifecycle/stop.mjs', event, env);
-  assert.ifError(blocked.error);
-  assert.equal(blocked.status, 0);
-  assert.deepEqual(JSON.parse(blocked.stdout), {
-    decision: 'block',
-    reason: PER_TURN_FEEDBACK_MESSAGE,
+  const firstStop = runLifecycle('lifecycle/stop.mjs', event, env);
+  assert.ifError(firstStop.error);
+  assert.equal(firstStop.status, 0);
+  assert.deepEqual(JSON.parse(firstStop.stdout), {
+    hookSpecificOutput: {
+      additionalContext: PER_TURN_FEEDBACK_MESSAGE,
+      hookEventName: 'Stop',
+    },
   });
 
   const continued = runLifecycle(
