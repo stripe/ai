@@ -3,7 +3,7 @@
 import { STOP_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
 import {
   printFeedback,
-  transcriptMentionsStripe,
+  stripeMentionedInLastTurn,
 } from '../feedback.mjs';
 import {
   readHookEvent,
@@ -20,7 +20,7 @@ await runHook(async () => {
     return;
   }
 
-  if (transcriptMentionsStripe(event.transcript_path)) {
+  if (stripeMentionedInLastTurn(event)) {
     printFeedback('task', 'Stop');
   }
 });
