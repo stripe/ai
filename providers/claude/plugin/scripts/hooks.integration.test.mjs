@@ -257,6 +257,9 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
       'Claude did not continue after the Stop hard steer',
     );
     assert.ok(transcript.includes(PER_TURN_FEEDBACK_MESSAGE));
+
+    const completed = events.find((event) => event.type === 'result');
+    assert.equal(completed?.result, 'DONE');
   });
 
   it('keeps unsupported usage reporting silent', () => {
