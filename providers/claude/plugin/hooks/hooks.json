@@ -29,29 +29,30 @@
             "timeout": 5
           }
         ]
-      },
+      }
+    ],
+    "PostToolBatch": [
       {
-        "matcher": "^mcp__(?:plugin_stripe_stripe|stripe)__.*$",
         "hooks": [
           {
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUse.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolBatch.mjs"
             ],
             "timeout": 5
           }
         ]
       }
     ],
-    "Stop": [
+    "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/stop.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/userPromptSubmit.mjs"
             ],
             "timeout": 5
           }

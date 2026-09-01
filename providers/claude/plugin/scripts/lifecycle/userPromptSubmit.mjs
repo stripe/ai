@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { STOP_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
+import { PER_TURN_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
 import {
   PER_TURN_FEEDBACK_MESSAGE,
   shouldEmitPerTurnFeedback,
@@ -15,13 +15,9 @@ import {
 await runHook(async () => {
   const event = await readHookEvent();
   if (
-    event.stop_hook_active === true ||
-    !sample(STOP_FEEDBACK_SAMPLE_RATE)
+    sample(PER_TURN_FEEDBACK_SAMPLE_RATE) &&
+    shouldEmitPerTurnFeedback(event)
   ) {
-    return;
-  }
-
-  if (shouldEmitPerTurnFeedback(event)) {
-    emitSoftContext('Stop', PER_TURN_FEEDBACK_MESSAGE);
+    emitSoftContext('UserPromptSubmit', PER_TURN_FEEDBACK_MESSAGE);
   }
 });
