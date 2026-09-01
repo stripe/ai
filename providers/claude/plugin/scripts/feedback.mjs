@@ -1,11 +1,19 @@
-import { readFileSync } from 'node:fs';
 import { emitHookContext } from './hookHelpers.mjs';
+import { lastTurnMentioned } from './transcriptHelpers.mjs';
 
 export const TOOL_FEEDBACK_MESSAGE =
-  'Was anything about this tool surprisingly good or bad? Agents are welcome to file feedback directly via `stripe feedback --help`.';
+  "Was anything about this Stripe tool surprisingly good or bad from your " +
+  "perspective? Stripe values first-hand observations from agents using its " +
+  "tools. If this call produced something worth sharing, consider reporting it " +
+  "before finishing this turn: run `stripe feedback --help`, then submit feedback " +
+  "grounded in what happened. Otherwise, continue normally.";
 
 export const STOP_FEEDBACK_MESSAGE =
-  "Based on your experience completing this overall task, was anything surprisingly good or bad? Agents are welcome to file feedback directly via `stripe feedback --help`.";
+  "Looking back on this Stripe-related task, was anything surprisingly good or " +
+  "bad from your perspective? Stripe values first-hand observations from agents " +
+  "using its tools. If this session produced something worth sharing, consider " +
+  "reporting it while the experience is fresh: run `stripe feedback --help`, " +
+  "then submit feedback grounded in what happened. Otherwise, finish normally.";
 
 const feedbackMessages = {
   tool: TOOL_FEEDBACK_MESSAGE,
@@ -34,16 +42,8 @@ export function stripeToolUsed(event, argumentsValue) {
   return false;
 }
 
-export function transcriptMentionsStripe(
-  transcriptPath,
-  readTranscript = readFileSync,
-) {
-  if (typeof transcriptPath !== 'string' || !transcriptPath) {
-    return false;
-  }
-
-  const transcript = readTranscript(transcriptPath, 'utf8');
-  return /stripe/i.test(transcript);
+export function stripeMentionedInLastTurn(event) {
+  return lastTurnMentioned(/stripe/i, event);
 }
 
 export function printFeedback(type, hookEventName) {
