@@ -2,8 +2,8 @@
 
 import { STOP_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
 import {
-  printFeedback,
-  stripeMentionedInLastTurn,
+  emitPerTurnFeedbackSteer,
+  shouldEmitPerTurnFeedback,
 } from '../feedback.mjs';
 import {
   readHookEvent,
@@ -20,7 +20,7 @@ await runHook(async () => {
     return;
   }
 
-  if (stripeMentionedInLastTurn(event)) {
-    printFeedback('task', 'Stop');
+  if (shouldEmitPerTurnFeedback(event)) {
+    emitPerTurnFeedbackSteer();
   }
 });
