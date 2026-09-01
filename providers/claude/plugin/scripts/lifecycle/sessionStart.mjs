@@ -2,7 +2,7 @@
 
 import { getStripeCliGuidance } from '../cli.mjs';
 import {
-  emitHookContext,
+  emitSoftContext,
   readHookEvent,
   runHook,
 } from '../hookHelpers.mjs';
@@ -15,6 +15,6 @@ await runHook(async () => {
 
   const message = getStripeCliGuidance();
   if (message) {
-    emitHookContext('SessionStart', message);
+    emitSoftContext('SessionStart', message);
   }
 });

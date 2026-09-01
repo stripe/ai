@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 
+import { reportSkillUsage } from '../cli.mjs';
 import { POST_TOOL_USE_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
-import { printFeedback, stripeToolUsed } from '../feedback.mjs';
 import {
+  getStripeSkillName,
+  PER_TOOL_FEEDBACK_MESSAGE,
+  shouldEmitPerToolFeedback,
+} from '../feedback.mjs';
+import {
+  emitSoftContext,
   getHookArguments,
   readHookEvent,
   runHook,
@@ -12,11 +18,16 @@ import {
 await runHook(async () => {
   const event = await readHookEvent();
   const argumentsValue = getHookArguments(event);
+  const skillName = getStripeSkillName(event, argumentsValue);
+
+  if (skillName) {
+    reportSkillUsage(skillName);
+  }
 
   if (
-    stripeToolUsed(event, argumentsValue) &&
+    shouldEmitPerToolFeedback(event, argumentsValue) &&
     sample(POST_TOOL_USE_FEEDBACK_SAMPLE_RATE)
   ) {
-    printFeedback('tool', 'PostToolUse');
+    emitSoftContext('PostToolUse', PER_TOOL_FEEDBACK_MESSAGE);
   }
 });
