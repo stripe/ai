@@ -160,28 +160,23 @@ function* readLinesFromEnd(transcriptPath) {
   }
 }
 
-function* latestTurnEntries(transcriptPath) {
+function transcriptLastTurnMatches(transcriptPath, pattern) {
+  if (typeof transcriptPath !== 'string' || !transcriptPath) {
+    return false;
+  }
+
+  let matched = false;
   for (const line of readLinesFromEnd(transcriptPath)) {
     const entry = parseTranscriptLine(line);
     if (!entry) {
       continue;
     }
 
-    yield entry;
-    if (isHumanPrompt(entry)) {
-      return;
-    }
-  }
-}
-
-function transcriptLastTurnMatches(transcriptPath, pattern) {
-  if (typeof transcriptPath !== 'string' || !transcriptPath) {
-    return false;
-  }
-
-  for (const entry of latestTurnEntries(transcriptPath)) {
     if (matchesPattern(transcriptEntryText(entry), pattern)) {
-      return true;
+      matched = true;
+    }
+    if (isHumanPrompt(entry)) {
+      return matched;
     }
   }
   return false;

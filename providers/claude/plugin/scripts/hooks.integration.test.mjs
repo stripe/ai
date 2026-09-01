@@ -11,11 +11,11 @@ import {
 import { fileURLToPath } from 'node:url';
 import { CLI_NOT_INSTALLED_MESSAGE } from './cli.mjs';
 import {
-  POST_TOOL_USE_FEEDBACK_SAMPLE_RATE,
-  STOP_FEEDBACK_SAMPLE_RATE,
+  PER_BATCH_FEEDBACK_SAMPLE_RATE,
+  PER_TURN_FEEDBACK_SAMPLE_RATE,
 } from './constants.mjs';
 import {
-  PER_TOOL_FEEDBACK_MESSAGE,
+  PER_BATCH_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
 } from './feedback.mjs';
 
@@ -147,8 +147,8 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
   });
 
   it('uses the intended feedback frequencies', () => {
-    assert.equal(POST_TOOL_USE_FEEDBACK_SAMPLE_RATE, 0.99);
-    assert.equal(STOP_FEEDBACK_SAMPLE_RATE, 0.99);
+    assert.equal(PER_BATCH_FEEDBACK_SAMPLE_RATE, 0.99);
+    assert.equal(PER_TURN_FEEDBACK_SAMPLE_RATE, 0.99);
   });
 
   it('checks the Stripe CLI at SessionStart', () => {
@@ -171,7 +171,7 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
     );
   });
 
-  it('suggests sharing feedback after a Stripe skill', () => {
+  it('emits batch feedback after a Stripe skill', () => {
     assert.ok(
       events.some(
         (event) =>
@@ -189,17 +189,26 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
       events.some(
         (event) =>
           event.type === 'system' &&
-          event.subtype === 'hook_response' &&
-          event.hook_event === 'PostToolUse' &&
-          event.hook_name === 'PostToolUse:Skill' &&
-          hookContext(event) === PER_TOOL_FEEDBACK_MESSAGE,
+          event.subtype === 'hook_started' &&
+          event.hook_name === 'PostToolUse:Skill',
       ),
-      'The PostToolUse hook did not emit Stripe feedback',
+      'The usage-reporting PostToolUse hook did not run',
     );
-    assert.ok(transcript.includes(PER_TOOL_FEEDBACK_MESSAGE));
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'system' &&
+          event.subtype === 'hook_response' &&
+          event.hook_event === 'PostToolBatch' &&
+          event.hook_name === 'PostToolBatch' &&
+          hookContext(event) === PER_BATCH_FEEDBACK_MESSAGE,
+      ),
+      'The PostToolBatch hook did not emit Stripe feedback',
+    );
+    assert.ok(transcript.includes(PER_BATCH_FEEDBACK_MESSAGE));
   });
 
-  it('suggests sharing feedback after a Stripe MCP tool', () => {
+  it('emits batch feedback after a Stripe MCP tool', () => {
     const mcpToolCall = events
       .filter((event) => event.type === 'assistant')
       .flatMap((event) => event.message?.content ?? [])
@@ -221,39 +230,49 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
         (event) =>
           event.type === 'system' &&
           event.subtype === 'hook_response' &&
-          event.hook_event === 'PostToolUse' &&
-          event.hook_name === `PostToolUse:${mcpToolCall.name}` &&
-          hookContext(event) === PER_TOOL_FEEDBACK_MESSAGE,
+          event.hook_event === 'PostToolBatch' &&
+          event.hook_name === 'PostToolBatch' &&
+          hookContext(event) === PER_BATCH_FEEDBACK_MESSAGE,
       ),
-      'The PostToolUse hook did not emit feedback after the Stripe MCP tool',
+      'The PostToolBatch hook did not emit feedback after the Stripe MCP tool',
     );
 
     const completed = events.find((event) => event.type === 'result');
     assert.ok(completed, 'Claude session did not complete');
   });
 
-  it('emits per-turn feedback once at Stop and then allows completion', () => {
-    const stopHookStarts = events.filter(
-      (event) =>
-        event.type === 'system' &&
-        event.subtype === 'hook_started' &&
-        event.hook_name === 'Stop',
+  it('does not run a Stop hook or replace the final response', () => {
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'system' &&
+          event.subtype === 'hook_started' &&
+          event.hook_name === 'UserPromptSubmit',
+      ),
+      'The UserPromptSubmit hook did not run',
     );
-    const stopFeedback = events.filter(
-      (event) =>
-        event.type === 'system' &&
-        event.subtype === 'hook_response' &&
-        event.hook_event === 'Stop' &&
-        hookContext(event) === PER_TURN_FEEDBACK_MESSAGE,
+    assert.ok(
+      !events.some(
+        (event) =>
+          event.type === 'system' &&
+          event.subtype === 'hook_started' &&
+          event.hook_name === 'Stop',
+      ),
+      'A Stop hook still ran',
+    );
+    assert.ok(
+      !events.some(
+        (event) =>
+          event.type === 'system' &&
+          event.subtype === 'hook_response' &&
+          event.hook_event === 'UserPromptSubmit' &&
+          hookContext(event) === PER_TURN_FEEDBACK_MESSAGE,
+      ),
+      'The first prompt received feedback without a previous turn',
     );
 
-    assert.equal(stopFeedback.length, 1);
-    assert.equal(hookOutput(stopFeedback[0])?.decision, undefined);
-    assert.ok(
-      stopHookStarts.length >= 2,
-      'Claude did not continue after the Stop feedback',
-    );
-    assert.ok(transcript.includes(PER_TURN_FEEDBACK_MESSAGE));
+    const completed = events.find((event) => event.type === 'result');
+    assert.ok(completed, 'Claude session did not complete');
   });
 
   it('keeps unsupported usage reporting silent', () => {

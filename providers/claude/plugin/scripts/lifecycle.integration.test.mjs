@@ -21,7 +21,10 @@ import {
   CLI_NOT_LOGGED_IN_MESSAGE,
   CLI_OUTDATED_MESSAGE,
 } from './cli.mjs';
-import { PER_TURN_FEEDBACK_MESSAGE } from './feedback.mjs';
+import {
+  PER_BATCH_FEEDBACK_MESSAGE,
+  PER_TURN_FEEDBACK_MESSAGE,
+} from './feedback.mjs';
 
 const SCRIPTS_ROOT = dirname(fileURLToPath(import.meta.url));
 
@@ -63,12 +66,11 @@ function writeExecutable(directory, name, contents) {
   chmodSync(executablePath, 0o755);
 }
 
-test('sampled Stripe Stop emits soft context once', (t) => {
+test('sampled UserPromptSubmit emits feedback about the previous turn', (t) => {
   const transcriptPath = writeTranscript(t, 'Help me integrate Stripe');
   const event = {
-    hook_event_name: 'Stop',
-    last_assistant_message: 'Done.',
-    stop_hook_active: false,
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'What should I do next?',
     transcript_path: transcriptPath,
   };
   const env = {
@@ -77,24 +79,19 @@ test('sampled Stripe Stop emits soft context once', (t) => {
     )}`,
   };
 
-  const firstStop = runLifecycle('lifecycle/stop.mjs', event, env);
-  assert.ifError(firstStop.error);
-  assert.equal(firstStop.status, 0);
-  assert.deepEqual(JSON.parse(firstStop.stdout), {
-    hookSpecificOutput: {
-      additionalContext: PER_TURN_FEEDBACK_MESSAGE,
-      hookEventName: 'Stop',
-    },
-  });
-
-  const continued = runLifecycle(
-    'lifecycle/stop.mjs',
-    { ...event, stop_hook_active: true },
+  const result = runLifecycle(
+    'lifecycle/userPromptSubmit.mjs',
+    event,
     env,
   );
-  assert.ifError(continued.error);
-  assert.equal(continued.status, 0);
-  assert.equal(continued.stdout, '');
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    hookSpecificOutput: {
+      additionalContext: PER_TURN_FEEDBACK_MESSAGE,
+      hookEventName: 'UserPromptSubmit',
+    },
+  });
 });
 
 test('Stripe Skill usage is reported with its short name and silent failures', (t) => {
@@ -119,9 +116,6 @@ exit 1
       tool_name: 'Skill',
     },
     {
-      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
-        'Math.random = () => 1',
-      )}`,
       PATH: `${directory}${delimiter}${process.env.PATH}`,
       STRIPE_USAGE_LOG: usageLog,
     },
@@ -152,7 +146,37 @@ exit 1
   );
   assert.ifError(unrelated.error);
   assert.equal(unrelated.status, 0);
+  assert.equal(unrelated.stdout, '');
   assert.ok(!existsSync(usageLog), 'A non-Stripe Skill was reported');
+});
+
+test('sampled PostToolBatch emits feedback for Stripe tools', () => {
+  const result = runLifecycle(
+    'lifecycle/postToolBatch.mjs',
+    {
+      hook_event_name: 'PostToolBatch',
+      tool_calls: [
+        {
+          tool_input: { query: 'Checkout' },
+          tool_name: 'mcp__stripe__search_stripe_documentation',
+        },
+      ],
+    },
+    {
+      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+        'Math.random = () => 0',
+      )}`,
+    },
+  );
+
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    hookSpecificOutput: {
+      additionalContext: PER_BATCH_FEEDBACK_MESSAGE,
+      hookEventName: 'PostToolBatch',
+    },
+  });
 });
 
 test('SessionStart reports missing, outdated, and current CLI states', (t) => {

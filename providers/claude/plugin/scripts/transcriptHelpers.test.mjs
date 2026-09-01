@@ -55,6 +55,25 @@ test('ignores matches before the latest user turn', (t) => {
   );
 });
 
+test('requires a previous user turn', (t) => {
+  const transcriptPath = writeTranscript(t, [
+    {
+      type: 'attachment',
+      attachment: {
+        type: 'hook_additional_context',
+        content: ['The Stripe CLI is available'],
+      },
+    },
+  ]);
+
+  assert.equal(
+    lastTurnMentioned(/stripe/i, {
+      transcript_path: transcriptPath,
+    }),
+    false,
+  );
+});
+
 test('finds a pattern in tool inputs, tool results, and hook output', (t) => {
   const cases = [
     assistantContent([
