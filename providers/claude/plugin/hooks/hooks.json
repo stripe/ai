@@ -11,7 +11,7 @@
             "args": [
               "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/sessionStart.mjs"
             ],
-            "timeout": 5
+            "timeout": 10
           }
         ]
       }

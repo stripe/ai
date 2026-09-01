@@ -7,7 +7,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { stripeMentionedInLastTurn } from './feedback.mjs';
+import { shouldEmitPerTurnFeedback } from './feedback.mjs';
 import { lastTurnMentioned } from './transcriptHelpers.mjs';
 
 function writeTranscript(t, entries) {
@@ -147,14 +147,14 @@ test('accepts patterns unrelated to Stripe', (t) => {
   );
 });
 
-test('provides Stripe-specific feedback logic', (t) => {
+test('provides per-turn Stripe feedback logic', (t) => {
   const transcriptPath = writeTranscript(t, [
     userPrompt('Help me configure Stripe'),
     assistantContent([{ type: 'text', text: 'Done.' }]),
   ]);
 
   assert.equal(
-    stripeMentionedInLastTurn({
+    shouldEmitPerTurnFeedback({
       transcript_path: transcriptPath,
       last_assistant_message: 'Done.',
     }),

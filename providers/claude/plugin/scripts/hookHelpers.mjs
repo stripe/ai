@@ -29,13 +29,22 @@ export function sample(rate, random = Math.random) {
   return random() < rate;
 }
 
-export function emitHookContext(hookEventName, message) {
+export function emitSoftContext(hookEventName, message) {
   process.stdout.write(
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName,
         additionalContext: message,
       },
+    }),
+  );
+}
+
+export function emitHardSteer(message) {
+  process.stdout.write(
+    JSON.stringify({
+      decision: 'block',
+      reason: message,
     }),
   );
 }
