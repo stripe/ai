@@ -7,10 +7,18 @@ export const CLI_NOT_INSTALLED_MESSAGE =
 export const CLI_NOT_LOGGED_IN_MESSAGE =
   'The Stripe CLI can provide better Stripe integration guidance when connected. `stripe login` connects an existing account, and `stripe sandbox create` creates a quick sandbox.';
 
+export const CLI_OUTDATED_MESSAGE =
+  'A newer Stripe CLI version is available. Updating with `npm i -g @stripe/cli@latest` can provide the latest Stripe integration guidance.';
+
 const commandOptions = {
   encoding: 'utf8',
   stdio: ['ignore', 'pipe', 'pipe'],
   timeout: CLI_COMMAND_TIMEOUT_MS,
+};
+
+const silentCommandOptions = {
+  ...commandOptions,
+  stdio: 'ignore',
 };
 
 function hasAuthenticatedConfig(config) {
@@ -26,9 +34,32 @@ function hasAuthenticatedConfig(config) {
   return false;
 }
 
-export function cliInstalled(run = spawnSync) {
+function parseVersion(output) {
+  return output.match(/\b\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?\b/)?.[0];
+}
+
+function getInstalledCli(run) {
   const result = run('stripe', ['--version'], commandOptions);
-  return result.error?.code !== 'ENOENT';
+  return {
+    installed: result.error?.code !== 'ENOENT',
+    version:
+      result.status === 0 ? parseVersion(result.stdout ?? '') : undefined,
+  };
+}
+
+function getLatestCliVersion(run) {
+  const result = run(
+    'npm',
+    ['view', '@stripe/cli', 'version'],
+    commandOptions,
+  );
+  return result.status === 0
+    ? parseVersion(result.stdout ?? '')
+    : undefined;
+}
+
+export function cliInstalled(run = spawnSync) {
+  return getInstalledCli(run).installed;
 }
 
 export function cliLoggedIn(run = spawnSync) {
@@ -36,10 +67,37 @@ export function cliLoggedIn(run = spawnSync) {
   return result.status === 0 && hasAuthenticatedConfig(result.stdout ?? '');
 }
 
+export function reportSkillUsage(skillName, run = spawnSync) {
+  try {
+    run(
+      'stripe',
+      ['agent', 'report_usage', '--skill', skillName],
+      silentCommandOptions,
+    );
+  } catch {
+    // Usage reporting must never affect the agent's work.
+  }
+}
+
 export function getStripeCliGuidance(run = spawnSync) {
-  if (!cliInstalled(run)) {
+  const installedCli = getInstalledCli(run);
+  if (!installedCli.installed) {
     return CLI_NOT_INSTALLED_MESSAGE;
   }
 
-  return cliLoggedIn(run) ? undefined : CLI_NOT_LOGGED_IN_MESSAGE;
+  const messages = [];
+  if (!cliLoggedIn(run)) {
+    messages.push(CLI_NOT_LOGGED_IN_MESSAGE);
+  }
+
+  const latestVersion = getLatestCliVersion(run);
+  if (
+    installedCli.version &&
+    latestVersion &&
+    installedCli.version !== latestVersion
+  ) {
+    messages.push(CLI_OUTDATED_MESSAGE);
+  }
+
+  return messages.length > 0 ? messages.join(' ') : undefined;
 }

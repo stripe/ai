@@ -15,8 +15,8 @@ import {
   STOP_FEEDBACK_SAMPLE_RATE,
 } from './constants.mjs';
 import {
-  STOP_FEEDBACK_MESSAGE,
-  TOOL_FEEDBACK_MESSAGE,
+  PER_TOOL_FEEDBACK_MESSAGE,
+  PER_TURN_FEEDBACK_MESSAGE,
 } from './feedback.mjs';
 
 const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -45,8 +45,17 @@ function hookContext(event) {
   }
 }
 
+function hookOutput(event) {
+  try {
+    return JSON.parse(event.output);
+  } catch {
+    return undefined;
+  }
+}
+
 describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
   let events;
+  let sessionStderr;
   let stripeMcpStatuses;
   let transcript;
 
@@ -106,6 +115,7 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
     );
 
     events = parseEventStream(result.stdout);
+    sessionStderr = result.stderr;
     const initialized = events.find(
       (event) => event.type === 'system' && event.subtype === 'init',
     );
@@ -137,9 +147,8 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
   });
 
   it('uses the intended feedback frequencies', () => {
-    assert.equal(POST_TOOL_USE_FEEDBACK_SAMPLE_RATE, 0.1);
-    assert.equal(STOP_FEEDBACK_SAMPLE_RATE, 0.01);
-    assert.ok(!transcript.includes(STOP_FEEDBACK_MESSAGE));
+    assert.equal(POST_TOOL_USE_FEEDBACK_SAMPLE_RATE, 0.99);
+    assert.equal(STOP_FEEDBACK_SAMPLE_RATE, 0.99);
   });
 
   it('checks the Stripe CLI at SessionStart', () => {
@@ -183,11 +192,11 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
           event.subtype === 'hook_response' &&
           event.hook_event === 'PostToolUse' &&
           event.hook_name === 'PostToolUse:Skill' &&
-          hookContext(event) === TOOL_FEEDBACK_MESSAGE,
+          hookContext(event) === PER_TOOL_FEEDBACK_MESSAGE,
       ),
       'The PostToolUse hook did not emit Stripe feedback',
     );
-    assert.ok(transcript.includes(TOOL_FEEDBACK_MESSAGE));
+    assert.ok(transcript.includes(PER_TOOL_FEEDBACK_MESSAGE));
   });
 
   it('suggests sharing feedback after a Stripe MCP tool', () => {
@@ -214,12 +223,52 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
           event.subtype === 'hook_response' &&
           event.hook_event === 'PostToolUse' &&
           event.hook_name === `PostToolUse:${mcpToolCall.name}` &&
-          hookContext(event) === TOOL_FEEDBACK_MESSAGE,
+          hookContext(event) === PER_TOOL_FEEDBACK_MESSAGE,
       ),
       'The PostToolUse hook did not emit feedback after the Stripe MCP tool',
     );
 
     const completed = events.find((event) => event.type === 'result');
-    assert.equal(completed?.result, 'DONE');
+    assert.ok(completed, 'Claude session did not complete');
+  });
+
+  it('hard-steers once at Stop and then allows completion', () => {
+    const stopHookStarts = events.filter(
+      (event) =>
+        event.type === 'system' &&
+        event.subtype === 'hook_started' &&
+        event.hook_name === 'Stop',
+    );
+    const stopBlocks = events.filter(
+      (event) =>
+        event.type === 'system' &&
+        event.subtype === 'hook_response' &&
+        event.hook_event === 'Stop' &&
+        hookOutput(event)?.decision === 'block',
+    );
+
+    assert.equal(stopBlocks.length, 1);
+    assert.equal(
+      hookOutput(stopBlocks[0]).reason,
+      PER_TURN_FEEDBACK_MESSAGE,
+    );
+    assert.ok(
+      stopHookStarts.length >= 2,
+      'Claude did not continue after the Stop hard steer',
+    );
+    assert.ok(transcript.includes(PER_TURN_FEEDBACK_MESSAGE));
+  });
+
+  it('keeps unsupported usage reporting silent', () => {
+    assert.ok(!sessionStderr.includes('report_usage'));
+    assert.ok(
+      !events.some(
+        (event) =>
+          event.type === 'system' &&
+          event.subtype === 'hook_response' &&
+          event.hook_event === 'PostToolUse' &&
+          hookOutput(event)?.systemMessage?.includes('report_usage'),
+      ),
+    );
   });
 });
