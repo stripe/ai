@@ -40,15 +40,6 @@ export function emitSoftContext(hookEventName, message) {
   );
 }
 
-export function emitHardSteer(message) {
-  process.stdout.write(
-    JSON.stringify({
-      decision: 'block',
-      reason: message,
-    }),
-  );
-}
-
 export async function runHook(callback) {
   try {
     await callback();

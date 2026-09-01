@@ -2,10 +2,11 @@
 
 import { STOP_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
 import {
-  emitPerTurnFeedbackSteer,
+  PER_TURN_FEEDBACK_MESSAGE,
   shouldEmitPerTurnFeedback,
 } from '../feedback.mjs';
 import {
+  emitSoftContext,
   readHookEvent,
   runHook,
   sample,
@@ -21,6 +22,6 @@ await runHook(async () => {
   }
 
   if (shouldEmitPerTurnFeedback(event)) {
-    emitPerTurnFeedbackSteer();
+    emitSoftContext('Stop', PER_TURN_FEEDBACK_MESSAGE);
   }
 });
