@@ -38,18 +38,19 @@ function parseEventStream(stdout) {
 }
 
 function hookContext(event) {
-  return hookOutput(event)?.hookSpecificOutput?.additionalContext;
+  try {
+    return JSON.parse(event.output).hookSpecificOutput?.additionalContext;
+  } catch {
+    return undefined;
+  }
 }
 
 function hookOutput(event) {
-  for (const output of [event.output, ...String(event.output).split(/\r?\n/)]) {
-    try {
-      return JSON.parse(output);
-    } catch {
-      // Debug output can appear beside the hook's JSON response.
-    }
+  try {
+    return JSON.parse(event.output);
+  } catch {
+    return undefined;
   }
-  return undefined;
 }
 
 function valueContains(value, expected) {
@@ -123,7 +124,7 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
         env: {
           ...process.env,
           NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
-            'Math.random = () => 0.05',
+            'Math.random = () => 0.01',
           )}`,
         },
         maxBuffer: 16 * 1024 * 1024,
@@ -171,8 +172,8 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
   });
 
   it('uses the intended feedback frequencies', () => {
-    assert.equal(PER_TOOL_FEEDBACK_SAMPLE_RATE, 0.99);
-    assert.equal(PER_TURN_FEEDBACK_SAMPLE_RATE, 0.99);
+    assert.equal(PER_TOOL_FEEDBACK_SAMPLE_RATE, 0.05);
+    assert.equal(PER_TURN_FEEDBACK_SAMPLE_RATE, 0.25);
   });
 
   it('checks the Stripe CLI at SessionStart', () => {
