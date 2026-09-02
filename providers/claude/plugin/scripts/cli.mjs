@@ -76,6 +76,13 @@ export function reportSkillUsage(skillName, run = spawnSync) {
     '--name',
     skillName,
   ];
+  const debugArgs = process.env.STRIPE_API_KEY
+    ? [...args, '--api-key', '[REDACTED]']
+    : args;
+  process.stderr.write(
+    `DEBUG: Would've called stripe ${debugArgs.join(' ')}\n`,
+  );
+
   if (process.env.STRIPE_API_KEY) {
     args.push('--api-key', process.env.STRIPE_API_KEY);
   }

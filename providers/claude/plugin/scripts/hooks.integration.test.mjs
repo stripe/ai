@@ -38,19 +38,18 @@ function parseEventStream(stdout) {
 }
 
 function hookContext(event) {
-  try {
-    return JSON.parse(event.output).hookSpecificOutput?.additionalContext;
-  } catch {
-    return undefined;
-  }
+  return hookOutput(event)?.hookSpecificOutput?.additionalContext;
 }
 
 function hookOutput(event) {
-  try {
-    return JSON.parse(event.output);
-  } catch {
-    return undefined;
+  for (const output of [event.output, ...String(event.output).split(/\r?\n/)]) {
+    try {
+      return JSON.parse(output);
+    } catch {
+      // Debug output can appear beside the hook's JSON response.
+    }
   }
+  return undefined;
 }
 
 describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
@@ -203,7 +202,13 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
           event.hook_name === 'PostToolUse:Skill' &&
           hookContext(event) === PER_TOOL_FEEDBACK_MESSAGE,
       ),
-      'The PostToolUse hook did not emit Stripe feedback',
+      `The PostToolUse hook did not emit Stripe feedback: ${JSON.stringify(
+        events.filter(
+          (event) =>
+            event.hook_event === 'PostToolUse' ||
+            event.hook_name === 'PostToolUse:Skill',
+        ),
+      )}`,
     );
     assert.ok(transcript.includes(PER_TOOL_FEEDBACK_MESSAGE));
   });

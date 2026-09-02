@@ -165,13 +165,17 @@ exit 1
         'Math.random = () => 0',
       )}`,
       PATH: `${directory}${delimiter}${process.env.PATH}`,
+      STRIPE_API_KEY: '',
       STRIPE_USAGE_LOG: usageLog,
     },
   );
 
   assert.ifError(result.error);
   assert.equal(result.status, 0);
-  assert.equal(result.stderr, '');
+  assert.equal(
+    result.stderr,
+    "DEBUG: Would've called stripe agent report_usage --type skill --name stripe-docs\n",
+  );
   assert.deepEqual(JSON.parse(result.stdout), {
     hookSpecificOutput: {
       additionalContext: PER_TOOL_FEEDBACK_MESSAGE,
@@ -194,6 +198,7 @@ exit 1
     },
     {
       PATH: `${directory}${delimiter}${process.env.PATH}`,
+      STRIPE_API_KEY: '',
       STRIPE_USAGE_LOG: usageLog,
     },
   );
