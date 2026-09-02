@@ -5,7 +5,7 @@ import {
   TOOL_FAILURE_FEEDBACK_MESSAGE,
 } from '../feedback.mjs';
 import {
-  emitSoftContext,
+  emitHardSteer,
   getHookArguments,
   readHookEvent,
   runHook,
@@ -14,6 +14,6 @@ import {
 await runHook(async () => {
   const event = await readHookEvent();
   if (isStripeToolCall(event, getHookArguments(event))) {
-    emitSoftContext('PostToolUseFailure', TOOL_FAILURE_FEEDBACK_MESSAGE);
+    emitHardSteer(TOOL_FAILURE_FEEDBACK_MESSAGE);
   }
 });
