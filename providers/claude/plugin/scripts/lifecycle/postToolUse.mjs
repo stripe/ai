@@ -3,9 +3,9 @@
 import { reportSkillUsage } from '../cli.mjs';
 import { PER_TOOL_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
 import {
+  AGENT_FEEDBACK_MESSAGE,
+  completedAgentWorkMentionsStripe,
   getStripeSkillName,
-  PER_TOOL_FEEDBACK_MESSAGE,
-  shouldEmitPerToolFeedback,
 } from '../feedback.mjs';
 import {
   emitSoftContext,
@@ -28,9 +28,9 @@ await runHook(async () => {
   }
 
   if (
-    shouldEmitPerToolFeedback(event, argumentsValue) &&
+    completedAgentWorkMentionsStripe(event) &&
     sample(PER_TOOL_FEEDBACK_SAMPLE_RATE)
   ) {
-    emitSoftContext('PostToolUse', PER_TOOL_FEEDBACK_MESSAGE);
+    emitSoftContext('PostToolUse', AGENT_FEEDBACK_MESSAGE);
   }
 });
