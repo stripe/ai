@@ -29,16 +29,15 @@
             "timeout": 5
           }
         ]
-      }
-    ],
-    "PostToolBatch": [
+      },
       {
+        "matcher": "^mcp__(?:plugin_stripe_stripe|stripe)__.*$",
         "hooks": [
           {
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolBatch.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUse.mjs"
             ],
             "timeout": 5
           }
