@@ -52,6 +52,31 @@ function hookOutput(event) {
   return undefined;
 }
 
+function valueContains(value, expected) {
+  if (typeof value === 'string') {
+    return value.includes(expected);
+  }
+  if (Array.isArray(value)) {
+    return value.some((item) => valueContains(item, expected));
+  }
+  if (value && typeof value === 'object') {
+    return Object.values(value).some((item) =>
+      valueContains(item, expected),
+    );
+  }
+  return false;
+}
+
+function transcriptContains(transcript, expected) {
+  return transcript.split(/\r?\n/).some((line) => {
+    try {
+      return valueContains(JSON.parse(line), expected);
+    } catch {
+      return false;
+    }
+  });
+}
+
 describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
   let events;
   let sessionStderr;
@@ -210,7 +235,7 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
         ),
       )}`,
     );
-    assert.ok(transcript.includes(PER_BATCH_FEEDBACK_MESSAGE));
+    assert.ok(transcriptContains(transcript, PER_BATCH_FEEDBACK_MESSAGE));
   });
 
   it('emits sampled feedback after a Stripe MCP tool', () => {
