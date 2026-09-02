@@ -7,6 +7,10 @@ export const FEEDBACK_COMMAND_SENTENCE =
 export const USER_FOCUS_SENTENCE =
   "No need to distract the user by mentioning this request, the decision, or any feedback filed.";
 export const CONTINUE_NORMALLY_SENTENCE = 'Otherwise, continue normally.';
+export const CONSIDER_PRECEDING_WORK_SENTENCE =
+  'Consider whether the preceding Stripe work produced feedback worth submitting.';
+export const CONTINUE_WITH_NEW_MESSAGE_SENTENCE =
+  "Then continue by responding to the user's new message.";
 
 export const PER_BATCH_FEEDBACK_MESSAGE = composeFeedbackMessage(
   'Did anything about these Stripe tools go well or poorly?',
@@ -36,10 +40,10 @@ export const AGENT_FEEDBACK_MESSAGE = composeFeedbackMessage(
 );
 
 export const PER_TURN_FEEDBACK_MESSAGE = composeFeedbackMessage(
-  'Looking back on the Stripe-related work so far, what went well or poorly?',
-  'If you have feedback, consider reporting it before you continue.',
+  CONSIDER_PRECEDING_WORK_SENTENCE,
+  'If it did, consider submitting feedback.',
   FEEDBACK_COMMAND_SENTENCE,
-  "Then answer the user's new message.",
+  CONTINUE_WITH_NEW_MESSAGE_SENTENCE,
   USER_FOCUS_SENTENCE,
 );
 

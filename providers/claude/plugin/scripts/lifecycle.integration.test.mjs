@@ -100,6 +100,14 @@ test('sampled UserPromptSubmit emits feedback about the previous turn', (t) => {
       hookEventName: 'UserPromptSubmit',
     },
   });
+  assert.match(
+    PER_TURN_FEEDBACK_MESSAGE,
+    /^Consider whether the preceding Stripe work produced feedback worth submitting\./,
+  );
+  assert.match(
+    PER_TURN_FEEDBACK_MESSAGE,
+    /continue by responding to the user's new message\./,
+  );
 });
 
 test('UserPromptSubmit checks only the immediately preceding turn', (t) => {
@@ -303,10 +311,8 @@ test('PostToolUseFailure always asks about failed Stripe Skills', () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0);
   assert.deepEqual(JSON.parse(result.stdout), {
-    hookSpecificOutput: {
-      additionalContext: TOOL_FAILURE_FEEDBACK_MESSAGE,
-      hookEventName: 'PostToolUseFailure',
-    },
+    decision: 'block',
+    reason: TOOL_FAILURE_FEEDBACK_MESSAGE,
   });
 });
 
@@ -325,10 +331,8 @@ test('PostToolUseFailure always asks about failed Stripe MCP tools', () => {
   assert.ifError(result.error);
   assert.equal(result.status, 0);
   assert.deepEqual(JSON.parse(result.stdout), {
-    hookSpecificOutput: {
-      additionalContext: TOOL_FAILURE_FEEDBACK_MESSAGE,
-      hookEventName: 'PostToolUseFailure',
-    },
+    decision: 'block',
+    reason: TOOL_FAILURE_FEEDBACK_MESSAGE,
   });
 });
 
