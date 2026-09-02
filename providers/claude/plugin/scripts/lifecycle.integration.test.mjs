@@ -202,10 +202,7 @@ exit 1
 
   assert.ifError(result.error);
   assert.equal(result.status, 0);
-  assert.equal(
-    result.stderr,
-    "DEBUG: Would've called stripe agent report_usage --type skill --name stripe-docs\n",
-  );
+  assert.equal(result.stderr, '');
   assert.equal(result.stdout, '');
   assert.ok(existsSync(usageLog), 'Stripe CLI was not invoked');
   assert.equal(
