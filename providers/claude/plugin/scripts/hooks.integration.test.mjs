@@ -15,7 +15,7 @@ import {
   PER_TURN_FEEDBACK_SAMPLE_RATE,
 } from './constants.mjs';
 import {
-  PER_TOOL_FEEDBACK_MESSAGE,
+  PER_BATCH_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
 } from './feedback.mjs';
 
@@ -170,7 +170,7 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
     );
   });
 
-  it('emits sampled feedback after a Stripe skill', () => {
+  it('reports Stripe Skill usage and emits sampled batch feedback', () => {
     assert.ok(
       events.some(
         (event) =>
@@ -198,19 +198,19 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
         (event) =>
           event.type === 'system' &&
           event.subtype === 'hook_response' &&
-          event.hook_event === 'PostToolUse' &&
-          event.hook_name === 'PostToolUse:Skill' &&
-          hookContext(event) === PER_TOOL_FEEDBACK_MESSAGE,
+          event.hook_event === 'PostToolBatch' &&
+          event.hook_name === 'PostToolBatch' &&
+          hookContext(event) === PER_BATCH_FEEDBACK_MESSAGE,
       ),
-      `The PostToolUse hook did not emit Stripe feedback: ${JSON.stringify(
+      `The PostToolBatch hook did not emit Stripe feedback: ${JSON.stringify(
         events.filter(
           (event) =>
-            event.hook_event === 'PostToolUse' ||
-            event.hook_name === 'PostToolUse:Skill',
+            event.hook_event === 'PostToolBatch' ||
+            event.hook_name === 'PostToolBatch',
         ),
       )}`,
     );
-    assert.ok(transcript.includes(PER_TOOL_FEEDBACK_MESSAGE));
+    assert.ok(transcript.includes(PER_BATCH_FEEDBACK_MESSAGE));
   });
 
   it('emits sampled feedback after a Stripe MCP tool', () => {
@@ -235,18 +235,18 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
         (event) =>
           event.type === 'system' &&
           event.subtype === 'hook_response' &&
-          event.hook_event === 'PostToolUse' &&
-          event.hook_name === `PostToolUse:${mcpToolCall.name}` &&
-          hookContext(event) === PER_TOOL_FEEDBACK_MESSAGE,
+          event.hook_event === 'PostToolBatch' &&
+          event.hook_name === 'PostToolBatch' &&
+          hookContext(event) === PER_BATCH_FEEDBACK_MESSAGE,
       ),
-      'The PostToolUse hook did not emit feedback after the Stripe MCP tool',
+      'The PostToolBatch hook did not emit feedback after the Stripe MCP tool',
     );
 
     const completed = events.find((event) => event.type === 'result');
     assert.ok(completed, 'Claude session did not complete');
   });
 
-  it('does not run PostToolBatch or Stop hooks', () => {
+  it('runs UserPromptSubmit and PostToolBatch without a Stop hook', () => {
     assert.ok(
       events.some(
         (event) =>
@@ -266,13 +266,13 @@ describe('Stripe feedback hooks', { timeout: 120_000 }, () => {
       'A Stop hook still ran',
     );
     assert.ok(
-      !events.some(
+      events.some(
         (event) =>
           event.type === 'system' &&
           event.subtype === 'hook_started' &&
           event.hook_name === 'PostToolBatch',
       ),
-      'A PostToolBatch hook still ran',
+      'The PostToolBatch hook did not run',
     );
     assert.ok(
       !events.some(

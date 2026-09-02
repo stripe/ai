@@ -22,8 +22,10 @@ import {
   CLI_OUTDATED_MESSAGE,
 } from './cli.mjs';
 import {
-  PER_TOOL_FEEDBACK_MESSAGE,
+  AGENT_FEEDBACK_MESSAGE,
+  PER_BATCH_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
+  TOOL_FAILURE_FEEDBACK_MESSAGE,
 } from './feedback.mjs';
 
 const SCRIPTS_ROOT = dirname(fileURLToPath(import.meta.url));
@@ -176,12 +178,7 @@ exit 1
     result.stderr,
     "DEBUG: Would've called stripe agent report_usage --type skill --name stripe-docs\n",
   );
-  assert.deepEqual(JSON.parse(result.stdout), {
-    hookSpecificOutput: {
-      additionalContext: PER_TOOL_FEEDBACK_MESSAGE,
-      hookEventName: 'PostToolUse',
-    },
-  });
+  assert.equal(result.stdout, '');
   assert.ok(existsSync(usageLog), 'Stripe CLI was not invoked');
   assert.equal(
     readFileSync(usageLog, 'utf8').trim(),
@@ -208,13 +205,19 @@ exit 1
   assert.ok(!existsSync(usageLog), 'A non-Stripe Skill was reported');
 });
 
-test('sampled PostToolUse emits feedback for Stripe MCP tools', () => {
+test('sampled PostToolBatch emits feedback for Stripe tools', () => {
   const result = runLifecycle(
-    'lifecycle/postToolUse.mjs',
+    'lifecycle/postToolBatch.mjs',
     {
-      hook_event_name: 'PostToolUse',
-      tool_input: { query: 'Checkout' },
-      tool_name: 'mcp__stripe__search_stripe_documentation',
+      hook_event_name: 'PostToolBatch',
+      tool_calls: [
+        {
+          tool_input: { query: 'Checkout' },
+          tool_name: 'mcp__stripe__search_stripe_documentation',
+          tool_response: 'Search results',
+          tool_use_id: 'toolu_stripe',
+        },
+      ],
     },
     {
       NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
@@ -227,10 +230,167 @@ test('sampled PostToolUse emits feedback for Stripe MCP tools', () => {
   assert.equal(result.status, 0);
   assert.deepEqual(JSON.parse(result.stdout), {
     hookSpecificOutput: {
-      additionalContext: PER_TOOL_FEEDBACK_MESSAGE,
+      additionalContext: PER_BATCH_FEEDBACK_MESSAGE,
+      hookEventName: 'PostToolBatch',
+    },
+  });
+});
+
+test('PostToolBatch ignores batches without Stripe tools', () => {
+  const result = runLifecycle(
+    'lifecycle/postToolBatch.mjs',
+    {
+      hook_event_name: 'PostToolBatch',
+      tool_calls: [
+        {
+          tool_input: { file_path: '/tmp/example' },
+          tool_name: 'Read',
+          tool_response: 'contents',
+          tool_use_id: 'toolu_read',
+        },
+      ],
+    },
+    {
+      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+        'Math.random = () => 0',
+      )}`,
+    },
+  );
+
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '');
+});
+
+test('PostToolBatch defers failed Stripe tools to PostToolUseFailure', () => {
+  const result = runLifecycle(
+    'lifecycle/postToolBatch.mjs',
+    {
+      hook_event_name: 'PostToolBatch',
+      tool_calls: [
+        {
+          tool_input: { query: 'Checkout' },
+          tool_name: 'mcp__stripe__search_stripe_documentation',
+          tool_response: 'MCP error -32603: request failed',
+          tool_use_id: 'toolu_stripe',
+        },
+      ],
+    },
+    {
+      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+        'Math.random = () => 0',
+      )}`,
+    },
+  );
+
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '');
+});
+
+test('PostToolUseFailure always asks about failed Stripe Skills', () => {
+  const result = runLifecycle(
+    'lifecycle/postToolUseFailure.mjs',
+    {
+      error: 'Skill failed to load',
+      hook_event_name: 'PostToolUseFailure',
+      tool_input: { skill: 'stripe:stripe-docs' },
+      tool_name: 'Skill',
+      tool_use_id: 'toolu_skill',
+    },
+  );
+
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    hookSpecificOutput: {
+      additionalContext: TOOL_FAILURE_FEEDBACK_MESSAGE,
+      hookEventName: 'PostToolUseFailure',
+    },
+  });
+});
+
+test('PostToolUseFailure always asks about failed Stripe MCP tools', () => {
+  const result = runLifecycle(
+    'lifecycle/postToolUseFailure.mjs',
+    {
+      error: 'MCP error -32603: request failed',
+      hook_event_name: 'PostToolUseFailure',
+      tool_input: { query: 'Checkout' },
+      tool_name: 'mcp__stripe__search_stripe_documentation',
+      tool_use_id: 'toolu_mcp',
+    },
+  );
+
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    hookSpecificOutput: {
+      additionalContext: TOOL_FAILURE_FEEDBACK_MESSAGE,
+      hookEventName: 'PostToolUseFailure',
+    },
+  });
+});
+
+test('sampled PostToolUse asks the parent about Stripe-related Agent work', () => {
+  const result = runLifecycle(
+    'lifecycle/postToolUse.mjs',
+    {
+      hook_event_name: 'PostToolUse',
+      tool_input: { prompt: 'Investigate the Stripe integration' },
+      tool_name: 'Agent',
+      tool_response: {
+        content: [{ type: 'text', text: 'The investigation is complete.' }],
+        status: 'completed',
+      },
+    },
+    {
+      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+        'Math.random = () => 0',
+      )}`,
+    },
+  );
+
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    hookSpecificOutput: {
+      additionalContext: AGENT_FEEDBACK_MESSAGE,
       hookEventName: 'PostToolUse',
     },
   });
+});
+
+test('PostToolUse ignores unrelated and background Agent work', () => {
+  for (const toolResponse of [
+    {
+      content: [{ type: 'text', text: 'CSS investigation complete.' }],
+      status: 'completed',
+    },
+    {
+      description: 'Investigate Stripe',
+      status: 'async_launched',
+    },
+  ]) {
+    const result = runLifecycle(
+      'lifecycle/postToolUse.mjs',
+      {
+        hook_event_name: 'PostToolUse',
+        tool_input: { prompt: 'Investigate CSS' },
+        tool_name: 'Agent',
+        tool_response: toolResponse,
+      },
+      {
+        NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+          'Math.random = () => 0',
+        )}`,
+      },
+    );
+
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.equal(result.stdout, '');
+  }
 });
 
 test('SessionStart reports missing, outdated, and current CLI states', (t) => {
