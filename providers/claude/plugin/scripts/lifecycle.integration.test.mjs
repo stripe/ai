@@ -74,6 +74,26 @@ function writeExecutable(directory, name, contents) {
   chmodSync(executablePath, 0o755);
 }
 
+test('feedback prompts provide direct, valid CLI guidance', () => {
+  const messages = [
+    AGENT_FEEDBACK_MESSAGE,
+    PER_BATCH_FEEDBACK_MESSAGE,
+    PER_TURN_FEEDBACK_MESSAGE,
+    TOOL_FAILURE_FEEDBACK_MESSAGE,
+  ];
+
+  for (const message of messages) {
+    assert.match(message, /stripe feedback --json --sentiment neutral/);
+    assert.match(message, /positive, neutral, or negative/);
+    assert.match(message, /stripe feedback --help/);
+    assert.doesNotMatch(message, /\bconsider\b/i);
+  }
+  assert.match(
+    TOOL_FAILURE_FEEDBACK_MESSAGE,
+    /^The Stripe tool failed\. Send Stripe feedback/,
+  );
+});
+
 test('sampled UserPromptSubmit emits feedback about the previous turn', (t) => {
   const transcriptPath = writeTranscript(t, 'Help me integrate Stripe');
   const event = {
@@ -102,7 +122,7 @@ test('sampled UserPromptSubmit emits feedback about the previous turn', (t) => {
   });
   assert.match(
     PER_TURN_FEEDBACK_MESSAGE,
-    /^Consider whether the preceding Stripe work produced feedback worth submitting\./,
+    /^Assess the preceding Stripe work before handling the new message\./,
   );
   assert.match(
     PER_TURN_FEEDBACK_MESSAGE,
