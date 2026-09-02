@@ -185,15 +185,22 @@ export class StripeLanguageModelV3 implements LanguageModelV3 {
 
     const model = modelId.substring('anthropic/'.length);
 
+    // Check both dash-form (claude-3-7-sonnet) and dot-form (claude-3.7-sonnet)
+    // since normalizeModelId converts version dashes to dots
     if (
       model.includes('sonnet-4') ||
       model.includes('claude-3-7-sonnet') ||
-      model.includes('haiku-4-5')
+      model.includes('claude-3.7-sonnet') ||
+      model.includes('haiku-4-5') ||
+      model.includes('haiku-4.5')
     ) {
       return 64000;
     } else if (model.includes('opus-4')) {
       return 32000;
-    } else if (model.includes('claude-3-5-haiku')) {
+    } else if (
+      model.includes('claude-3-5-haiku') ||
+      model.includes('claude-3.5-haiku')
+    ) {
       return 8192;
     } else {
       return 4096;
