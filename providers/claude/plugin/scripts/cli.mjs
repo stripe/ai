@@ -68,12 +68,19 @@ export function cliLoggedIn(run = spawnSync) {
 }
 
 export function reportSkillUsage(skillName, run = spawnSync) {
+  const args = [
+    'agent',
+    'report_usage',
+    '--type',
+    'skill',
+    '--name',
+    skillName,
+  ];
+  if (process.env.STRIPE_API_KEY) {
+    args.push('--api-key', process.env.STRIPE_API_KEY);
+  }
   try {
-    run(
-      'stripe',
-      ['agent', 'report_usage', '--skill', skillName],
-      silentCommandOptions,
-    );
+    run('stripe', args, silentCommandOptions);
   } catch {
     // Usage reporting must never affect the agent's work.
   }

@@ -22,24 +22,30 @@ import {
   CLI_OUTDATED_MESSAGE,
 } from './cli.mjs';
 import {
-  PER_BATCH_FEEDBACK_MESSAGE,
+  PER_TOOL_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
 } from './feedback.mjs';
 
 const SCRIPTS_ROOT = dirname(fileURLToPath(import.meta.url));
 
-function writeTranscript(t, prompt) {
+function writeTranscriptEntries(t, entries) {
   const directory = mkdtempSync(join(tmpdir(), 'stripe-hooks-'));
   const transcriptPath = join(directory, 'transcript.jsonl');
   writeFileSync(
     transcriptPath,
-    `${JSON.stringify({
-      type: 'user',
-      message: { role: 'user', content: prompt },
-    })}\n`,
+    `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
   );
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   return transcriptPath;
+}
+
+function writeTranscript(t, prompt) {
+  return writeTranscriptEntries(t, [
+    {
+      type: 'user',
+      message: { role: 'user', content: prompt },
+    },
+  ]);
 }
 
 function runLifecycle(script, event, env = {}) {
@@ -94,6 +100,45 @@ test('sampled UserPromptSubmit emits feedback about the previous turn', (t) => {
   });
 });
 
+test('UserPromptSubmit checks only the immediately preceding turn', (t) => {
+  const transcriptPath = writeTranscriptEntries(t, [
+    {
+      type: 'user',
+      message: { role: 'user', content: 'Help me integrate Stripe' },
+    },
+    {
+      type: 'assistant',
+      message: { role: 'assistant', content: 'Done.' },
+    },
+    {
+      type: 'user',
+      message: { role: 'user', content: 'Now explain CSS grid' },
+    },
+    {
+      type: 'assistant',
+      message: { role: 'assistant', content: 'Use display: grid.' },
+    },
+  ]);
+
+  const result = runLifecycle(
+    'lifecycle/userPromptSubmit.mjs',
+    {
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'What should I do next?',
+      transcript_path: transcriptPath,
+    },
+    {
+      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+        'Math.random = () => 0',
+      )}`,
+    },
+  );
+
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '');
+});
+
 test('Stripe Skill usage is reported with its short name and silent failures', (t) => {
   const directory = createBinDirectory(t);
   const usageLog = join(directory, 'usage.log');
@@ -116,6 +161,9 @@ exit 1
       tool_name: 'Skill',
     },
     {
+      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+        'Math.random = () => 0',
+      )}`,
       PATH: `${directory}${delimiter}${process.env.PATH}`,
       STRIPE_USAGE_LOG: usageLog,
     },
@@ -123,12 +171,17 @@ exit 1
 
   assert.ifError(result.error);
   assert.equal(result.status, 0);
-  assert.equal(result.stdout, '');
   assert.equal(result.stderr, '');
+  assert.deepEqual(JSON.parse(result.stdout), {
+    hookSpecificOutput: {
+      additionalContext: PER_TOOL_FEEDBACK_MESSAGE,
+      hookEventName: 'PostToolUse',
+    },
+  });
   assert.ok(existsSync(usageLog), 'Stripe CLI was not invoked');
   assert.equal(
     readFileSync(usageLog, 'utf8').trim(),
-    'agent report_usage --skill stripe-docs',
+    'agent report_usage --type skill --name stripe-docs',
   );
 
   rmSync(usageLog);
@@ -150,17 +203,13 @@ exit 1
   assert.ok(!existsSync(usageLog), 'A non-Stripe Skill was reported');
 });
 
-test('sampled PostToolBatch emits feedback for Stripe tools', () => {
+test('sampled PostToolUse emits feedback for Stripe MCP tools', () => {
   const result = runLifecycle(
-    'lifecycle/postToolBatch.mjs',
+    'lifecycle/postToolUse.mjs',
     {
-      hook_event_name: 'PostToolBatch',
-      tool_calls: [
-        {
-          tool_input: { query: 'Checkout' },
-          tool_name: 'mcp__stripe__search_stripe_documentation',
-        },
-      ],
+      hook_event_name: 'PostToolUse',
+      tool_input: { query: 'Checkout' },
+      tool_name: 'mcp__stripe__search_stripe_documentation',
     },
     {
       NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
@@ -173,8 +222,8 @@ test('sampled PostToolBatch emits feedback for Stripe tools', () => {
   assert.equal(result.status, 0);
   assert.deepEqual(JSON.parse(result.stdout), {
     hookSpecificOutput: {
-      additionalContext: PER_BATCH_FEEDBACK_MESSAGE,
-      hookEventName: 'PostToolBatch',
+      additionalContext: PER_TOOL_FEEDBACK_MESSAGE,
+      hookEventName: 'PostToolUse',
     },
   });
 });
