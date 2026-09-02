@@ -9,8 +9,8 @@ Run this interview **before writing any code**. Ask one question at a time. Neve
 ```
 What would you like your app to do? Pick the option that sounds closest:
 
-1. Show something or add a button/panel inside my Stripe Dashboard
-   (for example: show a customer's loyalty points, add a "Send email" button)
+1. Show something or add a custom page or experience inside my Stripe Dashboard
+   (for example: a custom standalone page in the Dashboard, show a customer's loyalty points, add a "Send email" button)
 
 2. Automatically do something when a payment or event happens
    (for example: send a confirmation email, update a spreadsheet, sync data)
@@ -130,7 +130,6 @@ Some Stripe Apps features are in **private preview** — they require the user t
 | --- | --- | --- |
 | Custom objects | “store custom data in Stripe”, “create my own data model”, “custom database in Stripe”, “custom fields on customers”, “structured data that isn’t in Stripe already” | “Custom objects let you define your own data types in Stripe, but this feature is currently in private preview. You’ll need to have access enabled on your account before we can use it. Can you confirm you’re gated in for custom objects?” |
 | Extension interfaces | “change how Stripe calculates”, “custom billing logic”, “modify payment routing”, “override Stripe’s default behavior”, “custom tax calculation” | “Extension interfaces let your app hook into Stripe’s processing pipeline, but this is in private preview. Can you confirm you have access to extension interfaces on your account?” |
-| Full-page apps | “full-screen page in Stripe”, “my own page in the Dashboard”, “not a side panel — a full page”, “standalone page inside Stripe” | “Full-page apps (using the `stripe.dashboard.fullpage` viewport) are in private preview. Can you confirm you have access to full-page apps on your account?” |
 
 **When to check:**
 

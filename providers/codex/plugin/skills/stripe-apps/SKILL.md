@@ -10,8 +10,9 @@ description: >-
   (UI extensions, backend-only, extension interfaces, embedded apps),
   authentication (platform keys, OAuth, restricted API keys), stripe-app.yaml
   manifest setup (permissions, viewports, CSP), webhook configuration for apps,
-  Secret Store API, `fetchStripeSignature` auth, and marketplace publishing. Use
-  when the user mentions Stripe Apps, UI extensions, @stripe/ui-extension-sdk,
+  Secret Store API, `fetchStripeSignature` auth, and marketplace publishing,
+  plus submitting one agentic feedback report after a build. Use when the user
+  mentions Stripe Apps, UI extensions, @stripe/ui-extension-sdk,
   stripe-app.yaml, Dashboard extensions, or customizing the Stripe Dashboard.
 
 ---
@@ -47,7 +48,8 @@ If you cannot access the docs, tell the user: “I need to check the current Str
 | 6 | File names: `ui/src/views/App.tsx` (V2 workspace layout), `server.js` (project root). Only create files that are needed for the app’s architecture (see Step 3). | Using wrong filenames or creating files the architecture doesn’t need |
 | 7 | Every file you write to disk MUST be complete and runnable — not a skeleton or placeholder. The user should be able to run it immediately. Do not write partial files with TODOs. | Writing a file with TODO placeholders or incomplete implementations |
 | 8 | When presenting the development workflow, include `pnpm build` and `pnpm test` as explicit steps for apps with a UI extension. Backend-only apps without TypeScript skip `pnpm build`. | Omitting build/test steps for UI apps, or requiring them for backend-only apps |
-| 9 | If the user’s app requires custom objects or extension interfaces (private preview features), OR full-page apps, inform them the feature is in private preview and ask them to confirm they have access BEFORE proceeding. Do not silently proceed with a private preview feature. | Building with private preview features without confirming user has access |
+| 9 | If the user’s app requires custom objects or extension interfaces (private preview features), inform them the feature is in private preview and ask them to confirm they have access BEFORE proceeding. Do not silently proceed with a private preview feature. | Building with private preview features without confirming user has access |
+| 10 | Before ending the conversation, if you ran any toolchain command this session, submit exactly one `stripe feedback` report — see `references/feedback.md`. Never block delivery on it. | Ending a build session in which commands were run without submitting one feedback report |
 
 ## BLOCKED — these produce broken apps
 
@@ -91,9 +93,10 @@ Do NOT include a summary, plan, or architecture in this first message. ONLY the 
 
 - **Custom objects** (storing custom data models IN Stripe)
 - **Extension interfaces** (changing how Stripe processes billing, payments, or tax)
-- **Full-page apps** (dedicated page in Dashboard nav)
 
 If yes: tell the user that feature is in private preview, ask them to confirm access. See `references/discovery.md` for exact wording and alternatives.
+
+Full-page apps require `@stripe/ui-extension-sdk` version `9.2.1` or later and the latest version of the Stripe Apps CLI plugin.
 
 After the user answers, show a plain-language summary:
 
@@ -205,3 +208,4 @@ If any file is MISSING, call Write now to create it.
 | <references/authentication.md> | For auth type selection and patterns |
 | <references/onboarding-ux.md> | For first-run experience |
 | <references/publishing.md> | For marketplace publishing |
+| <references/feedback.md> | After a build where you ran CLI/build commands — submit one feedback report |

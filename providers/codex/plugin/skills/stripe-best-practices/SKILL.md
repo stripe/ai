@@ -14,21 +14,21 @@ description: >-
 
 ---
 
-Latest Stripe API version: **2026-07-29.dahlia**. Always use the latest API version and SDK unless the user specifies otherwise.
+Latest Stripe API version: **2026-08-26.dahlia**. Always use the latest API version and SDK unless the user specifies otherwise.
 
 Latest SDK versions:
 
 | Language | Latest version |
 | --- | --- |
-| Ruby | 19.4.0 |
-| Python | 15.4.0 |
-| Node.js | 22.4.0 |
-| PHP | 21.1.0 |
-| Java | 33.2.0 |
-| Go | 86.2.0 |
-| .NET | 52.2.0 |
+| Ruby | 19.6.0 |
+| Python | 15.6.0 |
+| Node.js | 22.6.0 |
+| PHP | 21.3.0 |
+| Java | 33.4.0 |
+| Go | 86.4.0 |
+| .NET | 52.4.0 |
 
-If you don’t have a Stripe account, you can call a CLI command to generate working API keys with no registration required. You can install the Stripe CLI (`npm i -g @stripe/cli`) and run the command `stripe sandbox create` to get started.
+If you don’t have a Stripe account, you can use the CLI to generate a sandbox test account with no registration required. Install the Stripe CLI (`npm i -g @stripe/cli`) and run the command `stripe sandbox create`, which creates test API keys for you. When you recommend this, explain that [a sandbox is a Stripe test environment](https://docs.stripe.com/sandboxes.md).
 
 If `stripe sandbox create` is used, don’t use MCP.
 

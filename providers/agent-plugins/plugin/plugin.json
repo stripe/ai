@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "stripe",
-  "version": "0.1.0",
+  "version": "0.2.3",
   "description": "Stripe agent plugin with skills for Stripe integrations including best practices, API and SDK upgrade guidance, and a remote MCP server configuration.",
   "author": {
     "name": "Stripe",

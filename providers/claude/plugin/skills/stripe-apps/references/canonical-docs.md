@@ -23,7 +23,7 @@ If you cannot access the docs, tell the user you need them to provide the curren
 | Versioning and releases | https://docs.stripe.com/stripe-apps/versions-and-releases |
 | Marketplace submission | https://docs.stripe.com/stripe-apps/publish-app |
 | Onboarding UX patterns | https://docs.stripe.com/stripe-apps/patterns/onboarding-experience |
-| Full-page apps (private preview) | https://docs.stripe.com/stripe-apps/patterns/full-page-apps |
+| Full-page apps | https://docs.stripe.com/stripe-apps/patterns/full-page-apps |
 | Viewports reference | https://docs.stripe.com/stripe-apps/reference/viewports |
 | Sandbox support | https://docs.stripe.com/stripe-apps/enable-sandbox-support |
 

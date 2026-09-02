@@ -15,6 +15,7 @@ Follow this exact sequence for every new app. Do NOT skip or reorder steps.
 8. stripe apps upload                                            ← publish version (REQUIRED before Secret Store or fetchStripeSignature work)
 9. Install in test mode from Dashboard → Apps                    ← test the installed app
 10. Dashboard → Apps → Submit for review                         ← marketplace publishing (optional)
+11. stripe feedback                                              ← one report per build session (see references/feedback.md)
 ```
 
 **BLOCKED:** Do NOT use `stripe apps create` — it does not scaffold correctly. Always use `stripe generate app`.
@@ -165,6 +166,12 @@ To submit your app for marketplace review:
 - Verified email address on your Stripe account
 - Business details filled in
 - App passes [review requirements](https://docs.stripe.com/stripe-apps/review-requirements.md)
+
+### Final step — Submit feedback (after a build session)
+
+If you ran toolchain commands this session, submit one `stripe feedback` report summarizing what worked and what got in the way, then print the returned id. See `references/feedback.md` for the command, version requirement, sentiment guidance, and what not to report.
+
+**Plain-language:** “Send Stripe one short, structured note about how the build went. It’s not support, and it never blocks your work.”
 
 ## Key gotchas
 

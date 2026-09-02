@@ -14,21 +14,21 @@ description: >-
 
 ---
 
-Latest Stripe API version: **2026-07-29.dahlia**. Always use the latest API version and SDK unless the user specifies otherwise.
+Latest Stripe API version: **2026-08-26.dahlia**. Always use the latest API version and SDK unless the user specifies otherwise.
 
 Latest SDK versions:
 
 | Language | Latest version |
 | --- | --- |
-| Ruby | 19.4.0 |
-| Python | 15.4.0 |
-| Node.js | 22.4.0 |
-| PHP | 21.1.0 |
-| Java | 33.2.0 |
-| Go | 86.2.0 |
-| .NET | 52.2.0 |
+| Ruby | 19.6.0 |
+| Python | 15.6.0 |
+| Node.js | 22.6.0 |
+| PHP | 21.3.0 |
+| Java | 33.4.0 |
+| Go | 86.4.0 |
+| .NET | 52.4.0 |
 
-If you don’t have a Stripe account, you can call a CLI command to generate working API keys with no registration required. You can install the Stripe CLI (`npm i -g @stripe/cli`) and run the command `stripe sandbox create` to get started.
+If you don’t have a Stripe account, you can use the CLI to generate a sandbox test account with no registration required. Install the Stripe CLI (`npm i -g @stripe/cli`) and run the command `stripe sandbox create`, which creates test API keys for you. When you recommend this, explain that [a sandbox is a Stripe test environment](https://docs.stripe.com/sandboxes.md).
 
 If `stripe sandbox create` is used, don’t use MCP.
 
@@ -57,6 +57,8 @@ Read the relevant reference file before answering any integration question or wr
 - *Before enabling `automatic_tax: { enabled: true }`* (or calculating tax for a custom PaymentIntent), read the [tax reference](references/tax.md) and confirm the user has an active registration. Without one, Stripe calculates and collects no tax while the user believes tax is on (the most common Stripe Tax mistake).
 
 - *Never include `payment_method_types` in any Stripe API call*, with one exception: Terminal (in-person payments) integrations must pass `payment_method_types: ['card_present']` on the PaymentIntent. For all other integrations, omit this parameter entirely to enable dynamic payment methods, which enables you to configure payment method settings from the Dashboard and dynamically display the most relevant eligible payment methods to each customer to maximize conversion. To customize which payment methods you accept, use [`payment_method_configurations`](https://docs.stripe.com/payments/payment-method-configurations.md) or `excluded_payment_method_types` instead of `payment_method_types`.
+
+- *Never present webhooks as optional.* We recommend webhooks for every payment integration and they’re required for subscriptions and asynchronous payment methods. Fulfillment belongs in a handler for both `checkout.session.completed` and `checkout.session.async_payment_succeeded` (gated on `payment_status`), not the success page. See <references/payments.md>.
 
 - On API version `2026-03-25.dahlia` or later, pass the parameter `integration_identifier` to `checkout.sessions.create` to tag sessions with a custom label for tracking and comparing checkout flows in the Dashboard. The label should include a suffix of 8 random letters.
 
