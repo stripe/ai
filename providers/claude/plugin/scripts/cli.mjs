@@ -67,7 +67,7 @@ export function cliLoggedIn(run = spawnSync) {
   return result.status === 0 && hasAuthenticatedConfig(result.stdout ?? '');
 }
 
-export function reportSkillUsage(skillName, run = spawnSync) {
+export function reportSkillUsage(skillName, run = spawnSync) {)
   const args = [
     'agent',
     'report_usage',
@@ -80,6 +80,7 @@ export function reportSkillUsage(skillName, run = spawnSync) {
   if (process.env.STRIPE_API_KEY) {
     args.push('--api-key', process.env.STRIPE_API_KEY);
   }
+  console.log(`DEBUG: stripe ${args.join(' ')}`);
   try {
     run('stripe', args, silentCommandOptions);
   } catch {
