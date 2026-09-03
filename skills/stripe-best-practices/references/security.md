@@ -43,7 +43,7 @@ Never build API endpoints or error pages that dump environment variables. In add
 
 ## Restricted API keys (RAKs)
 
-Use [restricted API keys](https://docs.stripe.com/keys/restricted-api-keys.md) (prefix `rk_`) instead of secret keys (prefix `sk_`) wherever possible. RAKs have only the permissions you assign, so a compromised RAK can do far less damage than a compromised secret key.
+Use [restricted API keys](https://docs.stripe.com/keys.md#manage-your-api-keys) (prefix `rk_`) instead of secret keys (prefix `sk_`) wherever possible. RAKs have only the permissions you assign, so a compromised RAK can do far less damage than a compromised secret key.
 
 Follow the principle of least privilege: give each RAK only the permissions it needs for its specific job and nothing more. Create a separate RAK for each service or use case.
 
