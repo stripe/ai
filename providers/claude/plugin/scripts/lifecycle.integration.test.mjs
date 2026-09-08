@@ -83,10 +83,33 @@ test('feedback prompts provide direct, valid CLI guidance', () => {
   ];
 
   for (const message of messages) {
+    const feedbackRequestIndex = message.search(/send Stripe feedback/i);
+    const exampleIndex = message.indexOf('For example:');
+    const optionsIndex = message.indexOf(
+      'Use positive, neutral, or negative honestly.',
+    );
+    const continueIndex = message.indexOf('Then continue');
+    const approvalIndex = message.indexOf('Before submitting');
+    const firstBetaIndex = message.indexOf('private beta');
+    const lastBetaIndex = message.lastIndexOf('private beta');
+
+    assert.ok(feedbackRequestIndex >= 0);
+    assert.ok(feedbackRequestIndex < firstBetaIndex);
+    assert.ok(firstBetaIndex < exampleIndex);
+    assert.ok(exampleIndex < optionsIndex);
+    assert.ok(optionsIndex < continueIndex);
+    assert.ok(continueIndex < approvalIndex);
+    assert.ok(approvalIndex < lastBetaIndex);
     assert.match(message, /stripe feedback --json --sentiment neutral/);
     assert.match(message, /positive, neutral, or negative/);
     assert.match(message, /stripe feedback --help/);
+    assert.match(
+      message,
+      /Before submitting, show the prospective feedback to the user and ask for approval, mentioning that they may be invited to a private beta if Stripe is developing a solution to their problem\./,
+    );
+    assert.equal(message.match(/private beta/g)?.length, 2);
     assert.doesNotMatch(message, /\bconsider\b/i);
+    assert.doesNotMatch(message, /distract the user/i);
   }
   assert.match(
     TOOL_FAILURE_FEEDBACK_MESSAGE,
@@ -436,8 +459,12 @@ if [ "$1" = "--version" ]; then
   echo "stripe version $STRIPE_FAKE_VERSION"
   exit 0
 fi
-if [ "$1" = "config" ] && [ "$2" = "--list" ]; then
-  printf '%s' "$STRIPE_FAKE_CONFIG"
+if [ "$1" = "whoami" ] && [ "$2" = "--format" ] && [ "$3" = "json" ]; then
+  if [ "$STRIPE_FAKE_AUTHENTICATED" = "1" ]; then
+    echo '{"authenticated":true,"account_id":"acct_123"}'
+    exit 0
+  fi
+  echo '{"authenticated":false}'
   exit 0
 fi
 exit 1
@@ -463,7 +490,6 @@ exit 1
     { hook_event_name: 'SessionStart', source: 'startup' },
     {
       PATH: directory,
-      STRIPE_FAKE_CONFIG: '',
       STRIPE_FAKE_LATEST: '1.50.6',
       STRIPE_FAKE_VERSION: '1.50.1',
     },
@@ -480,7 +506,7 @@ exit 1
     { hook_event_name: 'SessionStart', source: 'startup' },
     {
       PATH: directory,
-      STRIPE_FAKE_CONFIG: 'account_id = acct_123',
+      STRIPE_FAKE_AUTHENTICATED: '1',
       STRIPE_FAKE_LATEST: '1.50.6',
       STRIPE_FAKE_VERSION: '1.50.6',
     },
@@ -494,7 +520,7 @@ exit 1
     { hook_event_name: 'SessionStart', source: 'startup' },
     {
       PATH: directory,
-      STRIPE_FAKE_CONFIG: 'account_id = acct_123',
+      STRIPE_FAKE_AUTHENTICATED: '1',
       STRIPE_FAKE_NPM_FAILURE: '1',
       STRIPE_FAKE_VERSION: '1.50.1',
     },
@@ -502,4 +528,44 @@ exit 1
   assert.ifError(registryFailure.error);
   assert.equal(registryFailure.status, 0);
   assert.equal(registryFailure.stdout, '');
+});
+
+const sampledPromptEnv = {
+  NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+    'Math.random = () => 0',
+  )}`,
+};
+
+function assertSilentHook(result) {
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr, '');
+}
+
+test('UserPromptSubmit stays silent when the transcript is missing', () => {
+  const result = runLifecycle(
+    'lifecycle/userPromptSubmit.mjs',
+    {
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'What should I do next?',
+      transcript_path: join(tmpdir(), 'missing-stripe-transcript.jsonl'),
+    },
+    sampledPromptEnv,
+  );
+  assertSilentHook(result);
+});
+
+test('UserPromptSubmit stays silent when the transcript is unreadable', (t) => {
+  const transcriptPath = createBinDirectory(t);
+  const result = runLifecycle(
+    'lifecycle/userPromptSubmit.mjs',
+    {
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'What should I do next?',
+      transcript_path: transcriptPath,
+    },
+    sampledPromptEnv,
+  );
+  assertSilentHook(result);
 });

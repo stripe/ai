@@ -207,3 +207,11 @@ test('reads a latest-turn entry larger than one transcript chunk', (t) => {
     true,
   );
 });
+
+test('throws when the transcript file is missing', () => {
+  assert.throws(() =>
+    lastTurnMentioned(/stripe/i, {
+      transcript_path: join(tmpdir(), 'missing-stripe-transcript.jsonl'),
+    }),
+  );
+});

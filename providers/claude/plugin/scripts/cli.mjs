@@ -21,19 +21,6 @@ const silentCommandOptions = {
   stdio: 'ignore',
 };
 
-function hasAuthenticatedConfig(config) {
-  const configuredValue =
-    /^\s*(?:account_id|test_mode_api_key|live_mode_api_key)\s*=\s*(.*?)\s*$/gim;
-
-  for (const match of config.matchAll(configuredValue)) {
-    const value = match[1].replace(/^(['"])(.*)\1$/, '$2').trim();
-    if (value) {
-      return true;
-    }
-  }
-  return false;
-}
-
 function parseVersion(output) {
   return output.match(/\b\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?\b/)?.[0];
 }
@@ -63,8 +50,13 @@ export function cliInstalled(run = spawnSync) {
 }
 
 export function cliLoggedIn(run = spawnSync) {
-  const result = run('stripe', ['config', '--list'], commandOptions);
-  return result.status === 0 && hasAuthenticatedConfig(result.stdout ?? '');
+  try {
+    const result = run('stripe', ['whoami', '--format', 'json'], commandOptions);
+    const payload = JSON.parse(result.stdout ?? '');
+    return payload.authenticated;
+  } catch {
+    return false;
+  }
 }
 
 export function reportSkillUsage(skillName, run = spawnSync) {
