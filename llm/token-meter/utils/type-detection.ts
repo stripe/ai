@@ -312,8 +312,9 @@ export async function extractUsageFromAnthropicStream(
         usage.input_tokens = chunk.message.usage.input_tokens ?? 0;
         model = chunk.message.model;
       }
-      // Capture usage from message_delta event (output tokens)
+      // Apply cumulative counts, keeping prior input usage when it is omitted.
       if (chunk.type === 'message_delta' && 'usage' in chunk) {
+        usage.input_tokens = chunk.usage.input_tokens ?? usage.input_tokens;
         usage.output_tokens = chunk.usage.output_tokens ?? 0;
       }
     }
