@@ -3,7 +3,9 @@
 ## Table of contents
 
 - API keys
+
 - Restricted API keys (RAKs)
+
 - IP restrictions
 - Incident response
 - Webhook security
