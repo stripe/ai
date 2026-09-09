@@ -1,8 +1,8 @@
 ---
 name: stripe-projects
 description: >
-  Use when the user wants to provision infrastructure or third-party services
-  using Stripe Projects. Triggers: "I need a database", "set up auth", "add
+  Use when the user wants to provision infrastructure or third-party services. 
+  Triggers: "I need a database", "set up auth", "add
   caching", "give me a Postgres", "provision Redis", "I need hosting", "add a
   vector DB", "get me an API key for X", "get credentials for X", "sign up for a
   service", "set up monitoring", "show me the catalog", "what can I provision",
