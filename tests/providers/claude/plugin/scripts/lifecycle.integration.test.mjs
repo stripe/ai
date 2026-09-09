@@ -20,13 +20,13 @@ import {
   CLI_NOT_INSTALLED_MESSAGE,
   CLI_NOT_LOGGED_IN_MESSAGE,
   CLI_OUTDATED_MESSAGE,
-} from './cli.mjs';
+} from '../../../../../providers/claude/plugin/scripts/cli.mjs';
 import {
   AGENT_FEEDBACK_MESSAGE,
   PER_BATCH_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
   TOOL_FAILURE_FEEDBACK_MESSAGE,
-} from './feedback.mjs';
+} from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
 
 const SCRIPTS_ROOT = dirname(fileURLToPath(import.meta.url));
 

@@ -9,11 +9,11 @@ import {
   it,
 } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { CLI_NOT_INSTALLED_MESSAGE } from './cli.mjs';
+import { CLI_NOT_INSTALLED_MESSAGE } from '../../../../../providers/claude/plugin/scripts/cli.mjs';
 import {
   PER_BATCH_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
-} from './feedback.mjs';
+} from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
 
 const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const STRIPE_MCP_TOOL_PREFIXES = [
