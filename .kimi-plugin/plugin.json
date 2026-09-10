@@ -1,0 +1,36 @@
+{
+  "name": "stripe",
+  "version": "0.1.3",
+  "description": "Stripe agent plugin with skills for Stripe integrations including best practices, API and SDK upgrade guidance, and a remote MCP server configuration.",
+  "author": {
+    "name": "Stripe"
+  },
+  "homepage": "https://docs.stripe.com",
+  "license": "MIT",
+  "keywords": [
+    "stripe",
+    "payments",
+    "webhooks",
+    "api",
+    "security"
+  ],
+  "interface": {
+    "displayName": "Stripe",
+    "shortDescription": "Stripe integration skills, upgrade guidance, and a remote MCP server."
+  },
+  "skills": [
+    "./providers/agent-plugins/plugin/skills/connect-recommend",
+    "./providers/agent-plugins/plugin/skills/connect-required-verification-information",
+    "./providers/agent-plugins/plugin/skills/stripe-apps",
+    "./providers/agent-plugins/plugin/skills/stripe-best-practices",
+    "./providers/agent-plugins/plugin/skills/stripe-directory",
+    "./providers/agent-plugins/plugin/skills/stripe-docs",
+    "./providers/agent-plugins/plugin/skills/stripe-projects",
+    "./providers/agent-plugins/plugin/skills/upgrade-stripe"
+  ],
+  "mcpServers": {
+    "stripe": {
+      "url": "https://mcp.stripe.com"
+    }
+  }
+}
