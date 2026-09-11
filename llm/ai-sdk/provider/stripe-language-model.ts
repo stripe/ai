@@ -9,6 +9,7 @@ import {
   LanguageModelV2Content,
   LanguageModelV2FinishReason,
   LanguageModelV2StreamPart,
+  NoContentGeneratedError,
 } from '@ai-sdk/provider';
 import {
   ParseResult,
@@ -346,6 +347,11 @@ export class StripeLanguageModel implements LanguageModelV2 {
     }
 
     const choice = response.choices[0];
+    if (choice == null) {
+      throw new NoContentGeneratedError({
+        message: 'Response contained no choices',
+      });
+    }
 
     // Convert response to AI SDK V2 format
     const content: LanguageModelV2Content[] = [];
