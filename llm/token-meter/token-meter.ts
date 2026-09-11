@@ -4,7 +4,7 @@
 
 import Stripe from 'stripe';
 import type OpenAI from 'openai';
-import type {Stream} from 'openai/streaming';
+import type {Stream as OpenAIStream} from 'openai/streaming';
 import type Anthropic from '@anthropic-ai/sdk';
 import type {Stream as AnthropicStream} from '@anthropic-ai/sdk/streaming';
 import type {
@@ -16,11 +16,29 @@ import {logUsageEvent} from './meter-event-logging';
 import {
   detectResponse,
   isGeminiStream,
-  extractUsageFromChatStream,
-  extractUsageFromResponseStream,
-  extractUsageFromAnthropicStream,
   type DetectedResponse,
 } from './utils/type-detection';
+
+function wrapSdkStream<T extends AsyncIterable<unknown> & {controller: AbortController}>(
+  source: T,
+  iterator: () => AsyncIterator<unknown>
+): T {
+  const StreamConstructor = source.constructor as new (
+    iterator: () => AsyncIterator<unknown>,
+    controller: AbortController
+  ) => T;
+
+  // The SDK streams are class instances. Keeping this fallback makes the
+  // structural test doubles accepted by the existing public type usable too.
+  if ((StreamConstructor as unknown) === Object) {
+    return {
+      controller: source.controller,
+      [Symbol.asyncIterator]: iterator,
+    } as T;
+  }
+
+  return new StreamConstructor(iterator, source.controller);
+}
 
 /**
  * Supported response types from all AI providers
@@ -36,8 +54,8 @@ export type SupportedResponse =
  * Supported stream types from all AI providers
  */
 export type SupportedStream =
-  | Stream<OpenAI.ChatCompletionChunk>
-  | Stream<OpenAI.Responses.ResponseStreamEvent>
+  | OpenAIStream<OpenAI.ChatCompletionChunk>
+  | OpenAIStream<OpenAI.Responses.ResponseStreamEvent>
   | AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
   | GenerateContentStreamResult;
 
@@ -58,8 +76,8 @@ export interface TokenMeter {
    */
   trackUsageStreamOpenAI<
     T extends
-      | Stream<OpenAI.ChatCompletionChunk>
-      | Stream<OpenAI.Responses.ResponseStreamEvent>
+      | OpenAIStream<OpenAI.ChatCompletionChunk>
+      | OpenAIStream<OpenAI.Responses.ResponseStreamEvent>
   >(
     stream: T,
     stripeCustomerId: string
@@ -172,78 +190,126 @@ export function createTokenMeter(
 
     trackUsageStreamOpenAI<
       T extends
-        | Stream<OpenAI.ChatCompletionChunk>
-        | Stream<OpenAI.Responses.ResponseStreamEvent>
+        | OpenAIStream<OpenAI.ChatCompletionChunk>
+        | OpenAIStream<OpenAI.Responses.ResponseStreamEvent>
     >(stream: T, stripeCustomerId: string): T {
-      const [peekStream, stream2] = stream.tee();
+      const meteredStream = wrapSdkStream(
+        stream,
+        async function* () {
+          let streamType: 'chat_completion' | 'response_api' | null = null;
+          let model = '';
+          let inputTokens = 0;
+          let outputTokens = 0;
 
-      (async () => {
-        // Peek at the first chunk to determine stream type
-        const [stream1, meterStream] = peekStream.tee();
-        const reader = stream1[Symbol.asyncIterator]();
-        const firstChunk = await reader.next();
-        
-        let detected: DetectedResponse | null = null;
-        
-        if (!firstChunk.done && firstChunk.value) {
-          const chunk = firstChunk.value as any;
-          
-          // Check if it's an OpenAI Chat stream (has choices array)
-          if ('choices' in chunk && Array.isArray(chunk.choices)) {
-            detected = await extractUsageFromChatStream(meterStream as any);
+          for await (const value of stream) {
+            const chunk = value as any;
+
+            if (!streamType) {
+              if ('choices' in chunk && Array.isArray(chunk.choices)) {
+                streamType = 'chat_completion';
+              } else if (
+                chunk.type &&
+                typeof chunk.type === 'string' &&
+                chunk.type.startsWith('response.')
+              ) {
+                streamType = 'response_api';
+              }
+            }
+
+            if (streamType === 'chat_completion') {
+              model = chunk.model || model;
+              if (chunk.usage) {
+                inputTokens = chunk.usage.prompt_tokens ?? 0;
+                outputTokens = chunk.usage.completion_tokens ?? 0;
+              }
+            } else if (streamType === 'response_api' && chunk.response) {
+              model = chunk.response.model || model;
+              if (chunk.response.usage) {
+                inputTokens = chunk.response.usage.input_tokens ?? 0;
+                outputTokens = chunk.response.usage.output_tokens ?? 0;
+              }
+            }
+
+            yield value;
           }
-          // Check if it's an OpenAI Response API stream (has type starting with 'response.')
-          else if (chunk.type && typeof chunk.type === 'string' && chunk.type.startsWith('response.')) {
-            detected = await extractUsageFromResponseStream(meterStream as any);
-          }
-          else {
-            console.warn('Unable to detect OpenAI stream type from first chunk:', chunk);
+
+          const detected: DetectedResponse | null =
+            streamType && model
+              ? {
+                  provider: 'openai',
+                  type: streamType,
+                  model,
+                  inputTokens,
+                  outputTokens,
+                }
+              : null;
+
+          if (detected) {
+            logUsageEvent(stripeClient, config, {
+              model: detected.model,
+              provider: detected.provider,
+              usage: {
+                inputTokens: detected.inputTokens,
+                outputTokens: detected.outputTokens,
+              },
+              stripeCustomerId,
+            });
+          } else {
+            console.warn('Unable to extract usage from OpenAI stream');
           }
         }
+      );
 
-        if (detected) {
-          logUsageEvent(stripeClient, config, {
-            model: detected.model,
-            provider: detected.provider,
-            usage: {
-              inputTokens: detected.inputTokens,
-              outputTokens: detected.outputTokens,
-            },
-            stripeCustomerId,
-          });
-        } else {
-          console.warn('Unable to extract usage from OpenAI stream');
-        }
-      })();
-
-      return stream2 as T;
+      return meteredStream as T;
     },
 
     trackUsageStreamAnthropic(
       stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>,
       stripeCustomerId: string
     ): AnthropicStream<Anthropic.Messages.RawMessageStreamEvent> {
-      const [peekStream, stream2] = stream.tee();
+      return wrapSdkStream(
+        stream,
+        async function* () {
+          let model = '';
+          let inputTokens = 0;
+          let outputTokens = 0;
 
-      (async () => {
-        const detected = await extractUsageFromAnthropicStream(peekStream);
+          for await (const chunk of stream) {
+            if (chunk.type === 'message_start') {
+              model = chunk.message.model;
+              inputTokens = chunk.message.usage.input_tokens ?? 0;
+            } else if (chunk.type === 'message_delta') {
+              outputTokens = chunk.usage.output_tokens ?? 0;
+            }
 
-        if (detected) {
-          logUsageEvent(stripeClient, config, {
-            model: detected.model,
-            provider: detected.provider,
-            usage: {
-              inputTokens: detected.inputTokens,
-              outputTokens: detected.outputTokens,
-            },
-            stripeCustomerId,
-          });
-        } else {
-          console.warn('Unable to extract usage from Anthropic stream');
+            yield chunk;
+          }
+
+          const detected: DetectedResponse | null = model
+            ? {
+                provider: 'anthropic',
+                type: 'chat_completion',
+                model,
+                inputTokens,
+                outputTokens,
+              }
+            : null;
+
+          if (detected) {
+            logUsageEvent(stripeClient, config, {
+              model: detected.model,
+              provider: detected.provider,
+              usage: {
+                inputTokens: detected.inputTokens,
+                outputTokens: detected.outputTokens,
+              },
+              stripeCustomerId,
+            });
+          } else {
+            console.warn('Unable to extract usage from Anthropic stream');
+          }
         }
-      })();
-
-      return stream2;
+      ) as AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>;
     },
   };
 }
