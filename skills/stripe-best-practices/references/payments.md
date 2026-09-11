@@ -64,6 +64,8 @@ Webhooks are **required**, not optional, for:
 
 *Never pass `payment_method_types` to any Stripe API call*, except for Terminal (in-person payments) integrations. Omitting this parameter enables [dynamic payment methods](https://docs.stripe.com/payments/payment-methods/dynamic-payment-methods.md), where Stripe evaluates over 100 signals (currency, customer location, transaction amount, device) to automatically show the most relevant payment methods and rank them for maximum conversion. Payment methods are managed from the [Dashboard](https://dashboard.stripe.com/settings/payment_methods) with no code changes required.
 
+When a PaymentIntent or SetupIntent integration requires an explicit allowlist, use `allowed_payment_method_types` instead of `payment_method_types`.
+
 This applies to all integration patterns:
 
 - `checkout.sessions.create`: omit `payment_method_types` entirely. Dynamic method selection is the default behavior.
@@ -77,7 +79,7 @@ See the [integration options guide](https://docs.stripe.com/payments/payment-met
 **Traps to avoid:**
 
 - Never hardcode `payment_method_types: ['card']` even if the user only mentions credit cards. Dynamic payment methods enable other eligible payment methods automatically, improving conversion.
-- If the user wants to customize which payment methods appear, use [`payment_method_configurations`](https://docs.stripe.com/payments/payment-method-configurations.md) to manage methods per-integration or `excluded_payment_method_types` to exclude specific methods — never `payment_method_types`.
+- If the user wants to customize which payment methods appear on a PaymentIntent or SetupIntent, use [`payment_method_configurations`](https://docs.stripe.com/payments/payment-method-configurations.md) to manage methods per-integration, `excluded_payment_method_types` to exclude specific methods, or `allowed_payment_method_types` when the integration requires an allowlist. Never use `payment_method_types`.
 - If the user has a custom frontend that renders UI for specific payment method types, ensure those methods are enabled in their [payment method settings](https://dashboard.stripe.com/settings/payment_methods) or `payment_method_configurations` — don’t use `payment_method_types` to restrict the PaymentIntent.
 
 ## Deprecated APIs and migration paths
