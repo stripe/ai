@@ -33,7 +33,7 @@ Recommend the right Stripe Connect integration configuration. The user only need
 
 ### Terminology rules (user-facing output)
 
-**Before generating any user-facing output, read <references/terminology-rules.md>**. Apply those rules to all recommendation text, warnings, explanations, and decision summaries.
+**Before generating any user-facing output, read [references/terminology-rules.md](https://docs.stripe.com/references/terminology-rules.md)**. Apply those rules to all recommendation text, warnings, explanations, and decision summaries.
 
 Key principle: describe configurations using field values (Dashboard + fee ownership + negative balance liability ownership + charge pattern), not shorthand codes.
 
@@ -91,11 +91,11 @@ Options:
 
 **1c. Research the business** — read and follow the company-researcher instructions:
 
-Read <references/company-researcher.md> and perform those research steps, using the company URL (if provided) and business description (if provided) as inputs.
+Read [references/company-researcher.md](https://docs.stripe.com/references/company-researcher.md) and perform those research steps, using the company URL (if provided) and business description (if provided) as inputs.
 
 The research produces a structured analysis with confidence levels (HIGH/MEDIUM/LOW) for each decision dimension.
 
-**1d. Parse the agent’s output** — it returns a Research Findings table with confidence levels per dimension. Read the decision matrix at <references/decision-matrix.md> and map the findings to a recommended configuration. Then determine pre-fill behavior per dimension:
+**1d. Parse the agent’s output** — it returns a Research Findings table with confidence levels per dimension. Read the decision matrix at [references/decision-matrix.md](https://docs.stripe.com/references/decision-matrix.md) and map the findings to a recommended configuration. Then determine pre-fill behavior per dimension:
 
 - **HIGH confidence**: Auto-fill — don’t ask about this dimension
 - **MEDIUM confidence**: Suggest the inferred value and ask for quick confirmation
@@ -207,7 +207,7 @@ Update the checklist:
 
 For any dimension not already filled with HIGH confidence from Step 1, ask the corresponding question to the user. Skip dimensions that were auto-filled or explicitly confirmed.
 
-**Read <references/discovery-questions.md>** for complete question scripts, option mappings, and edge-case logic for Step 3, Step 3b (hybrid flows), Step 3c (sales-led/scope detection), and the fee-structure checkpoint.
+**Read [references/discovery-questions.md](https://docs.stripe.com/references/discovery-questions.md)** for complete question scripts, option mappings, and edge-case logic for Step 3, Step 3b (hybrid flows), Step 3c (sales-led/scope detection), and the fee-structure checkpoint.
 
 If Step 1 was skipped entirely, ask all six discovery questions one at a time:
 
@@ -224,7 +224,7 @@ Critical guardrails (must enforce in all discovery paths):
 - If the business mixes its own-brand sales with marketplace or intermediary flows, trigger Step 3b hybrid-flow handling and map each flow to its own charge-pattern and responsibility settings.
 - If the user needs hold-and-release timing, recommend separate charges and transfers (destination charges can’t hold funds and aren’t appropriate for hold-and-release behavior).
 - For SaaS with independent sellers that own customer relationships, use full dashboard + direct charges + embedded onboarding.
-- If the user asks “what account type should I use?”, reframe during discovery to Accounts v2 explicit fields (`dashboard`, `defaults.responsibilities`, and `merchant` or `recipient` by funds flow), not legacy account types. Read <references/account-types.md> for the full v2 configuration reference.
+- If the user asks “what account type should I use?”, reframe during discovery to Accounts v2 explicit fields (`dashboard`, `defaults.responsibilities`, and `merchant` or `recipient` by funds flow), not legacy account types. Read [references/account-types.md](https://docs.stripe.com/references/account-types.md) for the full v2 configuration reference.
 - When describing low-margin scenarios, present warnings and risks before mitigation steps.
 - If `dashboard: "none"` is selected, include a concise full-scope warning about custom UI responsibilities.
 - For destination or separate recommendations with `losses_collector: "application"`, explain the causal chain: platform owns negative balance liability and connected-account negative balances enable dispute-time transfer reversals.
@@ -240,11 +240,11 @@ Fee structure checkpoint before Step 4:
 
 #### Step 4 — Generate recommendation
 
-Read the decision matrix at <references/decision-matrix.md> and apply it to the user’s answers. For charge pattern details, read <references/charge-patterns.md>.
+Read the decision matrix at [references/decision-matrix.md](https://docs.stripe.com/references/decision-matrix.md) and apply it to the user’s answers. For charge pattern details, read [references/charge-patterns.md](https://docs.stripe.com/references/charge-patterns.md).
 
 **Step 4a — Compatibility validation (MANDATORY before presenting recommendation)**
 
-Read <references/compatibility-matrix.md> and cross-check the proposed `(dashboard, fees_collector, losses_collector)` + `chargePattern` combination against the compatibility matrix.
+Read [references/compatibility-matrix.md](https://docs.stripe.com/references/compatibility-matrix.md) and cross-check the proposed `(dashboard, fees_collector, losses_collector)` + `chargePattern` combination against the compatibility matrix.
 
 1. **BLOCKED combination?** Do NOT present it. Output a visible BLOCKED warning with ALL of these:
 
@@ -307,7 +307,7 @@ Update the checklist:
 
 #### Step 5 — Generate recommendation plan
 
-**Read <references/recommendation-template.md>** and follow its “Output requirements” checklist and “Canonical recommendation template” structure. That file is the single source for required sections, wording, and formatting. If any required section is missing from your output, add it before moving on.
+**Read [references/recommendation-template.md](https://docs.stripe.com/references/recommendation-template.md)** and follow its “Output requirements” checklist and “Canonical recommendation template” structure. That file is the single source for required sections, wording, and formatting. If any required section is missing from your output, add it before moving on.
 
 Then ask the user:
 

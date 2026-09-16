@@ -30,11 +30,11 @@ Decide *where in the Dashboard* the app lives; that determines the viewport and 
 
 | Your goal | Surface | Viewport | Root component |
 | --- | --- | --- | --- |
-| A dedicated workspace: tabs, lists, dashboards, multi-step workflows | **Full-page** | [`stripe.dashboard.fullpage`](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [`FullPageView`](https://docs.stripe.com/stripe-apps/components/fullpageview.md) |
+| A dedicated workspace: tabs, lists, dashboards, multi-step workflows | **Full-page** | [stripe.dashboard.fullpage](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [FullPageView](https://docs.stripe.com/stripe-apps/components/fullpageview.md) |
 | Contextual info/actions tied to a specific object (a customer, a payment) | **Page-specific** | [`stripe.dashboard.customer.detail`, `.payment.detail`, `.list`, `.overview`, …](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [`ContextView`](https://docs.stripe.com/stripe-apps/components/contextview.md) |
-| Available on every Dashboard page | **Dashboard-wide drawer** | [`stripe.dashboard.drawer.default`](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [`ContextView`](https://docs.stripe.com/stripe-apps/components/contextview.md) |
-| App configuration | **Settings** | [`settings`](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [`SettingsView`](https://docs.stripe.com/stripe-apps/components/settingsview.md) |
-| First-run setup after install | **Onboarding** | [`onboarding`](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [`OnboardingView`](https://docs.stripe.com/stripe-apps/components/onboardingview.md) |
+| Available on every Dashboard page | **Dashboard-wide drawer** | [stripe.dashboard.drawer.default](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [ContextView](https://docs.stripe.com/stripe-apps/components/contextview.md) |
+| App configuration | **Settings** | [settings](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [SettingsView](https://docs.stripe.com/stripe-apps/components/settingsview.md) |
+| First-run setup after install | **Onboarding** | [onboarding](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [OnboardingView](https://docs.stripe.com/stripe-apps/components/onboardingview.md) |
 
 Rules of thumb: lead with **full-page** when the app is a destination with more than one section; use a **page-specific** drawer when the value is glanceable context on an existing object; only use `drawer.default` when the app truly applies everywhere. A full-page app can also register drawer/page-specific views — link between them.
 
@@ -45,15 +45,15 @@ The order and *which component does which job* (the API of each is in its linked
 **Full-page app** (walkthrough: [full-page apps pattern](https://docs.stripe.com/stripe-apps/patterns/full-page-apps.md)):
 
 1. **Manifest** — register the `stripe.dashboard.fullpage` [viewport](https://docs.stripe.com/stripe-apps/reference/viewports.md) → your view. *(The CLI’s `add view` adds a full-page view to an existing app; the full-page view needs `@stripe/ui-extension-sdk` ≥ 9.2.)*
-2. **Shell** — [`FullPageView`](https://docs.stripe.com/stripe-apps/components/fullpageview.md); the header (app name + icon) comes from `stripe-app.json`. Add one `pageAction` only if there’s a single clear top-level action.
+2. **Shell** — [FullPageView](https://docs.stripe.com/stripe-apps/components/fullpageview.md); the header (app name + icon) comes from `stripe-app.json`. Add one `pageAction` only if there’s a single clear top-level action.
 3. **Routing** — `createRoutes` + `AppRouter`; read the route with `useAppRoute`, navigate with `useNavigation`. Use a `/:tabId?` pattern so tabs are bookmarkable ([routing](https://docs.stripe.com/stripe-apps/routing.md)).
-4. **Tabs** — [`Tabs`/`Tab`](https://docs.stripe.com/stripe-apps/components/tabs.md) for top-level sections. Distinct areas only; don’t nest tabs.
-5. **Overview** — [`OverviewPage`](https://docs.stripe.com/stripe-apps/components/overviewpage.md) with a `primaryColumn` (main content, charts) and a `secondaryColumn` (supporting modules). Group content into `PageModule`s with titles; lead with a summary. *(See the [OverviewPage doc](https://docs.stripe.com/stripe-apps/components/overviewpage.md) for the exact column/`PageModule` parent-child contract.)*
-6. **List** — [`DataTable`](https://docs.stripe.com/stripe-apps/components/datatable.md): sortable columns, status cells, row → detail route, pagination, and an empty state.
-7. **Detail** — [`DetailPage`](https://docs.stripe.com/stripe-apps/components/detailpage.md) with `breadcrumbs` back to the list and two columns. The tab bar isn’t visible here; the breadcrumb is the way back.
-8. **Create / edit** — [`FocusView`](https://docs.stripe.com/stripe-apps/components/focusview.md) drawer over the current view.
+4. **Tabs** — [Tabs/Tab](https://docs.stripe.com/stripe-apps/components/tabs.md) for top-level sections. Distinct areas only; don’t nest tabs.
+5. **Overview** — [OverviewPage](https://docs.stripe.com/stripe-apps/components/overviewpage.md) with a `primaryColumn` (main content, charts) and a `secondaryColumn` (supporting modules). Group content into `PageModule`s with titles; lead with a summary. *(See the [OverviewPage doc](https://docs.stripe.com/stripe-apps/components/overviewpage.md) for the exact column/`PageModule` parent-child contract.)*
+6. **List** — [DataTable](https://docs.stripe.com/stripe-apps/components/datatable.md): sortable columns, status cells, row → detail route, pagination, and an empty state.
+7. **Detail** — [DetailPage](https://docs.stripe.com/stripe-apps/components/detailpage.md) with `breadcrumbs` back to the list and two columns. The tab bar isn’t visible here; the breadcrumb is the way back.
+8. **Create / edit** — [FocusView](https://docs.stripe.com/stripe-apps/components/focusview.md) drawer over the current view.
 
-**Drawer / page-specific app:** root is [`ContextView`](https://docs.stripe.com/stripe-apps/components/contextview.md); keep it **single-column and dense** (a drawer is narrow — don’t force multi-column). Use `environment.objectContext` for the current object. If you also have a full-page experience, link out to it rather than cramming a workflow into the drawer.
+**Drawer / page-specific app:** root is [ContextView](https://docs.stripe.com/stripe-apps/components/contextview.md); keep it **single-column and dense** (a drawer is narrow — don’t force multi-column). Use `environment.objectContext` for the current object. If you also have a full-page experience, link out to it rather than cramming a workflow into the drawer.
 
 ## 3. Layout and style rules (the codified craft)
 
@@ -122,9 +122,9 @@ Aim for ~3–5 cards in one row (for example, Total spend · MRR · Refunds · D
 
 **[Recommended] Charts & data viz — pick the representation that fits the data.**
 
-- **Sizing:** a chart needs an explicit height — wrap it in a [`Box`](https://docs.stripe.com/stripe-apps/components/box.md) with a pixel height (`~180` per the [chart-layout pattern](https://docs.stripe.com/stripe-apps/patterns/chart-layout.md)) inside a `PageModule`.
-- **Trend over time → [`LineChart`](https://docs.stripe.com/stripe-apps/components/linechart.md).** Use a sensible granularity (monthly or weekly); **daily points over a long range render as an unreadable, noisy line.**
-- **A small breakdown / a total split into parts (for example, members-by-tier) → a `List` of rows** (or a [`MeterChart`](https://docs.stripe.com/stripe-apps/components/meterchart.md) for a proportional bar). A `BarChart` with only a few categories renders as a lonely narrow bar in an empty module — so use a list:
+- **Sizing:** a chart needs an explicit height — wrap it in a [Box](https://docs.stripe.com/stripe-apps/components/box.md) with a pixel height (`~180` per the [chart-layout pattern](https://docs.stripe.com/stripe-apps/patterns/chart-layout.md)) inside a `PageModule`.
+- **Trend over time → [LineChart](https://docs.stripe.com/stripe-apps/components/linechart.md).** Use a sensible granularity (monthly or weekly); **daily points over a long range render as an unreadable, noisy line.**
+- **A small breakdown / a total split into parts (for example, members-by-tier) → a `List` of rows** (or a [MeterChart](https://docs.stripe.com/stripe-apps/components/meterchart.md) for a proportional bar). A `BarChart` with only a few categories renders as a lonely narrow bar in an empty module — so use a list:
 
 ```tsx
 import { List, ListItem, Inline } from "@stripe/ui-extension-sdk/ui";
@@ -135,7 +135,7 @@ import { List, ListItem, Inline } from "@stripe/ui-extension-sdk/ui";
 </List>
 ```
 
-Reserve [`BarChart`](https://docs.stripe.com/stripe-apps/components/barchart.md) for genuine multi-bar / time-series data, and let it fill width.
+Reserve [BarChart](https://docs.stripe.com/stripe-apps/components/barchart.md) for genuine multi-bar / time-series data, and let it fill width.
 
 - **Read the component’s doc for the exact `data` shape before wiring** — charts are strict (wrong shape = hard runtime error).
 - **[Optional]** a `surface`/`container` background makes a chart read as a card; not required.
@@ -144,11 +144,11 @@ Reserve [`BarChart`](https://docs.stripe.com/stripe-apps/components/barchart.md)
 
 **[Recommended] Cards & trays — a background implies a radius.** When a `Box` should read as a card or tray, set surface and radius together: a **card** = `backgroundColor: "surface"` + `borderRadius: "medium"` + `padding: "medium"`; group related cards on a **tray** = `backgroundColor: "container"` + `borderRadius: "medium"` + `padding: "small"`. `borderRadius` accepts `none | xsmall | small | medium | large | rounded`; `medium` is the card default. A plain layout `Box` that isn’t a card gets no background or radius.
 
-**[Recommended] Loading.** Put the loading state *inside* the tab/content region so the header and tab bar stay visible — don’t wrap `Tabs` or the whole view in a loading state. Center a [`Spinner`](https://docs.stripe.com/stripe-apps/components/spinner.md) ([loading pattern](https://docs.stripe.com/stripe-apps/patterns/loading.md)).
+**[Recommended] Loading.** Put the loading state *inside* the tab/content region so the header and tab bar stay visible — don’t wrap `Tabs` or the whole view in a loading state. Center a [Spinner](https://docs.stripe.com/stripe-apps/components/spinner.md) ([loading pattern](https://docs.stripe.com/stripe-apps/patterns/loading.md)).
 
-**[Recommended] Empty states.** Give [`DataTable`](https://docs.stripe.com/stripe-apps/components/datatable.md) an empty state, and swap it by scenario: an object with a call to action when there’s genuinely no data; a plain string when active filters produce zero results ([empty-state pattern](https://docs.stripe.com/stripe-apps/patterns/empty-state.md)).
+**[Recommended] Empty states.** Give [DataTable](https://docs.stripe.com/stripe-apps/components/datatable.md) an empty state, and swap it by scenario: an object with a call to action when there’s genuinely no data; a plain string when active filters produce zero results ([empty-state pattern](https://docs.stripe.com/stripe-apps/patterns/empty-state.md)).
 
-**[Required] Forms are uncontrolled.** There is no `react-hook-form` or ref-based forms in the sandbox. Use **uncontrolled inputs** — `defaultValue` + `onChange` (or a plain React-17 `useState` controlled value) — for [`TextField`](https://docs.stripe.com/stripe-apps/components/textfield.md), [`Select`](https://docs.stripe.com/stripe-apps/components/select.md), and similar. A ref-based form library won’t work.
+**[Required] Forms are uncontrolled.** There is no `react-hook-form` or ref-based forms in the sandbox. Use **uncontrolled inputs** — `defaultValue` + `onChange` (or a plain React-17 `useState` controlled value) — for [TextField](https://docs.stripe.com/stripe-apps/components/textfield.md), [Select](https://docs.stripe.com/stripe-apps/components/select.md), and similar. A ref-based form library won’t work.
 
 ## 4. Component index
 

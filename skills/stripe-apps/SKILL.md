@@ -65,7 +65,7 @@ If you cannot access the docs, tell the user: “I need to check the current Str
 
 ### Step 1 — Discovery (your first message)
 
-Read <references/discovery.md> using your file-reading tool.
+Read [references/discovery.md](https://docs.stripe.com/references/discovery.md) using your file-reading tool.
 
 You CANNOT determine the correct architecture without user input because:
 
@@ -198,14 +198,14 @@ If any file is MISSING, call Write now to create it.
 
 | File | Read when |
 | --- | --- |
-| <references/canonical-docs.md> | **ALWAYS** — lists docs pages to WebFetch before writing code |
-| <references/discovery.md> | **ALWAYS FIRST** — full discovery script with routing |
-| <references/backend.md> | Before writing server.js |
-| <references/ui-extensions.md> | Before writing React/UI code |
-| <references/workflow.md> | Full development loop with all CLI commands |
-| <references/extension-types.md> | After discovery — map answers to extension type |
-| <references/webhooks.md> | When app reacts to Stripe events |
-| <references/authentication.md> | For auth type selection and patterns |
-| <references/onboarding-ux.md> | For first-run experience |
-| <references/publishing.md> | For marketplace publishing |
-| <references/feedback.md> | After a build where you ran CLI/build commands — submit one feedback report |
+| [references/canonical-docs.md](https://docs.stripe.com/references/canonical-docs.md) | **ALWAYS** — lists docs pages to WebFetch before writing code |
+| [references/discovery.md](https://docs.stripe.com/references/discovery.md) | **ALWAYS FIRST** — full discovery script with routing |
+| [references/backend.md](https://docs.stripe.com/references/backend.md) | Before writing server.js |
+| [references/ui-extensions.md](https://docs.stripe.com/references/ui-extensions.md) | Before writing React/UI code |
+| [references/workflow.md](https://docs.stripe.com/references/workflow.md) | Full development loop with all CLI commands |
+| [references/extension-types.md](https://docs.stripe.com/references/extension-types.md) | After discovery — map answers to extension type |
+| [references/webhooks.md](https://docs.stripe.com/references/webhooks.md) | When app reacts to Stripe events |
+| [references/authentication.md](https://docs.stripe.com/references/authentication.md) | For auth type selection and patterns |
+| [references/onboarding-ux.md](https://docs.stripe.com/references/onboarding-ux.md) | For first-run experience |
+| [references/publishing.md](https://docs.stripe.com/references/publishing.md) | For marketplace publishing |
+| [references/feedback.md](https://docs.stripe.com/references/feedback.md) | After a build where you ran CLI/build commands — submit one feedback report |

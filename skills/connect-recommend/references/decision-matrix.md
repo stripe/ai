@@ -216,7 +216,7 @@ Stripe charges processing fees on every transaction. Rates vary by region, card 
 | **Direct charges** (`fees_collector: "application"`) | **Platform** pays Stripe fees | `application_fee_amount − Stripe_fees` |
 | **Separate charges & transfers** | **Platform** pays Stripe fees | Must account for fees in transfer math |
 
-> **Note:** Who pays Stripe fees on direct charges depends on the [`fees_collector` responsibility setting](https://docs.stripe.com/connect/direct-charges-fee-payer-behavior.md). When `fees_collector: "stripe"` (the default for SaaS), the connected account pays Stripe fees and the platform retains their full `application_fee_amount`. With `fees_collector: "application"` (used with Platform Pricing Tool and platform-owned pricing), the platform pays Stripe fees instead.
+Who pays Stripe fees on direct charges depends on the [fees_collector](https://docs.stripe.com/connect/direct-charges-fee-payer-behavior.md) responsibility setting. When `fees_collector: "stripe"` (the default for SaaS), the connected account pays Stripe fees and the platform retains their full `application_fee_amount`. With `fees_collector: "application"` (used with Platform Pricing Tool and platform-owned pricing), the platform pays Stripe fees instead.
 
 **Profitability warning:** If the platform’s desired fee margin is low relative to Stripe’s processing fees for their region, destination charges may cause per-transaction losses unless the `application_fee_amount` is set high enough to cover Stripe fees + the platform’s margin. DO NOT make definitive profit and loss claims with specific dollar amounts — pricing is situation-dependent.
 
