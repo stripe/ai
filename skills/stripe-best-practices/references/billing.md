@@ -66,3 +66,5 @@ const session = await stripe.checkout.sessions.create({
   cancel_url: `${url}/pricing`,
 });
 ```
+
+- *Don’t map asynchronous Stripe events to application objects through metadata by default.* Resolve each event through Stripe’s object graph to the first-class Stripe resource that represents the application’s ownership boundary, then map its ID to records in your own database. Use metadata only as an explicit fallback. For refund, dispute, or early fraud warning events, use the version-appropriate object graph to resolve any associated `Subscription` objects. See [Handle refund, dispute, and early fraud warning events](https://docs.stripe.com/billing/subscriptions/webhooks.md#refund-events).

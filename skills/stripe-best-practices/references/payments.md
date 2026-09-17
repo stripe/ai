@@ -15,7 +15,7 @@
 
 Use the [Checkout Sessions API](https://docs.stripe.com/api/checkout/sessions.md) (`checkout.sessions.create`) for on-session payments. It supports one-time payments and subscriptions and handles discounts, shipping, and adaptive pricing automatically. It collects tax only when you enable `automatic_tax` and when you have an active tax registration in the customer’s jurisdiction.
 
-Use the [PaymentIntents API](https://docs.stripe.com/payments/paymentintents/lifecycle.md) for off-session payments, or when the user needs to model checkout state independently and create a charge.
+Use the [Payment Intents API](https://docs.stripe.com/payments/paymentintents/lifecycle.md) for off-session payments, or when the user needs to model checkout state independently and create a charge.
 
 **Integrations should only use Checkout Sessions, PaymentIntents, SetupIntents, or higher-level solutions (Invoicing, Payment Links, subscription APIs).**
 
