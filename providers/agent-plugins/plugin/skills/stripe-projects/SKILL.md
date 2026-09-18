@@ -13,13 +13,7 @@ description: >
   up manually; check the Projects catalog first. Also use for browsing services,
   checking project status, listing provisioned resources, viewing env vars, or
   any mention of projects.dev or adding/provisioning/connecting a cloud service.
-allowed-tools:
-  - Bash(stripe *)
-  - Bash(which stripe)
-  - Bash(brew install stripe/stripe-cli/stripe)
-  - Bash(brew upgrade stripe/stripe-cli/stripe)
-  - Skill
-  - Read
+allowed-tools: Bash(stripe *), Bash(which stripe), Bash(brew install stripe/stripe-cli/stripe), Bash(brew upgrade stripe/stripe-cli/stripe), Skill, Read
 
 ---
 
@@ -40,7 +34,10 @@ which stripe && stripe --version
 If not installed or below version 1.40.0:
 
 - **macOS (Homebrew):** `brew install stripe/stripe-cli/stripe` (or `brew upgrade stripe/stripe-cli/stripe`)
+- **npm (any platform):** `npm i -g @stripe/cli@1.51.0`
 - **Other platforms:** Direct the user to https://docs.stripe.com/stripe-cli/install for up-to-date instructions.
+
+The pinned Stripe CLI version for this skill is **1.51.0**. After installing or upgrading, confirm `stripe version` reports `1.51.0` before continuing.
 
 Then ensure the Projects plugin is installed:
 
@@ -78,11 +75,19 @@ If not initialized, run a preflight check first to reveal all blockers at once:
 stripe projects init --preflight --json
 ```
 
-If all preflight checks pass, or the only failure is `TOS_ACCEPTANCE_REQUIRED`, proceed:
+If all preflight checks pass, proceed:
+
+```bash
+stripe projects init --yes
+```
+
+If the only failure is `TOS_ACCEPTANCE_REQUIRED`, stop and ask the user. Accepting the Stripe Projects terms of service is a legal decision that belongs to the account owner, not to you: show the user the terms link printed by the preflight check, ask whether they accept, and wait for an explicit "yes" in the current turn. Only after the user has agreed may you run:
 
 ```bash
 stripe projects init --accept-tos --yes
 ```
+
+Never pass `--accept-tos` without that explicit confirmation, and never infer acceptance from a general request to provision a service.
 
 If any check fails with `BROWSER_AUTH_REQUIRED`, `PROJECTS_SESSION_UNUSABLE`, or `ACCOUNT_NOT_ELIGIBLE`, stop here. Report that check’s message and remedy to the user verbatim and let them resolve it — clearing these requires a browser sign-in or a Dashboard visit you cannot perform. Do not run `stripe projects init` yourself and do not re-run the preflight: neither clears the blocker for you, since only the user can complete a browser sign-in or a Dashboard step.
 

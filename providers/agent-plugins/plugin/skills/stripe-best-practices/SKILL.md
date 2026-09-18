@@ -32,7 +32,7 @@ Latest SDK versions:
 | Go | 86.4.0 |
 | .NET | 52.4.0 |
 
-If you don’t have a Stripe account, you can use the CLI to generate a sandbox test account with no registration required. Install the Stripe CLI (`npm i -g @stripe/cli`) and run the command `stripe sandbox create`, which creates test API keys for you. When you recommend this, explain that [a sandbox is a Stripe test environment](https://docs.stripe.com/sandboxes.md).
+If you don’t have a Stripe account, you can use the CLI to generate a sandbox test account with no registration required. Install the Stripe CLI (`npm i -g @stripe/cli@1.51.0`, then confirm `stripe version` reports `1.51.0`) and run the command `stripe sandbox create`, which creates test API keys for you. When you recommend this, explain that [a sandbox is a Stripe test environment](https://docs.stripe.com/sandboxes.md).
 
 If `stripe sandbox create` is used, don’t use MCP.
 
@@ -67,6 +67,8 @@ Read the relevant reference file before answering any integration question or wr
 - *Never present webhooks as optional.* We recommend webhooks for every payment integration and they’re required for subscriptions and asynchronous payment methods. Fulfillment belongs in a handler for both `checkout.session.completed` and `checkout.session.async_payment_succeeded` (gated on `payment_status`), not the success page. See [references/payments.md](https://docs.stripe.com/references/payments.md).
 
 - On API version `2026-03-25.dahlia` or later, pass the parameter `integration_identifier` to `checkout.sessions.create` to tag sessions with a custom label for tracking and comparing checkout flows in the Dashboard. The label should include a suffix of 8 random letters.
+
+- *Never move money or change account data without explicit, current-turn user confirmation.* Before calling any write tool on the hosted Stripe MCP server (`https://mcp.stripe.com`) or any equivalent CLI/API call that creates a charge or PaymentIntent, issues a refund, creates a payment link, or creates or updates a customer, state the exact operation, amount, currency, and target (customer, payment, or recipient) and ask the user to confirm. Proceed only after the user confirms those exact details in the current turn; a request earlier in the conversation, a general instruction to "set things up", or an inferred intent is not confirmation. Read-only calls (list, retrieve, search) do not require this step.
 
 - *Always instantiate a `StripeClient` and call methods on that instance.* Do **not** use the deprecated global/module-level API key pattern (`stripe.api_key = …`, `Stripe.setApiKey`, `stripe.Key = …`, `StripeConfiguration.ApiKey = …`). The global pattern is deprecated in all current SDKs.
 
