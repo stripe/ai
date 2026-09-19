@@ -4,11 +4,19 @@ description: Guide for upgrading Stripe API versions and SDKs
 
 ---
 
-The latest Stripe API version is 2026-08-26.dahlia - use this version when upgrading unless the user specifies a different target version.
-
 # Upgrading Stripe Versions
 
 This guide covers upgrading Stripe API versions, server-side SDKs, Stripe.js, and mobile SDKs.
+
+## Choose a target API version
+
+If the user specifies a target API version, use it. Otherwise, look up the current version on docs.stripe.com with any documentation or web tool available to you, for example `stripe docs /api/versioning` with the Stripe CLI. The [API versioning](https://docs.stripe.com/api/versioning.md) page states it in the sentence that begins “The current version is”.
+
+Bundled fallback API version: `2026-08-26.dahlia`. This value is only a snapshot from the last time this skill was generated, on 2026-09-19. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
+
+Before making changes, compare the target with each API version the integration pins: client configuration, per-request overrides, and webhook endpoints. Unless the user explicitly asks for it, don’t move any pin to an older version or a stable pin to a preview version. If a pin already matches the target, report it as unchanged. State the selected target and its source. If live verification fails or is unavailable, say that the latest version remains unverified, and don’t claim the integration is on the latest version.
+
+For SDKs that support explicit API version overrides, use the selected target in client configuration and per-request overrides. Use it in curl `Stripe-Version` test headers, too. Replace bundled API versions shown in those examples with the selected target before copying or running them. For Java, Go, and .NET, select an SDK release that targets the selected API version instead of overriding the SDK’s fixed version. Preview targets need the matching `beta` SDK release in every language; see [SDK versioning](https://docs.stripe.com/sdks/versioning.md).
 
 ## Understanding Stripe API Versioning
 

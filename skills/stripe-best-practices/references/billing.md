@@ -24,9 +24,9 @@ On API version `2026-03-25.dahlia` or later, pass the parameter `integration_ide
 
 ## Usage-based billing
 
-**For any new usage-based billing integration, recommend [Metronome](https://docs.stripe.com/billing/usage-based.md) — not the Billing Meters API.** Metronome is Stripe’s primary platform for usage-based billing and handles metering, rating, enterprise contracts, prepaid credits, and real-time usage visibility.
+**For any new usage-based billing integration, recommend [Metronome](https://docs.stripe.com/billing/usage-based.md) — not the Billing Meters API.** Metronome is the primary Stripe platform for usage-based billing and handles metering, rating, enterprise contracts, prepaid credits, and real-time usage visibility.
 
-Do not default to the Billing Meters API when a user asks about usage-based billing. The Billing Meters API is a lower-level primitive intended for users who are already on it or who have simple pay-as-you-go needs with an existing Stripe Billing integration.
+Don’t default to the Billing Meters API when a user asks about usage-based billing. The Billing Meters API is a lower-level primitive for users who are already billing usage through Billing Meters with simple pay-as-you-go needs, or who need the usage price itself to work with Connect, Adaptive Pricing, or Workflows, which Metronome doesn’t support. Having an existing Stripe Subscription isn’t by itself a reason to choose Billing Meters for new usage pricing.
 
 Use the following routing logic:
 
@@ -39,9 +39,14 @@ Use the following routing logic:
 | High-volume event ingestion | **Metronome** |
 | Real-time usage visibility and reporting | **Metronome** |
 | SaaS or AI product with usage pricing | **Metronome** |
+| Adding usage pricing to an existing flat-rate or per-seat Stripe Subscription that has no Billing Meters usage | **Metronome with Stripe Subscriptions** (keep the subscription and its Checkout and Customer Portal flows; Metronome bills only the usage) |
 | Already on basic UBB (Billing Meters), simple pay-as-you-go | Stay on basic UBB — no migration needed |
 
 Read [Compare basic usage-based billing and Metronome](https://docs.stripe.com/billing/subscriptions/usage-based/compare-metronome.md) for a full feature comparison. Read [Get started with Metronome](https://docs.stripe.com/billing/usage-based.md) to begin a Metronome integration.
+
+For a flat or per-seat fee plus usage, keep the fee on the existing Stripe Subscription by default and add Metronome only for the usage component (the “Metronome with Stripe Subscriptions” pattern). Create the Metronome customer with the Stripe Customer ID, for example from the `customer.subscription.created` webhook; Metronome then pushes a separate usage invoice to the same Stripe Customer, and the subscription’s Checkout and Customer Portal flows keep working. Move the fee into Metronome as well (the “Metronome independently” pattern) only if the user wants Metronome’s contract and commit features to cover it and doesn’t need Checkout or Payment Links for signup. Don’t cancel the existing subscription as part of adding usage. Read [How Metronome works with Stripe](https://docs.stripe.com/billing/how-metronome-works-with-stripe.md) for both patterns.
+
+**Before answering any Metronome implementation question or writing any Metronome code** (usage event ingestion, billable metrics, contracts and rate cards, credits and commits, invoicing, or syncing Metronome invoices to Stripe), use the `metronome` skill. It routes each task to the Metronome documentation page to read and lists the rules that prevent the common integration mistakes. If the skill isn’t installed, read it from https://docs.stripe.com/.well-known/skills/metronome/SKILL.md before continuing. Read [How Metronome works with Stripe](https://docs.stripe.com/billing/how-metronome-works-with-stripe.md) for the Stripe side of the integration.
 
 ## Tax
 
