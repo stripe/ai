@@ -21,7 +21,7 @@ const prepareBranch = (branch) => {
       runCommand(`git checkout -B "${branch}"`);
     }
   } catch (error) {
-    throw new Error(`Warning: could not prepare branch ${branch}`);
+    throw new Error(`Error: could not prepare branch ${branch}`);
   }
 };
 
@@ -52,7 +52,7 @@ const copyDirectory = async (sourceDir, targetDir) => {
 };
 
 const run = async () => {
-  const { source, target, branch } = parseArgs({
+  const { values } = parseArgs({
     args: process.argv.slice(2),
     options: {
       source: { type: "string" },
@@ -60,6 +60,7 @@ const run = async () => {
       branch: { type: "string" },
     },
   });
+  const { source, target, branch } = values;
   const resolvedSource = path.resolve(source);
   const resolvedTarget = path.resolve(target);
 
