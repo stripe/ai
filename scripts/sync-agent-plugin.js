@@ -13,11 +13,14 @@ const runCommand = (command, options = {}) => {
 
 const prepareBranch = (branch) => {
   try {
+    // Fetch the remote branch so we have the latest changes, but don't fail if it doesn't exist
     runCommand(`git fetch origin "${branch}" || true`);
     try {
+      // Check whether the remote branch exists locally, if so check out the local branch pointing to it
       runCommand(`git show-ref --verify --quiet refs/remotes/origin/${branch}`);
       runCommand(`git checkout -B "${branch}" "origin/${branch}"`);
     } catch {
+      // If remote branch doesn't exist, create a fresh local branch
       runCommand(`git checkout -B "${branch}"`);
     }
   } catch (error) {

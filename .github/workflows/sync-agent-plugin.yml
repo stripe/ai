@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p providers/agent-plugins
-          node scripts/sync-agent-plugin.js --branch "dist/agent-plugin" --source /tmp/agent-plugin-source --target providers/agent-plugins
+          node scripts/sync-agent-plugin.js --branch "dist/agent-plugins" --source /tmp/agent-plugin-source --target providers/agent-plugins
 
       - name: Push generated branch
         if: ${{ github.ref == 'refs/heads/main' }}
