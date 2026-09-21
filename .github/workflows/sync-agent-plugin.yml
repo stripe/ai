@@ -1,0 +1,10 @@
+name: Sync agent plugin branch
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  sync-agent-plugin:
+    if: ${{ !github.event.repository.fork }}
+    runs-on: ubuntu-latest
