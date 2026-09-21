@@ -9,7 +9,7 @@ const runCommand = (command, options = {}) => {
   execSync(command, { stdio: "inherit", ...options });
 };
 
-const REQUIRED_ARGS = ["source", "message", "branch"];
+const REQUIRED_ARGS = ["source", "target", "branch"];
 
 const parseArgs = () => {
   const opts = {};
