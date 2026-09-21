@@ -3,7 +3,7 @@
 import json
 import warnings
 from contextlib import asynccontextmanager
-from typing import Optional, List, Dict, Any, AsyncGenerator, Tuple
+from typing import Optional, List, Dict, Any, AsyncGenerator
 from typing_extensions import TypedDict
 
 from mcp import ClientSession
@@ -68,7 +68,7 @@ class StripeMcpClient:
                 "for better security and granular permissions. "
                 "See: https://docs.stripe.com/keys#create-restricted-api-keys",
                 UserWarning,
-                stacklevel=3
+                stacklevel=3,
             )
 
     def _get_headers(self) -> Dict[str, str]:
@@ -99,9 +99,7 @@ class StripeMcpClient:
         headers = self._get_headers()
 
         async with streamablehttp_client(
-            MCP_SERVER_URL,
-            headers=headers,
-            terminate_on_close=False
+            MCP_SERVER_URL, headers=headers, terminate_on_close=False
         ) as (read_stream, write_stream, _):
             async with ClientSession(read_stream, write_stream) as session:
                 await session.initialize()
@@ -146,10 +144,7 @@ class StripeMcpClient:
         return self._tools
 
     async def call_tool(
-        self,
-        name: str,
-        args: Dict[str, Any],
-        customer: Optional[str] = None
+        self, name: str, args: Dict[str, Any], customer: Optional[str] = None
     ) -> str:
         """
         Execute a tool via MCP.
@@ -201,7 +196,7 @@ class StripeMcpClient:
                             for c in result.content
                             if hasattr(c, "text")
                         ),
-                        "Tool execution failed"
+                        "Tool execution failed",
                     )
                     raise RuntimeError(str(error_text))
 
@@ -212,7 +207,7 @@ class StripeMcpClient:
                         for c in result.content
                         if hasattr(c, "text")
                     ),
-                    None
+                    None,
                 )
 
                 if text_content:
