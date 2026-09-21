@@ -1,10 +1,62 @@
 name: Sync agent plugin branch
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'providers/agent-plugins/**'
   workflow_dispatch:
 
+permissions:
+  contents: write
 
 jobs:
   sync-agent-plugin:
     if: ${{ !github.event.repository.fork }}
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Generate GitHub App token
+        id: app-token
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_STRIPE_AI_SYNC_PEM }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '20'
+
+      - name: Snapshot source tree
+        run: |
+          mkdir -p /tmp/agent-plugin-source
+          rm -rf /tmp/agent-plugin-source/*
+          cp -R providers/agent-plugins/. /tmp/agent-plugin-source/
+
+      - name: Sync generated branch contents
+        shell: bash
+        run: |
+          mkdir -p providers/agent-plugins
+          node scripts/sync-agent-plugin.js --branch "dest/agent-plugin" --source /tmp/agent-plugin-source --target providers/agent-plugins
+
+      - name: Push generated branch
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          TARGET_BRANCH: dest/agent-plugin
+          COMMIT_MESSAGE: sync agent plugin
+        run: |
+          node scripts/push-branch.js --branch "$TARGET_BRANCH" --message "$COMMIT_MESSAGE" --files "providers/agent-plugins"
