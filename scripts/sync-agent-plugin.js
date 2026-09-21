@@ -4,32 +4,12 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const { execSync } = require("child_process");
+const { parseArgs } = require("util");
 
 const runCommand = (command, options = {}) => {
   execSync(command, { stdio: "inherit", ...options });
 };
 
-const REQUIRED_ARGS = ["source", "target", "branch"];
-
-const parseArgs = () => {
-  const opts = {};
-  const args = process.argv.slice(2);
-
-  for (let i = 0; i < args.length; i += 2) {
-    const key = args[i]?.replace(/^--/, "");
-    const value = args[i + 1];
-    if (key && value) {
-      opts[key] = value;
-    }
-  }
-
-  const missing = REQUIRED_ARGS.filter((key) => opts[key] === undefined);
-  if (missing.length > 0) {
-    throw new Error(`Missing required argument(s): ${missing.map((key) => `--${key}`).join(", ")}`);
-  }
-
-  return opts;
-};
 
 const prepareBranch = (branch) => {
   try {
@@ -72,7 +52,14 @@ const copyDirectory = async (sourceDir, targetDir) => {
 };
 
 const run = async () => {
-  const { source, target, branch } = parseArgs();
+  const { source, target, branch } = parseArgs({
+    args: process.argv.slice(2),
+    options: {
+      source: { type: "string" },
+      target: { type: "string" },
+      branch: { type: "string" },
+    },
+  });
   const resolvedSource = path.resolve(source);
   const resolvedTarget = path.resolve(target);
 

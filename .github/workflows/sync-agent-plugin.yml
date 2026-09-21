@@ -49,14 +49,26 @@ jobs:
         shell: bash
         run: |
           mkdir -p providers/agent-plugins
-          node scripts/sync-agent-plugin.js --branch "dest/agent-plugin" --source /tmp/agent-plugin-source --target providers/agent-plugins
+          node scripts/sync-agent-plugin.js --branch "dist/agent-plugin" --source /tmp/agent-plugin-source --target providers/agent-plugins
 
       - name: Push generated branch
         if: ${{ github.ref == 'refs/heads/main' }}
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          TARGET_BRANCH: dest/agent-plugin
-          COMMIT_MESSAGE: sync agent plugin
         run: |
-          node scripts/push-branch.js --branch "$TARGET_BRANCH" --message "$COMMIT_MESSAGE" --files "providers/agent-plugins"
+          git add providers/agent-plugins
+
+          # Skip if nothing changed
+          if git diff --staged --quiet; then
+            echo "No changes to commit, skipping."
+            exit 0
+          fi
+
+          # Allow commit to work
+          git config user.name "stripe-ai-sync[bot]"
+          git config user.email "282683001+stripe-ai-sync[bot]@users.noreply.github.com"
+
+          # Append a commit with a fix applied
+          git commit -m "sync agent plugin"
+
+          # Authenticate with the GitHub App token and push
+          git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
+          git push origin dist/agent-plugins
