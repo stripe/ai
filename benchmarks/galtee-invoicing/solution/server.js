@@ -91,8 +91,16 @@ app.get("/products", async (req, res) => {
   try {
     const products = [];
 
+    const stripeProducts = await stripe.products.list({ limit: 100 });
+    const stripeProductMap = new Map();
+    for (const p of stripeProducts.data) {
+      if (p.metadata && p.metadata.product_id) {
+        stripeProductMap.set(p.metadata.product_id, p.id);
+      }
+    }
+
     for (const [productId, config] of Object.entries(PRODUCT_CONFIG)) {
-      const stripeProductId = await getStripeProductId(productId);
+      const stripeProductId = stripeProductMap.get(productId) || null;
 
       products.push({
         id: productId,
