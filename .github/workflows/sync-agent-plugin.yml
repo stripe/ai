@@ -34,41 +34,12 @@ jobs:
           repositories: ${{ github.event.repository.name }}
           permission-contents: write
 
-      - name: Setup Node.js
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
-        with:
-          node-version: '20'
-
-      - name: Snapshot source tree
-        run: |
-          mkdir -p /tmp/agent-plugin-source
-          rm -rf /tmp/agent-plugin-source/*
-          cp -R providers/agent-plugins/. /tmp/agent-plugin-source/
-
-      - name: Sync generated branch contents
-        shell: bash
-        run: |
-          mkdir -p providers/agent-plugins
-          node scripts/sync-agent-plugin.js --branch "dist/agent-plugins" --source /tmp/agent-plugin-source --target providers/agent-plugins
-
-      - name: Push generated branch
+      - name: Split and push agent-plugins subtree
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          git add providers/agent-plugins
-
-          # Skip if nothing changed
-          if git diff --staged --quiet; then
-            echo "No changes to commit, skipping."
-            exit 0
-          fi
-
-          # Allow commit to work
           git config user.name "stripe-ai-sync[bot]"
           git config user.email "282683001+stripe-ai-sync[bot]@users.noreply.github.com"
-
-          # Append a commit with a fix applied
-          git commit -m "sync agent plugin"
-
-          # Authenticate with the GitHub App token and push
           git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
-          git push origin dist/agent-plugins
+
+          git subtree split --prefix=providers/agent-plugins -b dist/agent-plugins
+          git push origin dist/agent-plugins --force
