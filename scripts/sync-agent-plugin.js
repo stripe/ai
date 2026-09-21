@@ -28,26 +28,7 @@ const prepareBranch = (branch) => {
 const removeTargetContents = async (targetDir) => {
   const entries = await fs.readdir(targetDir, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name === ".git") continue;
     await fs.rm(path.join(targetDir, entry.name), { recursive: true, force: true });
-  }
-};
-
-const copyDirectory = async (sourceDir, targetDir) => {
-  await fs.mkdir(targetDir, { recursive: true });
-
-  const entries = await fs.readdir(sourceDir, { withFileTypes: true });
-  for (const entry of entries) {
-    const sourcePath = path.join(sourceDir, entry.name);
-    const targetPath = path.join(targetDir, entry.name);
-
-    if (entry.isDirectory()) {
-      await copyDirectory(sourcePath, targetPath);
-      continue;
-    }
-
-    await fs.mkdir(path.dirname(targetPath), { recursive: true });
-    await fs.copyFile(sourcePath, targetPath);
   }
 };
 
@@ -73,7 +54,7 @@ const run = async () => {
 
   await fs.mkdir(resolvedTarget, { recursive: true });
   await removeTargetContents(resolvedTarget);
-  await copyDirectory(resolvedSource, resolvedTarget);
+  await fs.cp(resolvedSource, resolvedTarget, { recursive: true });
 
   console.log(`Synced ${resolvedSource} over to ${resolvedTarget} on branch ${branch}`);
 };
