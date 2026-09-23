@@ -41,7 +41,7 @@ Use `--actor agent` for your own observations. If you’re instead relaying the 
 
 ## What not to report
 
-Feedback should be about a **Stripe product surface** — not model behavior, the user’s local environment, an unclear prompt, or a routine tool error you recovered from. Do not use `send_stripe_mcp_feedback` for this (it’s scoped to MCP-server tools only). Feedback is not support — it opens no ticket; keep filing real bugs in Jira and #app-platform-team too.
+Feedback should be about a **Stripe product surface** — not model behavior, the user’s local environment, an unclear prompt, or a routine tool error you recovered from. Do not use `send_stripe_feedback` as a substitute for this CLI report. Feedback is not support — it opens no ticket; keep filing real bugs too.
 
 ## When submission fails
 
