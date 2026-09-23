@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'providers/agent-plugins/**'
+      - 'providers/agent-plugins/plugin/**'
   workflow_dispatch:
 
 permissions:
@@ -20,6 +20,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
+          # workflow_dispatch runs the workflow from the selected branch. Always
+          # build the distribution branch from the latest main branch instead.
+          ref: main
           fetch-depth: 0
           persist-credentials: false
 
@@ -41,5 +44,5 @@ jobs:
           git config user.email "282683001+stripe-ai-sync[bot]@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
 
-          git subtree split --prefix=providers/agent-plugins/plugin -b dist/agent-plugin
-          git push origin dist/agent-plugin --force
+          subtree_commit="$(git subtree split --prefix=providers/agent-plugins/plugin HEAD)"
+          git push origin "${subtree_commit}:refs/heads/dist/agent-plugin" --force
