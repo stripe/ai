@@ -37,12 +37,9 @@ jobs:
 
       - name: Split and push agent-plugins subtree
         if: ${{ github.ref == 'refs/heads/main' }}
-        env:
-          SYNC_GIT_EMAIL: ${{ secrets.GH_APP_STRIPE_AI_SYNC_EMAIL }}
-          SYNC_GIT_USER_NAME: ${{ secrets.GH_APP_STRIPE_AI_SYNC_USER_NAME }}
         run: |
-          git config user.name "$SYNC_GIT_USER_NAME"
-          git config user.email "$SYNC_GIT_EMAIL"
+          git config user.name "${{ secrets.GH_APP_STRIPE_AI_SYNC_USER_NAME }}"
+          git config user.email "${{ secrets.GH_APP_STRIPE_AI_SYNC_EMAIL }}"
           git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
 
           subtree_commit="$(git subtree split --prefix=providers/agent-plugins/plugin HEAD)"
