@@ -421,6 +421,65 @@ describe('StripeLanguageModel', () => {
       expect(args.max_tokens).toBeUndefined();
     });
 
+    it('should apply correct defaults for normalized (dot-form) model IDs', () => {
+      // These are the IDs that normalizeModelId produces
+      const testCases = [
+        {modelId: 'anthropic/claude-3.7-sonnet', expected: 64000},
+        {modelId: 'anthropic/claude-3.5-haiku', expected: 8192},
+        {modelId: 'anthropic/claude-haiku-4.5', expected: 64000},
+        {modelId: 'anthropic/claude-opus-4', expected: 32000},
+        {modelId: 'anthropic/claude-sonnet-4', expected: 64000},
+      ];
+
+      testCases.forEach(({modelId, expected}) => {
+        const m = new StripeLanguageModel(
+          modelId,
+          {customerId: 'cus_test'},
+          {
+            provider: 'stripe',
+            baseURL: 'https://llm.stripe.com',
+            headers: () => ({}),
+          }
+        );
+
+        const options: LanguageModelV2CallOptions = {
+          prompt: [],
+        };
+
+        // @ts-expect-error - Accessing private method for testing
+        const {args} = m.getArgs(options);
+        expect(args.max_tokens).toBe(expected);
+      });
+    });
+
+    it('should apply correct defaults for dash-form model IDs (pre-normalization)', () => {
+      const testCases = [
+        {modelId: 'anthropic/claude-3-7-sonnet', expected: 64000},
+        {modelId: 'anthropic/claude-3-5-haiku', expected: 8192},
+        {modelId: 'anthropic/claude-haiku-4-5', expected: 64000},
+      ];
+
+      testCases.forEach(({modelId, expected}) => {
+        const m = new StripeLanguageModel(
+          modelId,
+          {customerId: 'cus_test'},
+          {
+            provider: 'stripe',
+            baseURL: 'https://llm.stripe.com',
+            headers: () => ({}),
+          }
+        );
+
+        const options: LanguageModelV2CallOptions = {
+          prompt: [],
+        };
+
+        // @ts-expect-error - Accessing private method for testing
+        const {args} = m.getArgs(options);
+        expect(args.max_tokens).toBe(expected);
+      });
+    });
+
     it('should allow user-provided maxOutputTokens to override default', () => {
       const sonnetModel = new StripeLanguageModel(
         'anthropic/claude-sonnet-4',
