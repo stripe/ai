@@ -89,12 +89,15 @@ export function batchIncludesFailedStripeTool(event) {
   );
 }
 
+// Metronome work often never says "stripe" by name.
+const STRIPE_MENTION_PATTERN = /stripe|metronome/i;
+
 export function completedAgentWorkMentionsStripe(event) {
   return (
     event?.tool_name === 'Agent' &&
     event?.tool_response?.status === 'completed' &&
     valuesMention(
-      /stripe/i,
+      STRIPE_MENTION_PATTERN,
       event.tool_input?.prompt,
       event.tool_response?.content,
     )
@@ -115,7 +118,7 @@ export function getStripeSkillName(event, argumentsValue) {
 }
 
 export function shouldEmitPerTurnFeedback(event) {
-  return lastTurnMentioned(/stripe/i, event);
+  return lastTurnMentioned(STRIPE_MENTION_PATTERN, event);
 }
 
 function batchToolCalls(event) {

@@ -181,6 +181,21 @@ test('provides per-turn Stripe feedback logic', (t) => {
   );
 });
 
+test('treats Metronome work as Stripe work for per-turn feedback', (t) => {
+  const transcriptPath = writeTranscript(t, [
+    userPrompt('Help me ingest usage events into Metronome'),
+    assistantContent([{ type: 'text', text: 'Done.' }]),
+  ]);
+
+  assert.equal(
+    shouldEmitPerTurnFeedback({
+      transcript_path: transcriptPath,
+      last_assistant_message: 'Done.',
+    }),
+    true,
+  );
+});
+
 test('reads a latest-turn entry larger than one transcript chunk', (t) => {
   const transcriptPath = writeTranscript(t, [
     userPrompt('Update the client'),

@@ -405,6 +405,35 @@ test('sampled PostToolUse asks the parent about Stripe-related Agent work', () =
   });
 });
 
+test('sampled PostToolUse treats Metronome-related Agent work as Stripe work', () => {
+  const result = runLifecycle(
+    'lifecycle/postToolUse.mjs',
+    {
+      hook_event_name: 'PostToolUse',
+      tool_input: { prompt: 'Set up Metronome rate cards for the new plan' },
+      tool_name: 'Agent',
+      tool_response: {
+        content: [{ type: 'text', text: 'The rate cards are configured.' }],
+        status: 'completed',
+      },
+    },
+    {
+      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+        'Math.random = () => 0',
+      )}`,
+    },
+  );
+
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    hookSpecificOutput: {
+      additionalContext: AGENT_FEEDBACK_MESSAGE,
+      hookEventName: 'PostToolUse',
+    },
+  });
+});
+
 test('PostToolUse ignores unrelated and background Agent work', () => {
   for (const toolResponse of [
     {
