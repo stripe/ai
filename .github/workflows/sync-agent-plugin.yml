@@ -26,7 +26,7 @@ jobs:
 
       - name: Generate GitHub App token
         id: app-token
-        if: ${{ github.ref == 'refs/heads/main' }}
+        #if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/create-github-app-token@v3 
         with:
           client-id: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
@@ -36,7 +36,7 @@ jobs:
           permission-contents: write
 
       - name: Split and push agent-plugins subtree
-        if: ${{ github.ref == 'refs/heads/main' }}
+        #if: ${{ github.ref == 'refs/heads/main' }}
         env:
           SYNC_GIT_EMAIL: ${{ secrets.GH_APP_STRIPE_AI_SYNC_EMAIL }}
           SYNC_GIT_USER_NAME: ${{ secrets.GH_APP_STRIPE_AI_SYNC_USER_NAME }}
