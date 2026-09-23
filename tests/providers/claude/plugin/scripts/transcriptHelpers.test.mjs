@@ -7,8 +7,8 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { shouldEmitPerTurnFeedback } from './feedback.mjs';
-import { lastTurnMentioned } from './transcriptHelpers.mjs';
+import { shouldEmitPerTurnFeedback } from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
+import { lastTurnMentioned } from '../../../../../providers/claude/plugin/scripts/transcriptHelpers.mjs';
 
 function writeTranscript(t, entries) {
   const directory = mkdtempSync(join(tmpdir(), 'stripe-transcript-'));

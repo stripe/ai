@@ -28,7 +28,10 @@ import {
   TOOL_FAILURE_FEEDBACK_MESSAGE,
 } from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
 
-const SCRIPTS_ROOT = dirname(fileURLToPath(import.meta.url));
+const SCRIPTS_ROOT = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../../../providers/claude/plugin/scripts',
+);
 
 function writeTranscriptEntries(t, entries) {
   const directory = mkdtempSync(join(tmpdir(), 'stripe-hooks-'));
