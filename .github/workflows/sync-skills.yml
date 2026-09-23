@@ -44,6 +44,9 @@ jobs:
           github.ref == 'refs/heads/main'&&
           !github.event.repository.fork
         shell: bash
+        env:
+          SYNC_GIT_EMAIL: ${{ secrets.GH_APP_STRIPE_AI_SYNC_EMAIL }}
+          SYNC_GIT_USER_NAME: ${{ secrets.GH_APP_STRIPE_AI_SYNC_USER_NAME }}
         run: |
           git add \
             ':(glob)**/skills/**' \
@@ -63,8 +66,8 @@ jobs:
           fi
 
           # Allow commit to work
-          git config user.name "stripe-ai-sync[bot]"
-          git config user.email "282683001+stripe-ai-sync[bot]@users.noreply.github.com"
+          git config user.name "$SYNC_GIT_USER_NAME"
+          git config user.email "$SYNC_GIT_EMAIL"
 
           # Append a commit with a fix applied
           git commit -m "sync skills"

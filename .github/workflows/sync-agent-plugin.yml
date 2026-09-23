@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        uses: actions/checkout@v5 
         with:
           ref: main
           fetch-depth: 0
@@ -27,7 +27,7 @@ jobs:
       - name: Generate GitHub App token
         id: app-token
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        uses: actions/create-github-app-token@v3 
         with:
           client-id: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
           private-key: ${{ secrets.GH_APP_STRIPE_AI_SYNC_PEM }}
@@ -37,9 +37,12 @@ jobs:
 
       - name: Split and push agent-plugins subtree
         if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          SYNC_GIT_EMAIL: ${{ secrets.GH_APP_STRIPE_AI_SYNC_EMAIL }}
+          SYNC_GIT_USER_NAME: ${{ secrets.GH_APP_STRIPE_AI_SYNC_USER_NAME }}
         run: |
-          git config user.name "stripe-ai-sync[bot]"
-          git config user.email "282683001+stripe-ai-sync[bot]@users.noreply.github.com"
+          git config user.name "$SYNC_GIT_USER_NAME"
+          git config user.email "$SYNC_GIT_EMAIL"
           git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
 
           subtree_commit="$(git subtree split --prefix=providers/agent-plugins/plugin HEAD)"
