@@ -15,7 +15,9 @@ import {
   PER_TURN_FEEDBACK_MESSAGE,
 } from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
 
-const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const PLUGIN_ROOT = fileURLToPath(
+  new URL('../../../../../providers/claude/plugin', import.meta.url),
+);
 const STRIPE_MCP_TOOL_PREFIXES = [
   'mcp__plugin_stripe_stripe__',
   'mcp__stripe__',

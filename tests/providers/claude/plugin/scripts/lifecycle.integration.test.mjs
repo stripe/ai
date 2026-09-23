@@ -9,11 +9,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import {
-  delimiter,
-  dirname,
-  join,
-} from 'node:path';
+import { delimiter, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
@@ -28,7 +24,9 @@ import {
   TOOL_FAILURE_FEEDBACK_MESSAGE,
 } from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
 
-const SCRIPTS_ROOT = dirname(fileURLToPath(import.meta.url));
+const SCRIPTS_ROOT = fileURLToPath(
+  new URL('../../../../../providers/claude/plugin/scripts/', import.meta.url),
+);
 
 function writeTranscriptEntries(t, entries) {
   const directory = mkdtempSync(join(tmpdir(), 'stripe-hooks-'));

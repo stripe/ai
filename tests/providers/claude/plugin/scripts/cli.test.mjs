@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { cliLoggedIn } from './cli.mjs';
+import { cliLoggedIn } from '../../../../../providers/claude/plugin/scripts/cli.mjs';
 
 function fakeWhoami(status, stdout) {
   return (command, args) => {
