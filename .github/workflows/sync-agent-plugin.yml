@@ -20,15 +20,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          # workflow_dispatch runs the workflow from the selected branch. Always
-          # build the distribution branch from the latest main branch instead.
           ref: main
           fetch-depth: 0
           persist-credentials: false
 
       - name: Generate GitHub App token
         id: app-token
-        #if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           client-id: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
@@ -38,7 +36,7 @@ jobs:
           permission-contents: write
 
       - name: Split and push agent-plugins subtree
-        #if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           git config user.name "stripe-ai-sync[bot]"
           git config user.email "282683001+stripe-ai-sync[bot]@users.noreply.github.com"
