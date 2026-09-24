@@ -1,20 +1,22 @@
 ---
 name: upgrade-stripe
-description: Guide for upgrading Stripe API versions and SDKs
+description: >-
+  Guide for upgrading Stripe API versions, webhook endpoints, server-side SDKs,
+  Stripe.js, and mobile SDKs
 
 ---
 
 # Upgrading Stripe Versions
 
-This guide covers upgrading Stripe API versions, server-side SDKs, Stripe.js, and mobile SDKs.
-
 ## Choose a target API version
 
 If the user specifies a target API version, use it. Otherwise, look up the current version on docs.stripe.com with any documentation or web tool available to you, for example `stripe docs /api/versioning` with the Stripe CLI. The [API versioning](https://docs.stripe.com/api/versioning.md) page states it in the sentence that begins “The current version is”.
 
-Bundled fallback API version: `2026-08-26.dahlia`. This value is only a snapshot from the last time this skill was generated, on 2026-09-23. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
+Bundled fallback API version: `2026-08-26.dahlia`. This value is only a snapshot from the last time this skill was generated, on 2026-09-24. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
 
 Before making changes, compare the target with each API version the integration pins: client configuration, per-request overrides, and webhook endpoints. Unless the user explicitly asks for it, don’t move any pin to an older version or a stable pin to a preview version. If a pin already matches the target, report it as unchanged. State the selected target and its source. If live verification fails or is unavailable, say that the latest version remains unverified, and don’t claim the integration is on the latest version.
+
+When reviewing webhook endpoints and event destinations, distinguish snapshot events from thin events. Thin event payloads are unversioned, so they don’t need to be upgraded when you change your API version. API calls that retrieve the full event or related resource remain versioned.
 
 For SDKs that support explicit API version overrides, use the selected target in client configuration and per-request overrides. Use it in curl `Stripe-Version` test headers, too. Replace bundled API versions shown in those examples with the selected target before copying or running them. For Java, Go, and .NET, select an SDK release that targets the selected API version instead of overriding the SDK’s fixed version. Preview targets need the matching `beta` SDK release in every language; see [SDK versioning](https://docs.stripe.com/sdks/versioning.md).
 
@@ -162,7 +164,7 @@ All mobile SDKs work with any Stripe API version you use on your backend unless 
 3. Update server-side SDK package version (e.g., `npm update stripe`, `pip install --upgrade stripe`)
 4. Update the `apiVersion` parameter in your Stripe client initialization
 5. Test your integration against the new API version using the `Stripe-Version` header
-6. Update webhook handlers to handle new event structures
+6. For each destination that receives snapshot events, review its configured API version. For webhook endpoints, follow [webhook versioning](https://docs.stripe.com/webhooks/versioning.md). For every v2 snapshot event destination — including webhook endpoints, Amazon EventBridge, and Azure Event Grid destinations — inspect [snapshot_api_version](https://docs.stripe.com/api/v2/core/event-destinations/object.md#v2_event_destination_object-snapshot_api_version) and, if it differs from the target, create and test a replacement destination because you can’t change it after creation. For a replacement webhook endpoint, save its new signing secret and configure the handler to accept both secrets during testing and cutover. After cutover, disable or delete the old destination to avoid duplicate delivery. Leave thin event destinations unchanged
 7. Update Stripe.js script tag or npm package version if needed
 8. Update mobile SDK versions in your package manager if needed
 9. Store Stripe object IDs in databases that accommodate up to 255 characters (case-sensitive collation)
@@ -187,6 +189,7 @@ const stripe = require('stripe')('sk_test_xxx', {
 
 ## Important Notes
 
+- For supported event types, follow the [migration guide](https://docs.stripe.com/webhooks/migrate-snapshot-to-thin-events.md) to move from snapshot events to thin events. After migration, webhook payloads no longer depend on API version upgrades; API calls that retrieve the full event or related resource remain versioned.
 - Your webhook listener should handle unfamiliar event types gracefully
 - Test webhooks with the new version structure before upgrading
 - Breaking changes are tagged by affected product areas (Payments, Billing, Connect, etc.)
