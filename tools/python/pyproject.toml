@@ -11,11 +11,11 @@ keywords = ["stripe", "api", "payments", "mcp", "agents"]
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0.0",
-    "mcp>=1.0.0",
+    "mcp>=1.8.0,<2",
 ]
 
 [project.optional-dependencies]
-openai = ["openai>=1.0.0", "agents>=0.0.84"]
+openai = ["openai>=1.0.0", "openai-agents>=0.5.0"]
 langchain = ["langchain>=0.1.0"]
 crewai = ["crewai>=0.1.0"]
 strands = ["strands>=0.1.0"]
