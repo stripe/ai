@@ -1,10 +1,46 @@
 name: Sync agent plugin branch
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'providers/agent-plugins/plugin/**'
   workflow_dispatch:
 
+permissions:
+  contents: write
 
 jobs:
   sync-agent-plugin:
     if: ${{ !github.event.repository.fork }}
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5 
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Generate GitHub App token
+        id: app-token
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: actions/create-github-app-token@v3 
+        with:
+          client-id: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_STRIPE_AI_SYNC_PEM }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - name: Split and push agent-plugins subtree
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          git config user.name "${{ secrets.GH_APP_STRIPE_AI_SYNC_USER_NAME }}"
+          git config user.email "${{ secrets.GH_APP_STRIPE_AI_SYNC_EMAIL }}"
+          git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
+
+          subtree_commit="$(git subtree split --prefix=providers/agent-plugins/plugin HEAD)"
+          git push origin "${subtree_commit}:refs/heads/plugins/agent-plugin" --force
