@@ -7,10 +7,7 @@ description: >-
   doesn't provide an exact Stripe Profile handle or network ID.
 metadata:
   short-description: Send funds to Stripe businesses
-allowed-tools:
-  - Bash(stripe directory *)
-  - Bash(stripe pay *)
-  - Bash(stripe whoami *)
+allowed-tools: Bash(stripe directory *), Bash(stripe pay *), Bash(stripe whoami *)
 
 ---
 
@@ -31,8 +28,9 @@ If the user needs details about financial accounts, read [Money Management](http
 2. Before running a command that can send money, show the exact `stripe pay ...` command you plan to run and get confirmation.
 3. Use `--agent` or `--json` first so the user can review the transfer details.
 4. Don’t pass `-y` or `--yes` until after the user confirms the reviewed transfer.
-5. Don’t guess at the user’s intent. Don’t guess at the username, financial account ID, amount, currency, internal note, memo, or any other detail. Always confirm with the user.
-6. Don’t print full API keys back to the user.
+5. Before the write call that actually sends money, restate the exact amount, currency, and recipient (Stripe Profile handle or network ID) and get an explicit confirmation of those details in the current turn. Confirmation given earlier in the conversation, or for different details, doesn’t carry over — ask again.
+6. Don’t guess at the user’s intent. Don’t guess at the username, financial account ID, amount, currency, internal note, memo, or any other detail. Always confirm with the user.
+7. Don’t print full API keys back to the user.
 
 ## Choose the workflow
 
