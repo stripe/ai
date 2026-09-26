@@ -12,6 +12,7 @@ import type {
   LanguageModelV3StreamResult,
   LanguageModelV3Usage,
 } from '@ai-sdk/provider';
+import {NoContentGeneratedError} from '@ai-sdk/provider';
 import {
   ParseResult,
   createEventSourceResponseHandler,
@@ -320,6 +321,11 @@ export class StripeLanguageModelV3 implements LanguageModelV3 {
     }
 
     const choice = response.choices[0];
+    if (choice == null) {
+      throw new NoContentGeneratedError({
+        message: 'Response contained no choices',
+      });
+    }
 
     const content: LanguageModelV3Content[] = [];
 
