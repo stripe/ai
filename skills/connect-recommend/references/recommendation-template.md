@@ -139,10 +139,26 @@ Include this wording (adapted to context) when charge pattern is destination or 
 
 Always present loss liability and risk management as separate concepts:
 
-- **Loss liability** (`losses_collector`): who is financially responsible for negative balances on connected accounts.
-- **Risk management**: who detects and prevents fraud (Stripe Radar vs platform-managed).
+- **Loss liability** (`losses_collector`): who is financially responsible for negative balances on connected accounts. `losses_collector: "stripe"` is the API field that enables Stripe’s public **Managed Risk** product — a full-service solution covering merchant loss protection, ongoing risk monitoring and detection, risk interventions, negative-balance recovery, and risk operations. Don’t equate `losses_collector: "stripe"` with Managed Risk as if they were the same thing; describe the field as what enables the broader product.
+- **Risk management**: who detects and prevents fraud (Stripe Radar vs platform-managed). Radar is available regardless of who owns negative balance liability, but it is NOT optional when recommending Managed Risk (see below).
 
 When `losses_collector: application` (platform owns loss liability), emphasize that Radar is essential — fraudulent charges that slip through come directly out of the platform’s balance. For marketplaces using destination charges, the platform is merchant of record and must manage risk.
+
+**Radar requirement for Managed Risk:** Whenever a recommendation includes `losses_collector: "stripe"` (SES, PES, or full/Stripe/Stripe SaaS), explicitly recommend enabling Radar for Platforms alongside it. Managed Risk’s loss-protection model assumes Radar is active to catch transaction-level fraud; don’t present Managed Risk as replacing the need for Radar.
+
+### Public-preview disclosure
+
+When the final recommendation is SES (`dashboard: "express"` + `fees_collector: "stripe"` + `losses_collector: "stripe"`, direct charges) or PES (`dashboard: "express"` + `fees_collector: "application"` + `losses_collector: "stripe"`, direct charges), include in the recommendation output. Don’t expose the SES or PES shorthand to the user.
+
+- A concise public-preview disclosure stating that this Express + Stripe-managed-negative-balance-liability direct-charge configuration is in public preview.
+- A statement that this configuration requires using the current Connect preview API version (not the platform’s pinned GA API version), with a link to the [preview changelog](https://docs.stripe.com/changelog.md?preview=true) so the user can confirm the exact version before implementing.
+- A note that this configuration is only available for newly onboarded connected accounts — see “Migration limitation” below.
+
+Keep the disclosure to two or three sentences total.
+
+### Migration limitation
+
+SES and PES can only be used for **new** connected accounts created going forward — existing connected accounts can’t be migrated to SES or PES. If the platform already has connected accounts on another configuration (for example, existing Express accounts with platform-owned pricing and losses, or full-dashboard accounts) and wants SES or PES, clarify that only newly onboarded accounts can use the new configuration; existing accounts keep their current configuration unless the platform pursues a separate account-migration path with Stripe. The dashboard choice (Express versus full) is a permanent, one-way decision made at account creation for each connected account and can’t be changed later, so the platform needs to confirm this before onboarding accounts under SES or PES.
 
 ### Fee guidance rules
 
@@ -170,7 +186,9 @@ When `losses_collector: application` (platform owns loss liability), emphasize t
 
 #### Fee output requirements
 
-Every recommendation MUST explicitly:
+These requirements apply only when the recommendation does NOT use the Platform Pricing Tool. When the Platform Pricing Tool is recommended (see “Fee guidance rules” above), skip `applicationFeeIncludes` and any `application_fee_amount` math entirely — state that pricing is configured in the Platform Pricing Tool instead, and do not set an explicit `application_fee_amount`.
+
+When NOT using the Platform Pricing Tool, every recommendation MUST explicitly:
 
 - Name the `applicationFeeIncludes` value (`stripe_fee_estimate` or `platform_fee_only`) and explain what it means for the platform’s margin
 - Show a funds flow diagram with the platform fee
@@ -178,13 +196,15 @@ Every recommendation MUST explicitly:
 
 #### Low-margin warning template
 
-This section only applies when the platform is NOT using direct charges with Stripe-owned pricing (`fees_collector: "stripe"`). In that configuration, the connected account pays Stripe fees directly and this concern doesn’t apply.
+This section applies unless the platform uses direct charges with Stripe-owned pricing (`fees_collector: "stripe"`). In that configuration, the connected account pays Stripe fees directly, so this concern doesn’t apply. When recommending the Platform Pricing Tool, retain the low-margin warning and margin explanation, but don’t include explicit `application_fee_amount` instructions because setting it overrides the tool’s pricing rules.
 
 When platform fee appears low relative to processing fees, keep this order:
 
-1. **Warn first**: explicitly state that the selected platform fee may be below Stripe processing fees, so the platform may lose money per transaction when it absorbs fees.
+1. **Warn first**: Explicitly state that the selected platform fee might be below Stripe processing fees, so the platform might lose money per transaction when it absorbs fees.
 2. **Show downside before fix**: include one concise illustrative example of net margin without fee passthrough (label assumptions clearly and link to [stripe.com/pricing](https://stripe.com/pricing)).
-3. **Then provide the fix**: recommend margin-preserving `application_fee_amount` logic (platform fee + estimated Stripe fee) and explain why it preserves margin.
+3. **Then provide the fix**:
+   - If NOT using the Platform Pricing Tool: recommend margin-preserving `application_fee_amount` logic (platform fee + estimated Stripe fee) and explain why it preserves margin.
+   - If using the Platform Pricing Tool: recommend configuring the tool to include Stripe’s estimated processing fee so the platform’s margin is preserved, and explicitly do NOT set `application_fee_amount` on the PaymentIntent.
 4. **Close with validation path**: link to [stripe.com/pricing](https://stripe.com/pricing) and recommend monitoring the margin report.
 
 Suggested warning phrasing:

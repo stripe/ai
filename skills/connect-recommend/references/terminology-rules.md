@@ -78,6 +78,14 @@ Use “negative balance liability” (not “loss liability” or “who pays fo
 
 Do NOT use “who pays” framing — it is too vague. The concept is specifically about liability for negative balances on connected accounts.
 
+### “Managed Risk” terminology
+
+Stripe’s public product name **“Managed Risk”** is a full-service risk management product, not a synonym for the negative balance liability setting. Managed Risk means Stripe takes on merchant loss protection (unrecoverable negative balances), ongoing risk monitoring and detection, risk interventions, negative-balance recovery, and risk operations (merchant support for risk issues) — so the platform doesn’t need to build its own risk expertise or absorb loss liability. `losses_collector: "stripe"` is the Accounts v2 API field that enables this: setting it is what turns on Stripe-managed negative balance liability, which is the loss-protection component of Managed Risk. Don’t describe `losses_collector: "stripe"` and “Managed Risk” as equivalent — `losses_collector: "stripe"` is the API mapping that enables the broader Managed Risk product, and you need to use the human-readable label (“Negative balance liability: Stripe”) when describing that field on its own.
+
+**Radar is required whenever you recommend Managed Risk.** Managed Risk’s loss-protection pricing assumes Radar is active on the platform’s connected accounts, because Radar is the first line of defense against transaction-level fraud that would otherwise drive up negative-balance losses. When recommending Managed Risk (including SES or PES — see below), explicitly recommend enabling Radar for Platforms alongside it; don’t present Managed Risk as a substitute for Radar. Radar and Managed Risk remain separate concepts: Radar detects and blocks fraud at the transaction level, while Managed Risk protects the platform from the resulting negative-balance losses (see “Loss Liability (Negative Balance Liability)” in `decision-matrix.md`).
+
+Use SES (`dashboard: "express"` + `fees_collector: "stripe"` + `losses_collector: "stripe"`) and PES (`dashboard: "express"` + `fees_collector: "application"` + `losses_collector: "stripe"`) only as internal shorthand in skill instructions. Never expose these codes in user-facing output. You can mention “Managed Risk” as the public product name for what `losses_collector: "stripe"` enables, but keep the primary field-level explanation in terms of negative balance liability, and always pair the recommendation with Radar.
+
 ### Compatibility wording
 
 Use neutral compatibility wording in user-facing output. Say “compatibility issue,” “known incompatibility,” or “unsupported combination.”

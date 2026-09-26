@@ -19,9 +19,9 @@ Significant compatibility issues arise when account controller properties (dashb
 > 
 > For destination charges and separate charges and transfers, use `losses_collector: "application"` so responsibility aligns with dispute and transfer-reversal flows. In this guide, combinations that pair these charge patterns with `losses_collector: "stripe"` are marked BLOCKED.
 > 
-> **Exception:** Express dashboard with `losses_collector: "stripe"` (regardless of fees_collector) is blocked for ALL charge types including direct — these configs are still in beta. Don’t recommend them.
+> **Public-preview exception:** As of the June 24 public-preview release, Express dashboard with `losses_collector: "stripe"` + **direct charges** is a supported path for self-serve SaaS platforms, in two variants: `fees_collector: "stripe"` (SES — Stripe-managed pricing) and `fees_collector: "application"` (PES — platform-managed pricing). Always disclose that these direct-charge Express + Stripe-managed-negative-balance-liability paths are in public preview. Express dashboard with `losses_collector: "stripe"` for destination charges or separate charges and transfers remains BLOCKED — the liability model still doesn’t align with those charge flows.
 
-> **Note:** `on_behalf_of` configurations aren’t supported by this guide. `on_behalf_of` columns are retained in the matrix for compatibility detection only — if the assistant encounters `on_behalf_of` requirements, it should redirect to Stripe docs or sales.
+> **Note:** `on_behalf_of` configurations aren’t supported by this guide. `on_behalf_of` columns are retained in the matrix for compatibility detection only — if the assistant encounters `on_behalf_of` requirements, it needs to redirect to Stripe docs or sales.
 
 #### Full Matrix (v2 field names)
 
@@ -32,15 +32,15 @@ Significant compatibility issues arise when account controller properties (dashb
 | `full` | `application` | `application` | SALES-GATED | SALES-GATED | OUT OF SCOPE | SALES-GATED | OUT OF SCOPE |
 | `full` | `application` | `stripe` | SALES-GATED | SALES-GATED | OUT OF SCOPE | SALES-GATED | OUT OF SCOPE |
 | `express` | `application` | `application` | ALLOWED | CAUTION | OUT OF SCOPE | CAUTION | OUT OF SCOPE |
-| `express` | `stripe` | `stripe` | BLOCKED* | BLOCKED | OUT OF SCOPE | BLOCKED | OUT OF SCOPE |
+| `express` | `stripe` | `stripe` | ALLOWED (PUBLIC PREVIEW)* | BLOCKED | OUT OF SCOPE | BLOCKED | OUT OF SCOPE |
 | `express` | `stripe` | `application` | BLOCKED | BLOCKED | OUT OF SCOPE | BLOCKED | OUT OF SCOPE |
-| `express` | `application` | `stripe` | BLOCKED* | BLOCKED | OUT OF SCOPE | BLOCKED | OUT OF SCOPE |
+| `express` | `application` | `stripe` | ALLOWED (PUBLIC PREVIEW)* | BLOCKED | OUT OF SCOPE | BLOCKED | OUT OF SCOPE |
 | `none` | `stripe` | `stripe` | BLOCKED | BLOCKED | OUT OF SCOPE | BLOCKED | OUT OF SCOPE |
 | `none` | `stripe` | `application` | BLOCKED | BLOCKED | OUT OF SCOPE | BLOCKED | OUT OF SCOPE |
 | `none` | `application` | `stripe` | BLOCKED | BLOCKED | OUT OF SCOPE | BLOCKED | OUT OF SCOPE |
 | `none` | `application` | `application` | ALLOWED | ALLOWED | OUT OF SCOPE | ALLOWED | OUT OF SCOPE |
 
-\*Express dashboard with `losses_collector: "stripe"` configs are still in beta. Even when GA, destination charges and separate charges and transfers still require platform-run dispute or refund recovery (including transfer reversals), which aligns with `losses_collector: "application"` instead.
+\*`express/stripe/stripe` + direct (SES) and `express/application/stripe` + direct (PES) are public-preview paths made available for self-serve SaaS platforms in the June 24 release. Always disclose public-preview status when recommending them. Destination charges and separate charges and transfers still require platform-run dispute or refund recovery (including transfer reversals), which aligns with `losses_collector: "application"` instead — these non-direct combinations remain BLOCKED regardless of the public-preview release.
 
 #### CAUTION Details
 
@@ -57,7 +57,9 @@ Significant compatibility issues arise when account controller properties (dashb
 | Business Model | Dashboard | Fees | Losses | Charge Type | Rating | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | **Marketplace** | `express` | `application` | `application` | Destination | CAUTION | Recommended path — CAUTION applies: connected accounts have limited dispute or refund visibility from their Express dashboard; platform must run webhook-driven recovery workflows. Always include the Express dispute-visibility warning. |
-| **SaaS** | `full` | `stripe` | `stripe` | Direct | ALLOWED | Stripe-managed fee and loss defaults; connected accounts are independent merchants |
+| **Self-serve SaaS (SES)** | `express` | `stripe` | `stripe` | Direct | ALLOWED (PUBLIC PREVIEW) | Low-operations default for self-serve SaaS platforms — Stripe-managed pricing and negative balance liability. Disclose public-preview status. |
+| **Self-serve SaaS (PES)** | `express` | `application` | `stripe` | Direct | ALLOWED (PUBLIC PREVIEW) | For self-serve SaaS platforms that want pricing control while keeping Stripe-managed negative balance liability. Pair with the Platform Pricing Tool. Disclose public-preview status. |
+| **SaaS** | `full` | `stripe` | `stripe` | Direct | ALLOWED | Stripe-managed fee and loss defaults; connected accounts are independent merchants that need full, independent Stripe operations |
 | **Enterprise or White-label** | `none` | `application` | `application` | Destination or Direct | ALLOWED | Full platform control |
 
 ### 2. Why Blocked Combos Fail

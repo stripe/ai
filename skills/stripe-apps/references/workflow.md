@@ -9,9 +9,9 @@ Follow this exact sequence for every new app. Do NOT skip or reorder steps.
 2. stripe generate app <name> && cd <name>                       ← scaffold (NOT `stripe apps create`)
 3. pnpm install                                                   ← install deps
 4. [modify scaffolded files + create missing ones]               ← implement (only add what scaffold doesn't provide)
-5. pnpm build                                                     ← compile UI (skip for backend-only apps)
+5. pnpm build                                                     ← compile UI and scripts (skip for backend-only apps)
 6. pnpm test                                                      ← run tests
-7. stripe apps start                                             ← local preview in Dashboard
+7. stripe apps start                                             ← local preview for Dashboard UI extensions
 8. stripe apps upload                                            ← publish version (REQUIRED before Secret Store or fetchStripeSignature work)
 9. Install in test mode from Dashboard → Apps                    ← test the installed app
 10. Dashboard → Apps → Submit for review                         ← marketplace publishing (optional)
@@ -77,7 +77,7 @@ This creates a new V2 workspace with the correct directory structure, `stripe-ap
 pnpm install
 ```
 
-### Step 4 — Build and test (UI apps)
+### Step 4 — Build and test
 
 For apps with a UI extension, compile TypeScript and run tests:
 
@@ -88,7 +88,7 @@ pnpm test
 
 Backend-only apps without TypeScript can skip this step.
 
-### Step 5 — Develop locally
+### Step 5 — Develop UI extensions locally
 
 ```bash
 stripe apps start

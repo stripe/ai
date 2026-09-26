@@ -12,7 +12,7 @@ description: >-
 
 If the user specifies a target API version, use it. Otherwise, look up the current version on docs.stripe.com with any documentation or web tool available to you, for example `stripe docs /api/versioning` with the Stripe CLI. The [API versioning](https://docs.stripe.com/api/versioning.md) page states it in the sentence that begins “The current version is”.
 
-Bundled fallback API version: `2026-08-26.dahlia`. This value is only a snapshot from the last time this skill was generated, on 2026-09-25. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
+Bundled fallback API version: `2026-08-26.dahlia`. This value is only a snapshot from the last time this skill was generated, on 2026-09-26. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
 
 Before making changes, compare the target with each API version the integration pins: client configuration, per-request overrides, and webhook endpoints. Unless the user explicitly asks for it, don’t move any pin to an older version or a stable pin to a preview version. If a pin already matches the target, report it as unchanged. State the selected target and its source. If live verification fails or is unavailable, say that the latest version remains unverified, and don’t claim the integration is on the latest version.
 
@@ -23,6 +23,8 @@ For SDKs that support explicit API version overrides, use the selected target in
 ## Understanding Stripe API Versioning
 
 Stripe uses date-based API versions (e.g., `2026-08-26.dahlia`, `2025-08-27.basil`, `2024-12-18.acacia`). Your account’s API version determines request/response behavior.
+
+Starting with the 2024-09-30.acacia release, Stripe releases new API versions monthly with no breaking changes. Twice a year, a new major release (for example, Basil) starts with an API version containing breaking changes. You can safely upgrade to any monthly release without updating your code.
 
 ### Types of Changes
 
@@ -40,11 +42,11 @@ Stripe uses date-based API versions (e.g., `2026-08-26.dahlia`, `2025-08-27.basi
 - Behavioral modifications
 - Removed endpoints or parameters
 
-Review the [API Changelog](https://docs.stripe.com/changelog.md) for all changes between versions.
+Review the [API changelog](https://docs.stripe.com/changelog.md) for all changes between versions. See [API upgrades](https://docs.stripe.com/upgrades.md) for the full upgrade guide.
 
 ## Server-Side SDK Versioning
 
-See [SDK Version Management](https://docs.stripe.com/sdks/set-version.md) for details.
+See [Set a Stripe API version for your SDK](https://docs.stripe.com/sdks/set-version.md) for details on setting an API version in code.
 
 ### Dynamically-Typed Languages (Ruby, Python, PHP, Node.js)
 
@@ -159,8 +161,8 @@ All mobile SDKs work with any Stripe API version you use on your backend unless 
 
 ## Upgrade Checklist
 
-1. Review the [API Changelog](https://docs.stripe.com/changelog.md) for changes between your current and target versions
-2. Check [Upgrades Guide](https://docs.stripe.com/upgrades.md) for migration guidance
+1. Review the [API changelog](https://docs.stripe.com/changelog.md) for changes between your current and target versions
+2. Check the [API upgrades guide](https://docs.stripe.com/upgrades.md) for migration guidance
 3. Update server-side SDK package version (e.g., `npm update stripe`, `pip install --upgrade stripe`)
 4. Update the `apiVersion` parameter in your Stripe client initialization
 5. Test your integration against the new API version using the `Stripe-Version` header
@@ -194,3 +196,4 @@ const stripe = require('stripe')('sk_test_xxx', {
 - Test webhooks with the new version structure before upgrading
 - Breaking changes are tagged by affected product areas (Payments, Billing, Connect, etc.)
 - Multiple API versions coexist simultaneously, enabling staged adoption
+- For 72 hours after upgrading, you can roll back to your previous API version in [Workbench](https://dashboard.stripe.com/workbench/overview)

@@ -13,7 +13,8 @@ description: >-
   Secret Store API, `fetchStripeSignature` auth, and marketplace publishing,
   plus submitting one agentic feedback report after a build. Use when the user
   mentions Stripe Apps, UI extensions, @stripe/ui-extension-sdk,
-  stripe-app.yaml, Dashboard extensions, or customizing the Stripe Dashboard.
+  @stripe/extensibility-sdk, script extensions, stripe-app.yaml, Dashboard
+  extensions, or customizing the Stripe Dashboard.
 
 ---
 
@@ -134,6 +135,7 @@ Which files to create depends on discovery answers:
 | Frontend-only (reads Stripe data, no external services) | Modify: `stripe-app.yaml`, `ui/src/views/App.tsx` |
 | Backend-only (webhooks/events, no Dashboard UI) | Modify: `stripe-app.yaml`. Create: `server.js` |
 | Full-stack (UI + backend) | Modify: `stripe-app.yaml`, `ui/src/views/App.tsx`. Create: `server.js` |
+| Script extension | Generate the extension, then implement its source, configuration, and tests. |
 
 For each file: call your Write tool FIRST, then explain what it does.
 
@@ -154,7 +156,7 @@ For each file: call your Write tool FIRST, then explain what it does.
 
 - Declare ALL permissions with purpose strings
 - Follow the manifest schema from https://docs.stripe.com/stripe-apps/reference/app-manifest
-- Include `extensions: []` even if no backend extensions
+- Preserve generated entries in `extensions`; use `extensions: []` when the app has no extension declarations
 
 ### Step 4 — Deliver (REQUIRED — do not skip)
 
@@ -163,9 +165,9 @@ Your FINAL message MUST present the development workflow:
 1. `stripe generate app <name>` → scaffold
 2. `pnpm install` → dependencies
 3. Modify scaffolded files + create additional files → implement
-4. `pnpm build` → compile TypeScript (UI apps only)
+4. `pnpm build` → compile TypeScript (UI and script extensions)
 5. `pnpm test` → run unit tests
-6. `stripe apps start` → local preview in Dashboard
+6. `stripe apps start` → local preview for Dashboard UI extensions
 7. `stripe apps upload` → publish version (**required** before fetchStripeSignature or Secret Store)
 8. Install from Dashboard → test
 
@@ -204,6 +206,7 @@ If any file is MISSING, call Write now to create it.
 | [references/ui-extensions.md](https://docs.stripe.com/references/ui-extensions.md) | Before writing React/UI code |
 | [references/workflow.md](https://docs.stripe.com/references/workflow.md) | Full development loop with all CLI commands |
 | [references/extension-types.md](https://docs.stripe.com/references/extension-types.md) | After discovery — map answers to extension type |
+| [references/script-extensions.md](https://docs.stripe.com/references/script-extensions.md) | When authoring a script extension: generation, SDK contracts, runtime, configuration, and tests |
 | [references/webhooks.md](https://docs.stripe.com/references/webhooks.md) | When app reacts to Stripe events |
 | [references/authentication.md](https://docs.stripe.com/references/authentication.md) | For auth type selection and patterns |
 | [references/onboarding-ux.md](https://docs.stripe.com/references/onboarding-ux.md) | For first-run experience |
