@@ -14,7 +14,14 @@ description: >-
   interaction), relevance and popularity. Do not treat this as a search-only
   tool. Examples: "setup a database", "find hosting", "pay X", "use Twilio",
   "donate $50 to the Red Cross", "book a table at Y", "subscribe to a CRM".
-allowed-tools: Bash(stripe *), Bash(which stripe), Bash(brew install stripe/stripe-cli/stripe), Bash(brew upgrade stripe/stripe-cli/stripe), Bash(npx skills@1.7.0 add https://docs.stripe.com *), Skill, Read
+allowed-tools:
+  - Bash(stripe *)
+  - Bash(which stripe)
+  - Bash(brew install stripe/stripe-cli/stripe)
+  - Bash(brew upgrade stripe/stripe-cli/stripe)
+  - Bash(npx skills add https://docs.stripe.com *)
+  - Skill
+  - Read
 
 ---
 

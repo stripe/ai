@@ -6,7 +6,10 @@ description: >-
   docs.stripe.com content. Use to fetch gated documentation.
 metadata:
   short-description: Read and search Stripe documentation from the terminal
-allowed-tools: Bash(stripe docs *), Bash(stripe login), Bash(stripe version)
+allowed-tools:
+  - Bash(stripe docs *)
+  - Bash(stripe login)
+  - Bash(stripe version)
 
 ---
 

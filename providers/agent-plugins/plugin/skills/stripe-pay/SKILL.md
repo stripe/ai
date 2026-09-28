@@ -7,7 +7,10 @@ description: >-
   doesn't provide an exact Stripe Profile handle or network ID.
 metadata:
   short-description: Send funds to Stripe businesses
-allowed-tools: Bash(stripe directory *), Bash(stripe pay *), Bash(stripe whoami *)
+allowed-tools:
+  - Bash(stripe directory *)
+  - Bash(stripe pay *)
+  - Bash(stripe whoami *)
 
 ---
 
