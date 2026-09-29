@@ -20,7 +20,7 @@ Connect offers three ways to create charges involving connected accounts. The ch
 
 ### Direct Charges
 
-> **Controller Property Compatibility:** Works with most controller configurations, but NOT all. BLOCKED combinations for direct charges include: `fees_collector: 'stripe' + losses_collector: 'application'` (full or none dashboard), and `express/stripe/application`. Express dashboard now also supports two public-preview direct-charge combinations for self-serve SaaS platforms: `express/stripe/stripe` (SES) and `express/application/stripe` (PES), in addition to the standard `express/application/application`. This is the **only** charge type that works with `losses_collector: 'stripe'`. If the platform wants Stripe to own losses, direct charges are the only option — with `dashboard: "full"` or, for self-serve SaaS platforms, `dashboard: "express"` (SES/PES, public preview).
+> **Controller Property Compatibility:** Works with most controller configurations, but NOT all. BLOCKED combinations for direct charges include: `fees_collector: 'stripe' + losses_collector: 'application'` (full or none dashboard), and `express/stripe/application`. Express dashboard now also supports two public-preview direct-charge combinations for self-serve SaaS platforms: `express/stripe/stripe` (Stripe-managed pricing) and `express/application/stripe` (platform-managed pricing), in addition to the standard `express/application/application`. This is the **only** charge type that works with `losses_collector: 'stripe'`. If the platform wants Stripe to own losses, direct charges are the only option — with `dashboard: "full"` or, for self-serve SaaS platforms, `dashboard: "express"` (Stripe-managed pricing or platform-managed pricing, public preview).
 
 #### How it works
 

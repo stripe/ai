@@ -119,8 +119,8 @@ Dashboard selection logic:
   - Destination charges pattern
   - User wants a lightweight dashboard for sellers
   - Cobranding benefit is desired
-  - **SaaS with direct charges, self-serve or low-operations needs** — Express is now the default (SES: Stripe-managed pricing + Stripe-managed negative balance liability; or PES: platform-managed pricing + Stripe-managed negative balance liability). Disclose that these direct-charge Express + Stripe-managed-negative-balance-liability configurations are in public preview.
-- **SaaS-with-payments rule:** SaaS, direct charges, and Stripe-managed responsibilities no longer automatically imply full dashboard. Default to `dashboard: "express"` (SES/PES, public preview) for self-serve or low-operations SaaS platforms. Use `dashboard: "full"` only when the merchant needs independent access, apps, or full payment operations beyond what Express provides.
+  - **SaaS with direct charges, self-serve or low-operations needs** — Express is now the default (Stripe-managed pricing + Stripe-managed negative balance liability; or platform-managed pricing + Stripe-managed negative balance liability). Disclose that these direct-charge Express + Stripe-managed-negative-balance-liability configurations are in public preview.
+- **SaaS-with-payments rule:** SaaS, direct charges, and Stripe-managed responsibilities no longer automatically imply full dashboard. Default to `dashboard: "express"` (Stripe-managed or platform-managed pricing, public preview) for self-serve or low-operations SaaS platforms. Use `dashboard: "full"` only when the merchant needs independent access, apps, or full payment operations beyond what Express provides.
 - **`dashboard: "none"`** when white-label or fully embedded control is required.
 
 Non-technical user language (“not tech savvy”) is a supporting signal, not a standalone override. It should reinforce a marketplace recommendation (`dashboard: "express"`), but it doesn’t override the full Dashboard when established merchants need to access Stripe directly, install Stripe apps, or manage payments, refunds, and payouts without relying on the platform’s UI.
@@ -131,9 +131,9 @@ When recommending, always explain why:
 - Full: independent seller control over payments, refunds, and payouts.
 - None: white-labeled UX; platform owns all seller UI views (or uses embedded components).
 
-#### Q4b: New vs. existing connected accounts (ask whenever SES or PES is being considered)
+#### Q4b: New versus existing connected accounts (ask whenever `dashboard: "express"` + `losses_collector: "stripe"` + direct charges is being considered)
 
-Before finalizing a recommendation of SES or PES (`dashboard: "express"` + `losses_collector: "stripe"` with direct charges), determine whether the platform is configuring newly onboarded accounts or trying to change the configuration of existing connected accounts. Ask the user:
+Before finalizing a recommendation of `dashboard: "express"` + `losses_collector: "stripe"` with direct charges (Stripe-managed or platform-managed pricing), determine whether the platform is configuring newly onboarded accounts or trying to change the configuration of existing connected accounts. Ask the user:
 
 ```
 Are these connected accounts you're onboarding for the first time, or accounts you already have on a different Stripe configuration today?
@@ -147,17 +147,17 @@ Options:
 
 Mapping:
 
-- **New accounts only** → SES/PES can be recommended without restriction (subject to the other compatibility checks).
-- **Existing accounts** (any or all) → SES and PES CANNOT be used to migrate those existing accounts. Existing connected accounts keep their current dashboard, fee, and loss-liability configuration. If the platform wants SES or PES, clarify it only applies to accounts newly onboarded going forward — don’t imply that existing accounts can be switched over via a settings change or an update to their account configuration.
-- **Mix of both** → Recommend SES/PES for the new-account cohort only, and explicitly call out that the existing cohort is unaffected and stays on its current configuration.
+- **New accounts only** → `dashboard: "express"` + `losses_collector: "stripe"` + direct charges can be recommended without restriction (subject to the other compatibility checks).
+- **Existing accounts** (any or all) → This configuration CANNOT be used to migrate those existing accounts. Existing connected accounts keep their current dashboard, fee, and loss-liability configuration. If the platform wants this configuration, clarify it only applies to accounts newly onboarded going forward — don’t imply that existing accounts can be switched over using a settings change or an update to their account configuration.
+- **Mix of both** → Recommend this configuration for the new-account cohort only, and explicitly call out that the existing cohort is unaffected and stays on its current configuration.
 
-Always include this warning when recommending SES or PES:
+Always include this warning when recommending `dashboard: "express"` + `losses_collector: "stripe"` + direct charges:
 
 ```
-WARNING: SES/PES apply to new accounts only.
-- Existing connected accounts can't be migrated to SES or PES.
+WARNING: This configuration applies to new accounts only.
+- Existing connected accounts can't be migrated to it.
 - The dashboard choice (Express vs. full) is a permanent, one-way decision made at account creation for each connected account and can't be changed later.
-- If you have existing accounts on a different configuration, they'll keep that configuration; only newly onboarded accounts can use SES/PES.
+- If you have existing accounts on a different configuration, they'll keep that configuration; only newly onboarded accounts can use this configuration.
 ```
 
 #### Q5: Dispute and refund responsibility (skip if auto-filled or confirmed)
@@ -207,7 +207,7 @@ If Q1 = Platform with service providers or SaaS:
   - “I’ll manage it with Radar — more control, more complexity”
   - “Use Stripe defaults for now”
 - Map:
-  - **If the resulting configuration uses `losses_collector: "stripe"` (Managed Risk — SaaS with payments, including SES/PES, or full dashboard):** Radar for Platforms is REQUIRED regardless of which option the user picks, because Managed Risk’s loss-protection pricing assumes Radar is active. Use `riskManagement: { owner: "stripe", radarEnabled: true }` for “Let Stripe manage it” and “Use Stripe defaults for now,” and recommend enabling Radar for Platforms explicitly in the output — don’t describe it as something to add later.
+  - **If the resulting configuration uses `losses_collector: "stripe"` (Managed Risk — SaaS with payments, including Stripe-managed or platform-managed pricing with Express dashboard, or full dashboard):** Radar for Platforms is REQUIRED regardless of which option the user picks, because Managed Risk’s loss-protection pricing assumes Radar is active. Use `riskManagement: { owner: "stripe", radarEnabled: true }` for “Let Stripe manage it” and “Use Stripe defaults for now,” and recommend enabling Radar for Platforms explicitly in the output — don’t describe it as something to add later.
   - **Platform-managed Radar** → `riskManagement: { owner: "platform", radarEnabled: true, radarCustomRules: true }`
   - **If the resulting configuration uses `losses_collector: "application"`** (for example, “platform with service providers” using destination charges): Stripe-managed → `riskManagement: { owner: "stripe", radarEnabled: false }`; Stripe defaults → `riskManagement: { owner: "stripe", radarEnabled: false }`
 

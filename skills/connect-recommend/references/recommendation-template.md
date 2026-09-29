@@ -144,11 +144,11 @@ Always present loss liability and risk management as separate concepts:
 
 When `losses_collector: application` (platform owns loss liability), emphasize that Radar is essential — fraudulent charges that slip through come directly out of the platform’s balance. For marketplaces using destination charges, the platform is merchant of record and must manage risk.
 
-**Radar requirement for Managed Risk:** Whenever a recommendation includes `losses_collector: "stripe"` (SES, PES, or full/Stripe/Stripe SaaS), explicitly recommend enabling Radar for Platforms alongside it. Managed Risk’s loss-protection model assumes Radar is active to catch transaction-level fraud; don’t present Managed Risk as replacing the need for Radar.
+**Radar requirement for Managed Risk:** Whenever a recommendation includes `losses_collector: "stripe"` (Express with Stripe-managed pricing, Express with platform-managed pricing, or full/Stripe/Stripe SaaS), explicitly recommend enabling Radar for Platforms alongside it. Managed Risk’s loss-protection model assumes Radar is active to catch transaction-level fraud; don’t present Managed Risk as replacing the need for Radar.
 
 ### Public-preview disclosure
 
-When the final recommendation is SES (`dashboard: "express"` + `fees_collector: "stripe"` + `losses_collector: "stripe"`, direct charges) or PES (`dashboard: "express"` + `fees_collector: "application"` + `losses_collector: "stripe"`, direct charges), include in the recommendation output. Don’t expose the SES or PES shorthand to the user.
+When the final recommendation is `dashboard: "express"` + `fees_collector: "stripe"` + `losses_collector: "stripe"` (Stripe-managed pricing, direct charges) or `dashboard: "express"` + `fees_collector: "application"` + `losses_collector: "stripe"` (platform-managed pricing, direct charges), include in the recommendation output:
 
 - A concise public-preview disclosure stating that this Express + Stripe-managed-negative-balance-liability direct-charge configuration is in public preview.
 - A statement that this configuration requires using the current Connect preview API version (not the platform’s pinned GA API version), with a link to the [preview changelog](https://docs.stripe.com/changelog.md?preview=true) so the user can confirm the exact version before implementing.
@@ -158,7 +158,7 @@ Keep the disclosure to two or three sentences total.
 
 ### Migration limitation
 
-SES and PES can only be used for **new** connected accounts created going forward — existing connected accounts can’t be migrated to SES or PES. If the platform already has connected accounts on another configuration (for example, existing Express accounts with platform-owned pricing and losses, or full-dashboard accounts) and wants SES or PES, clarify that only newly onboarded accounts can use the new configuration; existing accounts keep their current configuration unless the platform pursues a separate account-migration path with Stripe. The dashboard choice (Express versus full) is a permanent, one-way decision made at account creation for each connected account and can’t be changed later, so the platform needs to confirm this before onboarding accounts under SES or PES.
+The Express + Stripe-managed pricing and Express + platform-managed pricing configurations can only be used for **new** connected accounts created going forward — existing connected accounts can’t be migrated to either configuration. If the platform already has connected accounts on another configuration (for example, existing Express accounts with platform-owned pricing and losses, or full-dashboard accounts) and wants one of these configurations, clarify that only newly onboarded accounts can use the new configuration; existing accounts keep their current configuration unless the platform pursues a separate account-migration path with Stripe. The dashboard choice (Express versus full) is a permanent, one-way decision made at account creation for each connected account and can’t be changed later, so the platform needs to confirm this before onboarding accounts under either configuration.
 
 ### Fee guidance rules
 

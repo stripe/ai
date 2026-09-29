@@ -17,8 +17,8 @@ Instead, configure accounts using three independent dimensions:
 | **Marketplace** | `express` | `application` | `application` | Destination | Embedded | Platform owns customer relationship; platform-owned pricing + loss liability required for Express dashboard today |
 | **On-demand services** | `express` | `application` | `application` | Destination | Embedded | Fast onboarding for drivers and providers; platform-owned pricing + loss liability required for Express |
 | **Professional services** | `express` | `application` | `application` | Destination | Embedded | Similar to marketplace; platform-owned pricing + loss liability required for Express |
-| **SaaS with payments (self-serve, minimal ops)** | `express` | `stripe` | `stripe` | Direct | Embedded | Default for self-serve SaaS platforms — lightweight dashboard, Stripe-managed pricing and negative balance liability (SES, public preview) |
-| **SaaS with payments (self-serve, pricing control)** | `express` | `application` | `stripe` | Direct | Embedded | For self-serve SaaS platforms that want to control pricing while keeping Stripe-managed negative balance liability (PES, public preview); pair with the Platform Pricing Tool |
+| **SaaS with payments (self-serve, minimal ops)** | `express` | `stripe` | `stripe` | Direct | Embedded | Default for self-serve SaaS platforms — lightweight dashboard, Stripe-managed pricing and negative balance liability (public preview) |
+| **SaaS with payments (self-serve, pricing control)** | `express` | `application` | `stripe` | Direct | Embedded | For self-serve SaaS platforms that want to control pricing while keeping Stripe-managed negative balance liability (public preview); pair with the Platform Pricing Tool |
 | **SaaS with payments (established merchants)** | `full` | `stripe` | `stripe` | Direct | Embedded | Sellers want independence, own Stripe accounts, own branding, and need full, independent Stripe operations |
 | **Crowdfunding** | `express` | `application` | `application` | Separate | Embedded | Multi-party splits and delayed release. Use transfer math (not `application_fee_amount`) and platform-owned loss liability for transfer reversals |
 | **Subscription platforms** | `express` | `application` | `application` | Destination | Embedded | Recurring billing, platform manages subscriptions; platform-owned pricing + loss liability required for Express |
@@ -54,8 +54,8 @@ Who collects fees and bears losses?
 │   Platform is merchant of record and is responsible for paying Stripe fees
 │   Platform-owned pricing + loss liability is REQUIRED for Express dashboard today
 │   Platform-owned loss liability enables connected account negative balances for transfer reversals
-├── SaaS (direct charges), self-serve or low-operations → fees_collector: "stripe", losses_collector: "stripe" ← DEFAULT (SES, public preview, Express dashboard)
-│   Platform wants pricing control instead → fees_collector: "application", losses_collector: "stripe" (PES, public preview, Express dashboard; pair with Platform Pricing Tool)
+├── SaaS (direct charges), self-serve or low-operations → fees_collector: "stripe", losses_collector: "stripe" ← DEFAULT (Stripe-managed pricing, public preview, Express dashboard)
+│   Platform wants pricing control instead → fees_collector: "application", losses_collector: "stripe" (platform-managed pricing, public preview, Express dashboard; pair with Platform Pricing Tool)
 ├── SaaS (direct charges), established merchants needing independent Stripe operations → fees_collector: "stripe", losses_collector: "stripe" (full dashboard)
 └── White-label or enterprise → fees_collector: "application", losses_collector: "application" (use embedded components; fully custom adds significant complexity)
 ```
@@ -66,7 +66,7 @@ Who collects fees and bears losses?
 - If sellers need lightweight access (common for marketplaces, and now also the default for self-serve SaaS) → `dashboard: "express"` (typical default)
 - If fully white-labeled, sellers never see Stripe → `dashboard: "none"`
 - Marketplace defaults: `dashboard: "express"` + `fees_collector: "application"` + `losses_collector: "application"`
-- Self-serve SaaS defaults (direct charges only): `dashboard: "express"` + `fees_collector: "stripe"` + `losses_collector: "stripe"` (SES) — the low-operations default; use `fees_collector: "application"` (PES) when the platform wants pricing control. Both are public-preview configurations — disclose that status.
+- Self-serve SaaS defaults (direct charges only): `dashboard: "express"` + `fees_collector: "stripe"` + `losses_collector: "stripe"` (Stripe-managed pricing) — the low-operations default; use `fees_collector: "application"` (platform-managed pricing) when the platform wants pricing control. Both are public-preview configurations — disclose that status.
 - SaaS defaults for established merchants that need independent Stripe operations: `dashboard: "full"` + `fees_collector: "stripe"` + `losses_collector: "stripe"`
 - Hybrid Express defaults (same accounts used for direct + destination or separate): keep `dashboard: "express"` + `fees_collector: "application"` + `losses_collector: "application"` for both sides
 
@@ -181,7 +181,7 @@ How much control over onboarding UX?
 | **Marketplace** | Platform (mandatory) | Yes — strongly recommended | No — must self-manage | Platform is merchant of record for destination charges. Liable for fraud and disputes. Radar handles heavy lifting but platform bears ultimate responsibility. |
 | **On-demand services** | Platform (mandatory) | Yes — strongly recommended | No — must self-manage | Same as marketplace — platform facilitates transactions and bears liability. |
 | **Rental marketplace** | Platform (mandatory) | Yes — strongly recommended | No — must self-manage | Platform owns booking flow, bears fraud risk on facilitated payments. |
-| **SaaS with payments** | Stripe (recommended) | **Required** — `losses_collector: "stripe"` enables Managed Risk (full dashboard, or SES/PES with Express dashboard, public preview), and Managed Risk’s loss-protection pricing assumes Radar is active | **Yes — recommended** | Recommend Radar for Platforms alongside Managed Risk; don’t describe Radar as optional or something to add later when `losses_collector: "stripe"` is recommended. |
+| **SaaS with payments** | Stripe (recommended) | **Required** — `losses_collector: "stripe"` enables Managed Risk (full dashboard, or Stripe-managed/platform-managed pricing with Express dashboard, public preview), and Managed Risk’s loss-protection pricing assumes Radar is active | **Yes — recommended** | Recommend Radar for Platforms alongside Managed Risk; don’t describe Radar as optional or something to add later when `losses_collector: "stripe"` is recommended. |
 | **Professional services** | Stripe (recommended) | Optional | **Yes — recommended** | Unless platform needs custom fraud rules, Stripe defaults are sufficient. |
 | **Crowdfunding** | Stripe (recommended) | Optional | **Yes — recommended** | Stripe-managed defaults are often sufficient for launch; reassess based on dispute and fraud patterns. |
 | **Subscription platforms** | Stripe (recommended) | Optional | **Yes — recommended** | Recurring billing has different risk profile — churn > fraud. Stripe’s defaults usually sufficient. |
@@ -191,7 +191,7 @@ How much control over onboarding UX?
 
 - If `chargePattern` is `destination` or `separate`, the platform is the merchant of record and MUST manage risk — but Radar does the heavy lifting.
 - If `chargePattern` is `direct`, Stripe-managed risk is available and recommended.
-- **Whenever `losses_collector: "stripe"` is recommended (Managed Risk — full dashboard, or SES/PES with Express dashboard, public preview), Radar for Platforms is REQUIRED, not optional.** Don’t tell the platform it can “upgrade to Radar later” — recommend enabling Radar for Platforms as part of the same recommendation.
+- **Whenever `losses_collector: "stripe"` is recommended (Managed Risk — full dashboard, or Stripe-managed/platform-managed pricing with Express dashboard, public preview), Radar for Platforms is REQUIRED, not optional.** Don’t tell the platform it can “upgrade to Radar later” — recommend enabling Radar for Platforms as part of the same recommendation.
 - Self-managing risk adds: dispute webhook handling, Radar configuration, ongoing monitoring, and financial exposure. Always warn the user about this added complexity.
 - Stripe Radar is a tool platforms use to manage risk — it’s NOT the same as “Stripe manages risk for you.” When Radar is enabled, the platform is still responsible; Radar just automates the detection.
 
@@ -312,7 +312,7 @@ You can have Stripe own loss liability while still using Radar for fraud detecti
 **Recommendation depends on charge pattern:**
 
 - **Marketplaces (destination or separate charges):** Platform-owned loss liability. This is **required** for destination charges — it enables connected account balances to go negative, which the platform needs to reverse transfers (for example, for refunds or disputes). Also required for Express dashboard with non-direct charge patterns today.
-- **SaaS (direct charges):** Stripe-owned loss liability is the recommended default — SaaS platforms shouldn’t need to bear negative balance liability because the connected account is the merchant of record. This is available with Express dashboard (SES/PES, public preview) or full dashboard.
+- **SaaS (direct charges):** Stripe-owned loss liability is the recommended default — SaaS platforms shouldn’t need to bear negative balance liability because the connected account is the merchant of record. This is available with Express dashboard (Stripe-managed or platform-managed pricing, public preview) or full dashboard.
 - **Enterprise or white-label:** Platform-owned. Full control = full responsibility.
 
 | Business Model | Recommended Loss Liability | Why |
@@ -324,7 +324,7 @@ You can have Stripe own loss liability while still using Radar for fraud detecti
 | **Event ticketing** | **Platform** | Same as marketplace — uses destination charges |
 | **Crowdfunding** | **Platform** | Uses separate charges — platform-owned loss liability enables flexible transfer reversals |
 | **Subscription platforms** | **Platform** | Uses destination charges — platform-owned loss liability required |
-| **SaaS with payments** | **Stripe** | SaaS platforms use direct charges — connected account is merchant of record. Available with Express dashboard (SES/PES, public preview) or full dashboard. |
+| **SaaS with payments** | **Stripe** | SaaS platforms use direct charges — connected account is merchant of record. Available with Express dashboard (Stripe-managed or platform-managed pricing, public preview) or full dashboard. |
 | **E-commerce (white-label)** | Platform | Full control = full responsibility (dashboard: none, platform-managed) |
 | **B2B platforms** | Platform | Enterprise requirements usually demand full control |
 
@@ -341,7 +341,7 @@ When guiding users through this page, always:
 
 1. Explain what loss liability means in plain language with a concrete example
 2. Recommend platform-owned for marketplaces using destination or separate charges — required for transfer reversals, and required for Express dashboard with those non-direct charge patterns
-3. Recommend Stripe-owned for SaaS platforms using direct charges — this now works with either Express dashboard (SES/PES, public preview) or full dashboard
+3. Recommend Stripe-owned for SaaS platforms using direct charges — this now works with either Express dashboard (Stripe-managed or platform-managed pricing, public preview) or full dashboard
 4. Keep this decision separate from Radar and fraud detection
 
 ### Integration Antipattern Warnings
@@ -354,9 +354,9 @@ These combinations are true antipatterns that Stripe will never support. Do NOT 
 
 1. **`losses_collector: "stripe"` + destination charges** — Liability and fee behavior don’t align with this charge pattern. Treat as BLOCKED when `losses_collector: "stripe"` is selected.
 2. **`losses_collector: "stripe"` + separate charges and transfers (including `on_behalf_of`)** — Same negative balance mechanism as destination charges. Platform can’t recover funds from connected accounts that only receive transfers.
-3. **Express dashboard + `losses_collector: "stripe"` + non-direct charges** — Express dashboard with Stripe-managed negative balance liability is only supported for **direct** charges (SES with `fees_collector: "stripe"`, or PES with `fees_collector: "application"`), and only as a public-preview capability. For destination charges or separate charges and transfers, this combination remains BLOCKED regardless of `fees_collector`. `express/stripe/application` (Express + Stripe-managed pricing + platform-managed losses) also remains BLOCKED for all charge patterns.
+3. **Express dashboard + `losses_collector: "stripe"` + non-direct charges** — Express dashboard with Stripe-managed negative balance liability is only supported for **direct** charges (Stripe-managed pricing with `fees_collector: "stripe"`, or platform-managed pricing with `fees_collector: "application"`), and only as a public-preview capability. For destination charges or separate charges and transfers, this combination remains BLOCKED regardless of `fees_collector`. `express/stripe/application` (Express + Stripe-managed pricing + platform-managed losses) also remains BLOCKED for all charge patterns.
 4. **`dashboard: "full"` + destination charges or separate charges and transfers** — Full dashboard has reduced payment and dispute detail for destination and separate charges. Full dashboard provides complete payment and dispute management for direct charges only.
-5. **`fees_collector: "stripe"` + `losses_collector: "application"` (Stripe-owned pricing + platform-owned losses)** — This combination is BLOCKED for all charge types and all dashboards. The reverse — `fees_collector: "application"` + `losses_collector: "stripe"` (platform-managed pricing + Stripe-managed losses) — is SALES-GATED for `full` dashboard, BLOCKED for `none` dashboard, and, for `express` dashboard, ALLOWED as a public-preview path (PES) with direct charges only.
+5. **`fees_collector: "stripe"` + `losses_collector: "application"` (Stripe-owned pricing + platform-owned losses)** — This combination is BLOCKED for all charge types and all dashboards. The reverse — `fees_collector: "application"` + `losses_collector: "stripe"` (platform-managed pricing + Stripe-managed losses) — is SALES-GATED for `full` dashboard, BLOCKED for `none` dashboard, and, for `express` dashboard, ALLOWED as a public-preview path (platform-managed pricing) with direct charges only.
 6. **(`on_behalf_of` is out of scope for this guide — redirect to docs or sales if encountered.)** **`on_behalf_of` with destination charges for marketplace use cases** — Do NOT use `on_behalf_of` for marketplaces. `on_behalf_of` makes the connected account the merchant of record, but in a marketplace the platform is the merchant of record. If a user requires `on_behalf_of`, direct them to [Stripe Connect docs](https://docs.stripe.com/connect/charges.md) or [Stripe sales](https://stripe.com/contact/sales).
 7. **`application_fee_amount` with separate charges and transfers** — NOT compatible. Platforms using separate charges and transfers collect fees by transferring less than the charge amount.
 
@@ -365,8 +365,8 @@ These combinations are true antipatterns that Stripe will never support. Do NOT 
 | Business Model | Dashboard | Fees | Losses | Charge Type | Status |
 | --- | --- | --- | --- | --- | --- |
 | **Marketplace** | `express` | `application` | `application` | Destination | CAUTION — recommended path; always include Express dispute-visibility warning (see `compatibility-matrix.md`) |
-| **Self-serve SaaS (SES)** | `express` | `stripe` | `stripe` | Direct | ALLOWED (PUBLIC PREVIEW) — low-operations default for self-serve SaaS platforms; disclose public-preview status |
-| **Self-serve SaaS (PES)** | `express` | `application` | `stripe` | Direct | ALLOWED (PUBLIC PREVIEW) — for self-serve SaaS platforms that want pricing control; pair with the Platform Pricing Tool; disclose public-preview status |
+| **Self-serve SaaS, Stripe-managed pricing** | `express` | `stripe` | `stripe` | Direct | ALLOWED (PUBLIC PREVIEW) — low-operations default for self-serve SaaS platforms; disclose public-preview status |
+| **Self-serve SaaS, platform-managed pricing** | `express` | `application` | `stripe` | Direct | ALLOWED (PUBLIC PREVIEW) — for self-serve SaaS platforms that want pricing control; pair with the Platform Pricing Tool; disclose public-preview status |
 | **SaaS** | `full` | `stripe` | `stripe` | Direct | ALLOWED — connected accounts are independent merchants that need full, independent Stripe operations |
 | **Enterprise** | `none` | `application` | `application` | Any | ALLOWED — full platform control |
 
