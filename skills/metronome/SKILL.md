@@ -8,8 +8,11 @@ description: >-
   postpaid, thresholds, auto-recharge), and Stripe integration (arrears
   invoicing, tax providers, line item limits). Use when building, modifying, or
   reviewing any Metronome integration — including ingesting usage events,
-  creating contracts or rate cards, managing credits and commits, configuring
-  invoicing, or syncing invoices with Stripe Billing.
+  creating customers, contracts, or rate cards, designing billable metric group
+  keys, managing credits and commits, configuring invoicing, syncing invoices
+  with Stripe Billing, billing AI applications for token usage, setting up
+  self-serve (PLG) pricing, reviewing customer health, commit burn, portfolios,
+  or renewals, or migrating from Stripe Billing Meters to Metronome.
 
 ---
 
@@ -29,6 +32,21 @@ Metronome API base: `https://api.metronome.com`. Authenticate with a Bearer toke
 | Prepaid balances, auto-recharge, spend alerts, and thresholds | Notifications API | [Set prepaid balance thresholds](https://docs.metronome.com/guides/customers-billing/optimize-customer-experience/prepaid-balance-thresholds.md), [Enforce spend thresholds](https://docs.metronome.com/guides/customers-billing/optimize-customer-experience/set-customer-spend-control.md), and [Threshold notifications](https://docs.metronome.com/guides/pricing-packaging/apply-credits-and-commits/alerts.md) |
 
 Read the linked page before answering any integration question or writing code; the links return plain Markdown. If no row fits, use the [documentation index](https://docs.metronome.com/llms.txt) to find the right page, and append `.md` to the page URL to fetch it as Markdown.
+
+## Operational workflows
+
+Metronome publishes step-by-step skills for the tasks below. Read the linked skill in full before starting the task. Several of them create real Metronome objects through the API using the token in the environment: confirm which environment that token targets (sandbox and production share `https://api.metronome.com`; the token determines the environment) and get the user’s explicit confirmation before any write. Where a step also writes to Stripe, as the migration cutover does when it ends subscriptions, identify the Stripe account and mode behind the Stripe key (for example with `GET /v1/account`) and confirm those writes separately.
+
+| Task | Metronome skill | What it does |
+| --- | --- | --- |
+| Migrating from Stripe Billing Meters, Subscriptions, and Credit Grants to Metronome | [stripe-to-metronome-migration](https://docs.metronome.com/.well-known/skills/stripe-to-metronome-migration/SKILL.md) | Changes production state when executed: creates Metronome customers, contracts, and credits, flips billable status, and ends Stripe subscriptions at cutover. Also covers scoping, concept mapping, group key design, the parallel run, and rollback. |
+| Designing `group_keys`, `pricing_group_key`, and `presentation_group_key` for a billable metric | [metronome-group-keys](https://docs.metronome.com/.well-known/skills/metronome-group-keys/SKILL.md) | Creates the billable metric and product after a confirmation gate. Sizes cardinality risk first: a compound key’s cost is the product of each dimension’s cardinality, and `group_keys` is immutable. |
+| Setting up Metronome from scratch: billable metrics, products, rate card, customer, and contract | [metronome-setup-catalog](https://docs.metronome.com/.well-known/skills/metronome-setup-catalog/SKILL.md) | Creates objects. End-to-end setup from pricing intent to a verified draft invoice. |
+| Creating a customer record | [metronome-create-customer](https://docs.metronome.com/.well-known/skills/metronome-create-customer/SKILL.md) | Creates objects. Duplicate check and preview, then `POST /v1/customers` with name, ingest alias, Salesforce ID, and Slack channel. |
+| Creating a new contract from signed order-form terms | [metronome-create-contract](https://docs.metronome.com/.well-known/skills/metronome-create-contract/SKILL.md) | Creates objects. Commits, credits, and rate overrides on a new contract, including commit-specific discounts; for an existing contract use Contract Edits (routing table above). |
+| Billing an AI application for token usage | [metronome-token-billing](https://docs.metronome.com/.well-known/skills/metronome-token-billing/SKILL.md) | Creates objects. Models AI plans, builds the managed rate card with your markup over Stripe’s model catalog, provisions the customer, and validates the Stripe and Metronome flow. |
+| Self-serve (PLG) billing setup, pricing changes, and single-customer diagnostics, in business terms | [metronome-plg-billing](https://docs.metronome.com/.well-known/skills/metronome-plg-billing/SKILL.md) | Creates and changes objects in its start-billing and change-pricing modes; customer-story mode is a read-only diagnostic. |
+| Customer health reviews for Metronome CSMs: anomalies, commit burn, portfolio briefing, renewal prep | [metronome-csm-reviews](https://docs.metronome.com/.well-known/skills/metronome-csm-reviews/SKILL.md) | Read-only. Written for Metronome’s account team rather than for building an integration. |
 
 ## Critical rules
 

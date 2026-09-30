@@ -30,11 +30,11 @@ Decide *where in the Dashboard* the app lives; that determines the viewport and 
 
 | Your goal | Surface | Viewport | Root component |
 | --- | --- | --- | --- |
-| A dedicated workspace: tabs, lists, dashboards, multi-step workflows | **Full-page** | [stripe.dashboard.fullpage](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [FullPageView](https://docs.stripe.com/stripe-apps/components/fullpageview.md) |
-| Contextual info/actions tied to a specific object (a customer, a payment) | **Page-specific** | [`stripe.dashboard.customer.detail`, `.payment.detail`, `.list`, `.overview`, …](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [`ContextView`](https://docs.stripe.com/stripe-apps/components/contextview.md) |
-| Available on every Dashboard page | **Dashboard-wide drawer** | [stripe.dashboard.drawer.default](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [ContextView](https://docs.stripe.com/stripe-apps/components/contextview.md) |
-| App configuration | **Settings** | [settings](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [SettingsView](https://docs.stripe.com/stripe-apps/components/settingsview.md) |
-| First-run setup after install | **Onboarding** | [onboarding](https://docs.stripe.com/stripe-apps/reference/viewports.md) | [OnboardingView](https://docs.stripe.com/stripe-apps/components/onboardingview.md) |
+| A dedicated workspace: tabs, lists, dashboards, multi-step workflows | **Full-page** | `stripe.dashboard.fullpage` | [FullPageView](https://docs.stripe.com/stripe-apps/components/fullpageview.md) |
+| Contextual info/actions tied to a specific object (such as a customer or payment) | **Page-specific** | `stripe.dashboard.{object_type}.detail`, `stripe.dashboard.{object_type}.list`, or `stripe.dashboard.{object_type}.overview` | [ContextView](https://docs.stripe.com/stripe-apps/components/contextview.md) |
+| Available on every Dashboard page | **Dashboard-wide drawer** | `stripe.dashboard.drawer.default` | [ContextView](https://docs.stripe.com/stripe-apps/components/contextview.md) |
+| App configuration | **Settings** | `settings` | [SettingsView](https://docs.stripe.com/stripe-apps/components/settingsview.md) |
+| First-run setup after install | **Onboarding** | `onboarding` | [OnboardingView](https://docs.stripe.com/stripe-apps/components/onboardingview.md) |
 
 Rules of thumb: lead with **full-page** when the app is a destination with more than one section; use a **page-specific** drawer when the value is glanceable context on an existing object; only use `drawer.default` when the app truly applies everywhere. A full-page app can also register drawer/page-specific views — link between them.
 
