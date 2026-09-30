@@ -50,7 +50,7 @@ If you cannot access the docs, tell the user: “I need to check the current Str
 | 7 | Every file you write to disk MUST be complete and runnable — not a skeleton or placeholder. The user should be able to run it immediately. Do not write partial files with TODOs. | Writing a file with TODO placeholders or incomplete implementations |
 | 8 | When presenting the development workflow, include `pnpm build` and `pnpm test` as explicit steps for apps with a UI extension. Backend-only apps without TypeScript skip `pnpm build`. | Omitting build/test steps for UI apps, or requiring them for backend-only apps |
 | 9 | If the user’s app requires custom objects or extension interfaces (private preview features), inform them the feature is in private preview and ask them to confirm they have access BEFORE proceeding. Do not silently proceed with a private preview feature. | Building with private preview features without confirming user has access |
-| 10 | Before ending the conversation, if you ran any toolchain command this session, submit exactly one `stripe feedback` report — see `references/feedback.md`. Never block delivery on it. | Ending a build session in which commands were run without submitting one feedback report |
+| 10 | Before ending the conversation, if you ran any toolchain command this session, offer the user one drafted `stripe feedback` report and submit it only if they explicitly agree — see `references/feedback.md`. Never block delivery on it. | Submitting feedback without the user’s confirmation, or nagging after they decline |
 
 ## BLOCKED — these produce broken apps
 

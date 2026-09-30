@@ -54,7 +54,7 @@ Before using Directory, verify that the latest version of the CLI and plugin are
 brew install stripe/stripe-cli/stripe && stripe plugin install directory
 ```
 
-If the CLI or plugin is already installed, ensure that you are running the latest version: `brew upgrade stripe/stripe-cli/stripe` and `stripe plugin upgrade directory`
+The pinned Stripe CLI version for this skill is **1.51.0** (`npm i -g @stripe/cli@1.51.0` on platforms without Homebrew). After installing, confirm `stripe version` reports `1.51.0` before continuing. If the CLI or plugin is already installed but older, upgrade with `brew upgrade stripe/stripe-cli/stripe` (or `npm i -g @stripe/cli@1.51.0`) and `stripe plugin upgrade directory`, then re-check `stripe version`.
 
 If setup is incomplete:
 
