@@ -1,214 +1,75 @@
 ---
 name: stripe-apps
 description: >-
-  Use when building, modifying, or reviewing a Stripe App — or when the user
-  describes something that implies one (e.g. "add a panel to the customer page",
-  "customize my Stripe Dashboard", "react to Stripe events from my app",
-  "connect my service to Stripe without sharing API keys"). Covers the full app
-  development workflow (scaffold, preview, upload, versioning), UI extension
-  architecture (sandboxed iframe, Stripe UI toolkit, viewports), extension types
-  (UI extensions, backend-only, extension interfaces, embedded apps),
-  authentication (platform keys, OAuth, restricted API keys), stripe-app.yaml
-  manifest setup (permissions, viewports, CSP), webhook configuration for apps,
-  Secret Store API, `fetchStripeSignature` auth, and marketplace publishing,
-  plus submitting one agentic feedback report after a build. Use when the user
-  mentions Stripe Apps, UI extensions, @stripe/ui-extension-sdk,
-  @stripe/extensibility-sdk, script extensions, stripe-app.yaml, Dashboard
-  extensions, or customizing the Stripe Dashboard.
+  Build, modify, or review Stripe Apps and extensions using the relevant
+  documentation and reference guides. Use for custom Stripe Dashboard UI,
+  stripe-app.yaml, @stripe/ui-extension-sdk, @stripe/extensibility-sdk, script
+  extensions, extension interfaces, custom workflow actions, and apps that
+  authenticate to Stripe or react to events. Also use when deciding whether a
+  Stripe extension can support the user's billing or workflow requirements.
 
 ---
 
-## Stripe Apps — Agent Instructions
+## Stripe Apps
 
-**FIRST ACTION:** Say “Loading Stripe Apps skill.” then Read `references/discovery.md`. This file has routing logic you need before asking the user questions.
+Select and read the existing guidance for the user’s task. Product documentation describes what an extension can do; implementation guides describe how to build it. Before recommending an extension or writing code, load the applicable bundled reference files as well as the relevant product documentation. A link or filename in this skill isn’t a substitute for reading its contents.
 
-### Your role
+For a capability question, check native Stripe features and the documented applicability and limitations of the extension. For an implementation request, create or modify working files using the selected guide. For an existing app, inspect its manifest, packages, installed SDK, and local agent instructions before deciding what to change.
 
-You are a PROJECT BUILDER and INSTRUCTOR. Your primary output is working files on the user’s machine that they can run immediately. If you explain code without also writing it to disk using your Write tool, the user has nothing they can execute.
+## Choose the relevant documentation
 
-You are also a patient guide. Many users have never heard of Stripe Apps, viewports, or webhooks. When they say “I’m not sure” or “what does that mean?”, explain concepts in plain language with examples from their specific idea.
+Use information already supplied by the user or existing app. Read [references/discovery.md](https://docs.stripe.com/references/discovery.md) when you need to clarify the app’s requirements, and [references/extension-types.md](https://docs.stripe.com/references/extension-types.md) for an overview of app architectures. Ask only for missing information that affects the task.
 
-**Your tool calls (Read, Write) are your real work. Your chat messages explain what you did and teach the user why.**
+### Product capabilities
 
-### Source of truth for code patterns
+Use these existing product documents to determine which capability fits and whether the account has the required access. Don’t infer support from an extension’s name or the existence of a scaffold.
 
-Your training data for Stripe Apps SDK patterns may be outdated or incorrect. Before writing any code file, you MUST read the relevant canonical docs page using WebFetch. See `references/canonical-docs.md` for the full list of docs pages.
-
-If you cannot access the docs, tell the user: “I need to check the current Stripe Apps documentation to write correct code. Can you provide the current patterns from [relevant docs URL], or shall I proceed with the scaffold and you can verify against the docs?”
-
-## HARD RULES — violating any of these is a failure
-
-| \# | Rule | What failure looks like |
-| --- | --- | --- |
-| 0 | BEFORE ANYTHING ELSE: (1) Say “Loading Stripe Apps skill.” (2) Call Read on `references/discovery.md` to load the routing table. You need this data before you can ask informed questions. | Responding to the user before calling Read on discovery.md |
-| 1 | After reading discovery.md, your FIRST message to the user is ONLY the 4 discovery questions (see Step 1). No code, no plan, no summary. Even if the user’s request already mentions details — ask anyway. Users have unstated requirements that only emerge through questions. | Presenting a summary, plan, or any code before asking questions 1-4 and getting answers |
-| 2 | You MUST use your Write tool to create or modify files on disk. The scaffold creates base files via CLI — after that, use Write to modify scaffolded files and create new ones. A response with code only in chat gives the user nothing runnable. | Producing code in chat without calling Write to save it to disk |
-| 3 | Run `stripe generate app <name>` using your Bash tool to scaffold the project. Then use Write to modify scaffolded files and create additional files the app needs. | Writing stripe-app.yaml or package.json from scratch instead of modifying the scaffold output |
-| 4 | Before writing code for any topic (backend, UI, webhooks, auth), read the relevant canonical docs page using WebFetch. See `references/canonical-docs.md`. The docs are the source of truth — not this skill file, not your training data. | Writing code from memory without checking the current docs |
-| 5 | Tell user: `stripe apps upload` BEFORE testing fetchStripeSignature/Secret Store (the signing secret is generated during first upload). | Omitting upload-first requirement |
-| 6 | File names: `ui/src/views/App.tsx` (V2 workspace layout), `server.js` (project root). Only create files that are needed for the app’s architecture (see Step 3). | Using wrong filenames or creating files the architecture doesn’t need |
-| 7 | Every file you write to disk MUST be complete and runnable — not a skeleton or placeholder. The user should be able to run it immediately. Do not write partial files with TODOs. | Writing a file with TODO placeholders or incomplete implementations |
-| 8 | When presenting the development workflow, include `pnpm build` and `pnpm test` as explicit steps for apps with a UI extension. Backend-only apps without TypeScript skip `pnpm build`. | Omitting build/test steps for UI apps, or requiring them for backend-only apps |
-| 9 | If the user’s app requires custom objects or extension interfaces (private preview features), inform them the feature is in private preview and ask them to confirm they have access BEFORE proceeding. Do not silently proceed with a private preview feature. | Building with private preview features without confirming user has access |
-| 10 | Before ending the conversation, if you ran any toolchain command this session, submit exactly one `stripe feedback` report — see `references/feedback.md`. Never block delivery on it. | Ending a build session in which commands were run without submitting one feedback report |
-
-## BLOCKED — these produce broken apps
-
-| BLOCKED (never use) | Use instead |
+| Task | Read |
 | --- | --- |
-| `stripe apps create` | `stripe generate app <name>` |
-| Raw HTML in UI extensions (`<div>`, `<span>`, `<p>`, `<button>`, `<input>`, `<h1>`-`<h6>`) | SDK components from `@stripe/ui-extension-sdk/ui` (Box, Inline, Button, TextField, etc.) |
-| CSS frameworks in UI (Tailwind, MUI, Bootstrap, styled-components, CSS files) | Only `@stripe/ui-extension-sdk/ui` components — no custom styling |
-| React 18+ APIs in UI (`useId`, `useDeferredValue`, `useTransition`, concurrent features) | React 17 hooks only (Stripe Apps run React 17.0.2) |
-| `window`, `document`, `localStorage`, `sessionStorage` in UI | Not available in sandboxed iframe |
+| Select an extension interface and its supported implementation types | [Extension points](https://docs.stripe.com/extensions/extension-points.md) and [how extensions work](https://docs.stripe.com/extensions/how-extensions-work.md) |
+| Customize prorations | [Native proration behavior](https://docs.stripe.com/billing/subscriptions/prorations.md) and [prorations extensions](https://docs.stripe.com/billing/scripts/prorations.md) |
+| Add an action to Stripe Workflows | [Existing workflow actions](https://docs.stripe.com/workflows/define-workflows.md#actions), [existing custom actions](https://docs.stripe.com/workflows/custom-actions.md), and [how custom actions work](https://docs.stripe.com/extensions/custom-actions/how-custom-actions-work.md) |
+| Customize another product’s behavior | Follow the selected interface’s product documentation from the extension-point catalog |
 
-## Protocol — execute these steps IN ORDER
+### Implementation guidance
 
-### Step 1 — Discovery (your first message)
+The `references/*.md` files are bundled with this skill. After selecting the capability, load the applicable files before following their links to supporting documentation. Combine rows when an app needs multiple types. Follow the selected guide’s prerequisites, scaffolding, testing, and debugging instructions.
 
-Read [references/discovery.md](https://docs.stripe.com/references/discovery.md) using your file-reading tool.
-
-You CANNOT determine the correct architecture without user input because:
-
-- The authentication type determines the backend pattern (platform keys vs OAuth vs restricted keys)
-- Private vs public apps have different webhook configurations
-- The viewport determines which context props are available
-- Backend vs frontend-only changes which files you create
-
-Ask these questions in your FIRST message — nothing else:
-
-1. What should the app do? (UI in Dashboard / react to events / both / modify billing or payment logic)
-2. Where should it appear? (customer detail, payment detail, full page, etc.)
-3. Who is it for? (only you or your team = private, OR other Stripe users = public/marketplace)
-4. Does it need to store data or talk to other services?
-
-Do NOT include a summary, plan, or architecture in this first message. ONLY the 4 questions above.
-
-**If the user doesn’t know an answer or asks for clarification:**
-
-- Explain the concept in plain language
-- Give concrete examples from their stated idea
-- Help them figure out the right answer
-
-**Private preview check:** After getting answers, before showing your summary, check whether their app implies needing:
-
-- **Custom objects** (storing custom data models IN Stripe)
-- **Extension interfaces** (changing how Stripe processes billing, payments, or tax)
-
-If yes: tell the user that feature is in private preview, ask them to confirm access. See `references/discovery.md` for exact wording and alternatives.
-
-Full-page apps require `@stripe/ui-extension-sdk` version `9.2.1` or later and the latest version of the Stripe Apps CLI plugin.
-
-After the user answers, show a plain-language summary:
-
-- “You want to: [goal]. It will appear: [where]. It’s for: [private/marketplace]. It needs: [backend/secrets/only Stripe data].”
-
-Wait for explicit confirmation before proceeding.
-
-### Step 2 — Scaffold
-
-Run the scaffold command yourself using your Bash tool:
-
-```bash
-stripe generate app <name>
-```
-
-This creates a V2 workspace: `stripe-app.yaml`, `package.json`, `pnpm-workspace.yaml`, `ui/src/views/App.tsx`.
-
-After the scaffold completes, proceed directly to Step 3.
-
-### Step 3 — Build (WRITE every file to disk)
-
-Before writing any code, read the relevant canonical docs pages (see `references/canonical-docs.md`) using WebFetch:
-
-- For UI code: read the Extensions SDK API page and the UI components page
-- For backend code: read the Backend + signed requests page and Authentication types page
-- For webhooks: read the Events page
-- For Secret Store: read the Secret Store page
-
-**YOUR PRIMARY JOB: Create files on disk following the patterns from the docs.**
-
-Which files to create depends on discovery answers:
-
-| Architecture | Files to write |
+| Task | Read |
 | --- | --- |
-| Frontend-only (reads Stripe data, no external services) | Modify: `stripe-app.yaml`, `ui/src/views/App.tsx` |
-| Backend-only (webhooks/events, no Dashboard UI) | Modify: `stripe-app.yaml`. Create: `server.js` |
-| Full-stack (UI + backend) | Modify: `stripe-app.yaml`, `ui/src/views/App.tsx`. Create: `server.js` |
-| Script extension | Generate the extension, then implement its source, configuration, and tests. |
+| Build or modify any Dashboard UI, including drawers and full-page apps | [references/ui-extensions.md](https://docs.stripe.com/references/ui-extensions.md), then each selected component’s current API documentation |
+| Author, test, or debug a script extension | [references/script-extensions.md](https://docs.stripe.com/references/script-extensions.md), then the selected extension point’s implementation guide |
+| Build a custom-action script | [references/script-extensions.md](https://docs.stripe.com/references/script-extensions.md) and [build a custom action with a script](https://docs.stripe.com/extensions/custom-actions/build-with-script.md) |
+| Build a custom-action remote function | [Build a custom action with a remote function](https://docs.stripe.com/extensions/custom-actions/build-with-remote-function.md) |
+| Build a self-hosted UI back-end or webhook service | [references/backend.md](https://docs.stripe.com/references/backend.md) and [references/authentication.md](https://docs.stripe.com/references/authentication.md); also load [references/webhooks.md](https://docs.stripe.com/references/webhooks.md) when receiving Stripe events |
+| Store app credentials with the Secret Store API | The Secret Store API section in [references/backend.md](https://docs.stripe.com/references/backend.md) and [store secrets](https://docs.stripe.com/stripe-apps/store-secrets.md), including for apps without a self-hosted back-end |
+| Look up APIs, SDK patterns, configuration, or additional extension documentation | [references/canonical-docs.md](https://docs.stripe.com/references/canonical-docs.md) |
 
-For each file: call your Write tool FIRST, then explain what it does.
+Use the UI reference for layout and composition, and current component documentation for import paths, props, and styling APIs. For scripts and remote functions, follow the selected extension’s documentation; UI and self-hosted back-end instructions don’t define their runtime capabilities.
 
-**Key constraints for UI code:**
+### Shared app lifecycle
 
-- Import ONLY from `@stripe/ui-extension-sdk/ui` for components
-- NO raw HTML elements, NO CSS
-- Follow the SDK API patterns from the canonical docs exactly
+Read these references when the corresponding task is needed. Reuse existing apps and packages; scaffold only what is missing.
 
-**Key constraints for backend code (server.js):**
-
-- CORS (`Access-Control-Allow-Origin: *`) only on endpoints called by the UI extension — webhook endpoints don’t need CORS
-- `fetchStripeSignature` verification follows the pattern in https://docs.stripe.com/stripe-apps/build-backend
-- Webhook endpoint count and configuration depends on auth type and distribution — check https://docs.stripe.com/stripe-apps/events
-- The `event_read` permission must be declared in the manifest for webhook event access
-
-**Key constraints for stripe-app.yaml:**
-
-- Declare ALL permissions with purpose strings
-- Follow the manifest schema from https://docs.stripe.com/stripe-apps/reference/app-manifest
-- Preserve generated entries in `extensions`; use `extensions: []` when the app has no extension declarations
-
-### Step 4 — Deliver (REQUIRED — do not skip)
-
-Your FINAL message MUST present the development workflow:
-
-1. `stripe generate app <name>` → scaffold
-2. `pnpm install` → dependencies
-3. Modify scaffolded files + create additional files → implement
-4. `pnpm build` → compile TypeScript (UI and script extensions)
-5. `pnpm test` → run unit tests
-6. `stripe apps start` → local preview for Dashboard UI extensions
-7. `stripe apps upload` → publish version (**required** before fetchStripeSignature or Secret Store)
-8. Install from Dashboard → test
-
-**Important workflow facts:**
-
-- Use sandboxes for safe testing — they provide isolated environments for app development
-- `stripe apps upload` generates the signing secret needed for `fetchStripeSignature`
-- Public/marketplace apps need account activation (verified email + business details)
-- For webhook forwarding during local dev, see `references/webhooks.md`
-
-### Step 5 — Verify files exist
-
-Before ending the conversation, confirm your files are on disk. Run `ls` on the files you wrote to verify they exist.
-
-If any file is MISSING, call Write now to create it.
-
-## Troubleshooting uploads
-
-| Error | Cause | Fix |
-| --- | --- | --- |
-| `Invalid manifest` | Missing required fields or malformed YAML | Check indentation; ensure `id:`, `version:`, `name:` are present |
-| `Build failed` | UI component has type/import errors | Run `pnpm build` locally first |
-| `Version already exists` | Already uploaded this version number | Bump `version` in stripe-app.yaml |
-| `Permission denied` | CLI not logged in or wrong account | Run `stripe login` |
-| `connect-src` / CSP error | App calls undeclared URL | Add URL to `content_security_policy.connect-src` |
-| `extensions field required` | Missing `extensions: []` | Add `extensions: []` to stripe-app.yaml |
-| `Component not found` | Viewport references wrong component name | Match `component:` value to your default export |
-
-## Reference files
-
-| File | Read when |
+| Task | Read |
 | --- | --- |
-| [references/canonical-docs.md](https://docs.stripe.com/references/canonical-docs.md) | **ALWAYS** — lists docs pages to WebFetch before writing code |
-| [references/discovery.md](https://docs.stripe.com/references/discovery.md) | **ALWAYS FIRST** — full discovery script with routing |
-| [references/backend.md](https://docs.stripe.com/references/backend.md) | Before writing server.js |
-| [references/ui-extensions.md](https://docs.stripe.com/references/ui-extensions.md) | Before writing React/UI code |
-| [references/workflow.md](https://docs.stripe.com/references/workflow.md) | Full development loop with all CLI commands |
-| [references/extension-types.md](https://docs.stripe.com/references/extension-types.md) | After discovery — map answers to extension type |
-| [references/script-extensions.md](https://docs.stripe.com/references/script-extensions.md) | When authoring a script extension: generation, SDK contracts, runtime, configuration, and tests |
-| [references/webhooks.md](https://docs.stripe.com/references/webhooks.md) | When app reacts to Stripe events |
-| [references/authentication.md](https://docs.stripe.com/references/authentication.md) | For auth type selection and patterns |
-| [references/onboarding-ux.md](https://docs.stripe.com/references/onboarding-ux.md) | For first-run experience |
-| [references/publishing.md](https://docs.stripe.com/references/publishing.md) | For marketplace publishing |
-| [references/feedback.md](https://docs.stripe.com/references/feedback.md) | After a build where you ran CLI/build commands — submit one feedback report |
+| Scaffold, build, test, preview, or upload an app | [references/workflow.md](https://docs.stripe.com/references/workflow.md), together with the selected implementation guide |
+| Choose authentication for access to Stripe APIs | [references/authentication.md](https://docs.stripe.com/references/authentication.md) |
+| Receive Stripe events | [references/webhooks.md](https://docs.stripe.com/references/webhooks.md) |
+| Build a first-run setup experience | [references/onboarding-ux.md](https://docs.stripe.com/references/onboarding-ux.md) and the UI reference |
+| Release versions, change installed permissions, or publish to the marketplace | [references/publishing.md](https://docs.stripe.com/references/publishing.md) |
+| Submit feedback after running app toolchain commands | [references/feedback.md](https://docs.stripe.com/references/feedback.md) |
+
+## Load bundled reference files
+
+1. Use the task tables to select every applicable bundled reference under `references/`, then open those files with a file-reading tool before starting the corresponding work. For example, UI with a self-hosted back-end needs both UI and back-end guidance; onboarding also needs the UI reference.
+2. Follow relevant pointers to other bundled references inside the files you load, including filenames written as code rather than links. For example, back-end guidance can require authentication guidance, and changing permissions can require publishing guidance. Use this skill’s direct links to locate those files.
+3. Read the canonical documentation required by those references. External documentation supplements the bundled guidance on workflow, layout, and other task-specific decisions.
+
+- Resolve `references/` paths relative to this skill’s directory and bare reference filenames relative to its `references/` directory. When reading the hosted skill, fetch the corresponding reference URLs relative to the skill URL.
+- Load only references relevant to the task, and reuse contents already read during the session unless they have changed. A full-stack app doesn’t require every document in the skill.
+- Read canonical pages using the available documentation tools. Prefer `stripe docs` when available, including for pages that require account access.
+- Use current product documentation and the installed SDK’s types for API contracts and limitations. If an example in a reference disagrees, check the version and follow the applicable canonical documentation.
+- Read any interface-specific agent instructions supplied with an existing or newly generated extension. If none are present, use the linked product and implementation guides.
+- If the documentation doesn’t establish that an extension meets a requirement, state what is unknown or unsupported before proceeding.
+- Keep the work within the user’s request. Report the changes, validation results, and remaining steps relevant to that app.

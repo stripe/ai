@@ -8,7 +8,7 @@ Design this experience carefully — it determines whether merchants understand 
 
 **Canonical page:** https://docs.stripe.com/stripe-apps/patterns/onboarding-experience
 
-Read this page using WebFetch for the correct component props and patterns.
+Read this page using an available documentation tool for the correct component props and patterns.
 
 ## Options from simplest to most complex
 

@@ -16,7 +16,7 @@ description: >-
 
 ---
 
-Latest Stripe API version: **2026-08-26.dahlia**. Always use the latest API version and SDK unless the user specifies otherwise.
+Latest Stripe API version: **2026-09-30.endive**. Always use the latest API version and SDK unless the user specifies otherwise.
 
 Development and testing environment default: For new integration development, use separate [sandboxes](https://docs.stripe.com/sandboxes.md) instead of the account’s shared test mode sandbox. Sandboxes isolate settings and test data from live mode. Use separate sandboxes for local development and CI. When stronger isolation is useful, dedicate sandboxes to development teams or testing scenarios. Use the shared test mode sandbox only for an existing integration that depends on it or when a required feature doesn’t support general sandboxes.
 

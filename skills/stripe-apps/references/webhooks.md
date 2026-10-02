@@ -6,7 +6,7 @@ How your Stripe App receives and processes events (payments, customers, installs
 
 **Canonical page:** https://docs.stripe.com/stripe-apps/events
 
-Read this page using WebFetch before implementing webhook handlers.
+Read this page using an available documentation tool before implementing webhook handlers.
 
 ## Webhook configuration depends on app type
 

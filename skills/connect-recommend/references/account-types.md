@@ -8,7 +8,7 @@
 
 Accounts v2 replaces the three fixed account types with three independent configuration dimensions. Each dimension is set separately, so platforms can mix and match to fit their exact business model.
 
-#### 1. Dashboard access (`dashboard`)
+#### 1. Dashboard access (dashboard)
 
 Controls what connected accounts see when they log in.
 
@@ -18,7 +18,7 @@ Controls what connected accounts see when they log in.
 | `full` | Full, independent Stripe Dashboard. Connected accounts can manage their own settings, view all transactions, and install apps. | SaaS platforms where connected accounts are established businesses that want to operate independently. |
 | `none` | No Stripe dashboard. The platform owns the connected-account UI — use **[Embedded Components](https://docs.stripe.com/connect/supported-embedded-components.md)** (`@stripe/connect-js`) for pre-built widgets (account management, payouts, tax forms, and more) or build fully custom. | White-label platforms where connected accounts must never see Stripe branding. Use embedded components for pre-built functionality with white-label feel. **Fully custom (no embedded components)** adds significant complexity — the platform must build and maintain all connected account UX including onboarding remediation, refund and dispute flows, and ongoing requirement collection. |
 
-#### 2. Fee collection (`defaults.responsibilities.fees_collector`)
+#### 2. Fee collection (defaults.responsibilities.fees_collector)
 
 Determines who is responsible for collecting Stripe processing fees from connected accounts.
 
@@ -32,7 +32,7 @@ Determines who is responsible for collecting Stripe processing fees from connect
 > - **Direct charges:** `fees_collector` determines who pays Stripe processing fees. With `fees_collector: "stripe"`, the connected account pays fees directly. The `fee_payer` parameter can further control this — see [direct charges fee payer behavior](https://docs.stripe.com/connect/direct-charges-fee-payer-behavior.md).
 > - **Destination charges and separate charges and transfers:** The platform always pays Stripe processing fees regardless of the `fees_collector` setting, because the charge lives on the platform account. The `fees_collector` setting in these cases governs the platform-level billing relationship with Stripe (single invoice vs per-account), not per-transaction fee deduction.
 
-#### 3. Loss liability (`defaults.responsibilities.losses_collector`)
+#### 3. Loss liability (defaults.responsibilities.losses_collector)
 
 Determines who bears financial responsibility for negative balances, disputes, and refunds on connected account activity.
 

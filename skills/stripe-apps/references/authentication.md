@@ -6,7 +6,7 @@ How your app authenticates and accesses Stripe data for merchants who install it
 
 **Canonical page:** https://docs.stripe.com/stripe-apps/api-authentication
 
-Read this page using WebFetch before implementing authentication patterns.
+Read this page using an available documentation tool before implementing authentication patterns.
 
 ## Three authentication types
 

@@ -1,21 +1,21 @@
-# Publishing — versioning, releases, test vs live mode, marketplace
+# Publishing — versioning, releases, sandboxes, live mode, marketplace
 
 ## Publishing
 
 How to version, release, and publish your Stripe App.
 
-## Test mode vs live mode
+## Sandboxes and live mode
 
-**Plain-language:** “Test mode uses fake data so you can try things safely. Live mode uses real customer data. Always build and test in test mode first.”
+**Plain-language:** “A sandbox uses test data so you can try things safely. Live mode uses real customer data. Always build and test in a sandbox first.”
 
 | Mode | Data | When to use |
 | --- | --- | --- |
-| Test mode | Fake (test cards, test customers) | Development and QA |
+| Sandbox | Test data (test cards, test customers) | Development and QA |
 | Live mode | Real customer and payment data | Production |
 
-**Workflow:** Upload → install in test mode → test thoroughly → install in live mode.
+**Workflow:** Upload → install in a sandbox → test thoroughly → install in live mode.
 
-**Do not skip test mode testing.** Even if your app looks correct locally with `stripe apps start`, you must install it in test mode and verify it works with the actual install flow before going live.
+**Do not skip sandbox testing.** Even if your app looks correct locally with `stripe apps start`, you must install it in a sandbox and verify it works with the actual install flow before going live.
 
 ## Versioning
 
@@ -48,7 +48,7 @@ stripe apps upload
 
 # 2. Go to Dashboard → Apps → your app → version history
 # 3. Click the version you want to release
-# 4. Click "Set as external test version" (test mode) or "Release" (live mode)
+# 4. Click "Set as external test version" or "Release" (live mode)
 ```
 
 ## When you change permissions
@@ -88,7 +88,7 @@ Stripe reviews your app for security, functionality, and compliance with their g
 
 ### Review requirements overview
 
-- App must work correctly in test and live mode
+- App must work correctly in supported sandboxes and live mode
 - No prohibited content or misleading claims
 - Privacy policy URL required
 - Support contact required

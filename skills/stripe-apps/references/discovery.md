@@ -2,7 +2,7 @@
 
 ## Discovery interview
 
-Run this interview **before writing any code**. Ask one question at a time. Never use Stripe-internal jargon until after routing is complete.
+Use these questions to resolve requirements that affect the requested work. Reuse information from the user and existing app, and skip questions that are already answered or don’t apply. Ask one unresolved question at a time, using plain language. If the requirements are clear, proceed without an interview.
 
 ### Question 1 — What do you want to do?
 
@@ -20,19 +20,19 @@ What would you like your app to do? Pick the option that sounds closest:
 4. Let merchants connect their Stripe account to my service without sharing API keys
 
 5. Add custom logic to how Stripe calculates bills or routes payments
-   (advanced — private preview)
+   (availability depends on the extension point)
 
 6. I'm not sure — ask me more questions
 ```
 
 **Routing:**
 
-- Option 1 → UI extension. Ask Question 2.
-- Option 2 → Backend-only app. Ask Question 3. Then read `backend.md`, `webhooks.md`, `authentication.md`, `workflow.md`.
-- Option 3 → Full-stack app. Ask Question 2, then Question 3. Read all references.
-- Option 4 → App-as-authentication. Read `authentication.md`, `workflow.md`.
-- Option 5 → Extension interfaces (private preview). Tell the user: “This is in private preview — check [/stripe-apps](https://docs.stripe.com/stripe-apps.md) for the latest access information. I can help you get started once access is confirmed.”
-- Option 6 → Ask follow-up: “What problem are you trying to solve? For example: tracking sales, notifying customers, connecting a third-party tool?”
+- Option 1: UI extension. Ask Question 2.
+- Option 2: Back-end-only app. Ask Question 3. Then read `backend.md`, `webhooks.md`, `authentication.md`, `workflow.md`.
+- Option 3: Full-stack app. Resolve any unanswered UI and audience questions. Read `ui-extensions.md`, `backend.md`, `authentication.md`, `webhooks.md`, and `workflow.md`. Load other references only when their corresponding task applies.
+- Option 4: App-as-authentication. Read `authentication.md`, `workflow.md`.
+- Option 5: Extension interfaces. Read the [extension-point catalog](https://docs.stripe.com/extensions/extension-points.md) and the selected interface’s product documentation for applicability, supported implementation types, and current access requirements. Ask about access only if the documentation requires it and access hasn’t already been established.
+- Option 6: Ask a follow-up question: “What problem are you trying to solve? For example: tracking sales, notifying customers, connecting a third-party tool?”
 
 ### Question 2 — Where do you want your app to appear? (only if UI)
 
@@ -76,8 +76,8 @@ Who will use this app?
 
 **Routing:**
 
-- Option 1 → Private app. Simpler workflow — no marketplace submission needed.
-- Option 2 → Public app. Will need account activation (verified email and business details). Note this in the plan.
+- Option 1: Private app. Simpler workflow — no marketplace submission needed.
+- Option 2: Public app. Will need account activation (verified email and business details). Note this in the plan.
 
 ### Question 3b — Authentication type (only for public apps that need backend access)
 
@@ -98,14 +98,14 @@ Will your app need to:
 
 **Routing:**
 
-- Option 1 or 2 → Needs backend or Secret Store API. Read `backend.md`.
-  - If storing credentials/tokens → use the Secret Store API (plain-language: “Stripe has a built-in secure place to store passwords and tokens — you don’t need to build your own database for secrets”)
-  - If running server-side logic → needs a self-hosted backend
-- Option 3 → Frontend-only. Only the SDK’s Stripe client and `@stripe/ui-extension-sdk/ui` needed. No backend.
+- Option 1 or 2: Needs a back-end or the Secret Store API. Read `backend.md`.
+  - If storing credentials or tokens, use the Secret Store API (plain-language: “Stripe has a built-in secure place to store passwords and tokens — you don’t need to build your own database for secrets”).
+  - If running server-side logic, use a self-hosted back-end.
+- Option 3: Front-end-only. Only the SDK’s Stripe client and `@stripe/ui-extension-sdk/ui` needed. No back-end.
 
-### After the interview — show a summary
+### After discovery — summarize when useful
 
-Before writing any code, confirm your understanding with the user:
+For a new app or a substantial architecture decision, summarize what you learned when it helps clarify the work:
 
 ```
 Here's what I understood:
@@ -115,35 +115,34 @@ Here's what I understood:
 - It's for: [just you / other Stripe users]
 - It needs to: [remember things / talk to [service] / just show Stripe data]
 
-Does that sound right? I'll start building once you confirm.
 ```
 
-Only proceed after the user confirms. If they correct anything, update your understanding and show the summary again.
+Ask for confirmation only if a material requirement or choice remains unresolved. Otherwise, proceed within the user’s request. Incorporate corrections without repeating questions or confirmations already answered.
 
-### Private preview feature detection
+### Feature access
 
-Some Stripe Apps features are in **private preview** — they require the user to be gated in before they can use them. Detect these during or after the interview:
+Access requirements vary by feature and extension point. Check current product documentation during discovery, and don’t infer a private-preview requirement for every extension interface.
 
-**Private preview features:**
+**Features to check:**
 
 | Feature | Trigger phrases (user might say) | What to tell the user |
 | --- | --- | --- |
-| Custom objects | “store custom data in Stripe”, “create my own data model”, “custom database in Stripe”, “custom fields on customers”, “structured data that isn’t in Stripe already” | “Custom objects let you define your own data types in Stripe, but this feature is currently in private preview. You’ll need to have access enabled on your account before we can use it. Can you confirm you’re gated in for custom objects?” |
-| Extension interfaces | “change how Stripe calculates”, “custom billing logic”, “modify payment routing”, “override Stripe’s default behavior”, “custom tax calculation” | “Extension interfaces let your app hook into Stripe’s processing pipeline, but this is in private preview. Can you confirm you have access to extension interfaces on your account?” |
+| Custom objects | “store custom data in Stripe”, “create my own data model”, “custom database in Stripe”, “custom fields on customers”, “structured data that isn’t in Stripe already” | Check the [custom objects documentation](https://docs.stripe.com/custom-objects.md) for current requirements, then explain any access prerequisite relevant to the user’s account. |
+| Extension interfaces | “change how Stripe calculates”, “custom billing logic”, “modify payment routing”, “override Stripe’s default behavior”, “custom tax calculation” | Identify the exact extension point, then explain its current applicability and access requirements from its product documentation. |
 
 **When to check:**
 
-- If the user picks Option 5 in Question 1 → extension interfaces (already handled)
-- If the user’s description of what their app does (Question 1 or free-form description) implies custom objects or extension interfaces → ask before proceeding
-- If the user mentions “custom objects” or “extension interfaces” by name at ANY point → confirm access
+- If the user picks Option 5 in Question 1, follow the extension-interface routing above.
+- If the user’s description implies custom objects or extension interfaces, check the selected feature’s current requirements.
+- Ask the user to confirm access only when the selected feature requires it and the available information doesn’t establish access. Reuse access information already provided.
 
-**How to proceed after confirmation:**
+**When access is required:**
 
-- User confirms access → continue building with that feature
-- User says they don’t have access → suggest alternatives:
-  - Instead of custom objects → use Secret Store API for key-value data, or store data in their own backend
-  - Instead of extension interfaces → suggest a webhook-based approach that reacts to events rather than intercepting processing
-- User is unsure → tell them: “You can check your access at the Stripe Apps page in your Dashboard, or ask your Stripe account representative. I can help you build with an alternative approach in the meantime.”
+- If the user confirms access, continue building with that feature.
+- If the user says they don’t have access, suggest alternatives:
+  - Instead of custom objects, use the Secret Store API for key-value data, or store data in their own back-end.
+  - Instead of extension interfaces, suggest a webhook-based approach that reacts to events rather than intercepting processing.
+- If the user is unsure, tell them: “You can check your access at the Stripe Apps page in your Dashboard, or ask your Stripe account representative. I can help you build with an alternative approach in the meantime.”
 
 ## Plain-language glossary
 
@@ -159,5 +158,5 @@ Use these explanations when you need to introduce technical terms after routing:
 | Permissions | What Stripe data your app is allowed to read or write; must be declared before use |
 | Secret Store | Stripe’s built-in way for your app to save sensitive information like passwords or tokens |
 | stripe-app.yaml | The configuration file that tells Stripe what your app is called, what it needs access to, and where it appears |
-| Custom objects | Custom data types you define and store inside Stripe (in private preview — requires access) |
+| Custom objects | Custom data types you define and store inside Stripe; check the [custom objects documentation](https://docs.stripe.com/custom-objects.md) for current availability and access requirements |
 | Sandbox | An isolated Stripe test environment for safe testing — useful for testing destructive operations or onboarding flows |

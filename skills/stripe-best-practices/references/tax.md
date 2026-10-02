@@ -20,7 +20,7 @@
 
 ## What Stripe Tax does and doesn’t do
 
-**What Stripe Tax does:** tax calculation, nexus threshold monitoring (Dashboard → Tax → Locations → “Needs attention” and email alerts), registration on the user’s behalf for eligible US remote sellers (“Register for me”; see [Registration safety](https://docs.stripe.com/undefined.md#registration-safety)), and filing through [TaxJar](https://docs.stripe.com/tax/file-with-stripe.md) or [a filing partner](https://docs.stripe.com/tax/filing.md), where available.
+**What Stripe Tax does:** tax calculation, nexus threshold monitoring (Dashboard → Tax → Locations → “Needs attention” and email alerts), registration on the user’s behalf for eligible US remote sellers (“Register for me”; see Registration safety), and filing through [TaxJar](https://docs.stripe.com/tax/file-with-stripe.md) or [a filing partner](https://docs.stripe.com/tax/filing.md), where available.
 
 **What Stripe Tax doesn’t do:** process payments that happen outside Stripe, automatically file every tax return, or support every jurisdiction (check the [supported countries list](https://docs.stripe.com/tax/supported-countries.md) for current coverage). For off-Stripe payments, the [standalone Tax APIs](https://docs.stripe.com/tax/off-stripe.md) can calculate tax and record transactions for reporting and filing.
 

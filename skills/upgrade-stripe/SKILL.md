@@ -12,7 +12,7 @@ description: >-
 
 If the user specifies a target API version, use it. Otherwise, look up the current version on docs.stripe.com with any documentation or web tool available to you, for example `stripe docs /api/versioning` with the Stripe CLI. The [API versioning](https://docs.stripe.com/api/versioning.md) page states it in the sentence that begins “The current version is”.
 
-Bundled fallback API version: `2026-08-26.dahlia`. This value is only a snapshot from the last time this skill was generated, on 2026-10-01. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
+Bundled fallback API version: `2026-09-30.endive`. This value is only a snapshot from the last time this skill was generated, on 2026-10-02. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
 
 Before making changes, compare the target with each API version the integration pins: client configuration, per-request overrides, and webhook endpoints. Unless the user explicitly asks for it, don’t move any pin to an older version or a stable pin to a preview version. If a pin already matches the target, report it as unchanged. State the selected target and its source. If live verification fails or is unavailable, say that the latest version remains unverified, and don’t claim the integration is on the latest version.
 
@@ -22,7 +22,7 @@ For SDKs that support explicit API version overrides, use the selected target in
 
 ## Understanding Stripe API Versioning
 
-Stripe uses date-based API versions (e.g., `2026-08-26.dahlia`, `2025-08-27.basil`, `2024-12-18.acacia`). Your account’s API version determines request/response behavior.
+Stripe uses date-based API versions (e.g., `2026-09-30.endive`, `2025-08-27.basil`, `2024-12-18.acacia`). Your account’s API version determines request/response behavior.
 
 Starting with the 2024-09-30.acacia release, Stripe releases new API versions monthly with no breaking changes. Twice a year, a new major release (for example, Basil) starts with an API version containing breaking changes. You can safely upgrade to any monthly release without updating your code.
 
@@ -56,16 +56,16 @@ These SDKs offer flexible version control:
 
 ```python
 import stripe
-stripe.api_version = '2026-08-26.dahlia'
+stripe.api_version = '2026-09-30.endive'
 ```
 
 ```ruby
-Stripe.api_version = '2026-08-26.dahlia'
+Stripe.api_version = '2026-09-30.endive'
 ```
 
 ```javascript
 const stripe = require('stripe')('sk_test_xxx', {
-  apiVersion: '2026-08-26.dahlia'
+  apiVersion: '2026-09-30.endive'
 });
 ```
 
@@ -74,7 +74,7 @@ const stripe = require('stripe')('sk_test_xxx', {
 ```python
 stripe.Customer.create(
   email="customer@example.com",
-  stripe_version='2026-08-26.dahlia'
+  stripe_version='2026-09-30.endive'
 )
 ```
 
@@ -89,7 +89,7 @@ Always specify the API version you’re integrating against in your code instead
 ```javascript
 // Good: Explicit version
 const stripe = require('stripe')('sk_test_xxx', {
-  apiVersion: '2026-08-26.dahlia'
+  apiVersion: '2026-09-30.endive'
 });
 
 // Avoid: Relying on account default
@@ -100,14 +100,14 @@ const stripe = require('stripe')('sk_test_xxx');
 
 See [Stripe.js Versioning](https://docs.stripe.com/sdks/stripejs-versioning.md) for details.
 
-Stripe.js uses an evergreen model with major releases (Acacia, Basil, Clover, Dahlia) on a biannual basis.
+Stripe.js uses an evergreen model with major releases (Acacia, Basil, Clover, Dahlia, Endive) on a biannual basis.
 
 ### Loading Versioned Stripe.js
 
 **Via Script Tag:**
 
 ```html
-<script src="https://js.stripe.com/dahlia/stripe.js"></script>
+<script src="https://js.stripe.com/endive/stripe.js"></script>
 ```
 
 **Via npm:**
@@ -122,7 +122,7 @@ Major npm versions correspond to specific Stripe.js versions.
 
 Each Stripe.js version automatically pairs with its corresponding API version. For instance:
 
-- Dahlia Stripe.js uses `2026-08-26.dahlia` API
+- Endive Stripe.js uses `2026-09-30.endive` API
 - Acacia Stripe.js uses `2024-12-18.acacia` API
 
 You can’t override this association.
@@ -178,14 +178,14 @@ Use the `Stripe-Version` header to test your code against a new version without 
 ```bash
 curl https://api.stripe.com/v1/customers \
   -u sk_test_xxx: \
-  -H "Stripe-Version: 2026-08-26.dahlia"
+  -H "Stripe-Version: 2026-09-30.endive"
 ```
 
 Or in code:
 
 ```javascript
 const stripe = require('stripe')('sk_test_xxx', {
-  apiVersion: '2026-08-26.dahlia'  // Test with new version
+  apiVersion: '2026-09-30.endive'  // Test with new version
 });
 ```
 

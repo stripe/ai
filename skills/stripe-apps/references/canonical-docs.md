@@ -2,7 +2,9 @@
 
 ## Canonical documentation
 
-Before writing any code file, read the relevant canonical docs page using WebFetch. These docs are the source of truth for API patterns, component usage, and configuration — do NOT reproduce code examples from memory or from this skill file.
+Use this index alongside the bundled references selected in `SKILL.md`. Load their contents for task-specific guidance, including any other relevant reference files they name, before using the canonical pages for API details.
+
+Before writing any code file, read the relevant canonical docs page using an available documentation tool. These docs are the source of truth for API patterns, component usage, and configuration — do NOT reproduce code examples from memory or from this skill file.
 
 If you cannot access the docs, tell the user you need them to provide the current patterns rather than guessing.
 
@@ -26,11 +28,24 @@ If you cannot access the docs, tell the user you need them to provide the curren
 | Full-page apps | https://docs.stripe.com/stripe-apps/patterns/full-page-apps |
 | Viewports reference | https://docs.stripe.com/stripe-apps/reference/viewports |
 | Sandbox support | https://docs.stripe.com/stripe-apps/enable-sandbox-support |
+| Extension points and supported implementation types | https://docs.stripe.com/extensions/extension-points |
+| Extension runtimes and limitations | https://docs.stripe.com/extensions/how-extensions-work |
+| Native proration behavior | https://docs.stripe.com/billing/subscriptions/prorations |
+| Prorations applicability and limitations | https://docs.stripe.com/billing/scripts/prorations |
+| Prorations script walkthrough: scaffolding, tests, and debugging | https://docs.stripe.com/extensions/scripts/build-prorations-extension |
+| Existing workflow actions | https://docs.stripe.com/workflows/define-workflows#actions |
+| Existing custom actions | https://docs.stripe.com/workflows/custom-actions |
+| Custom action contract and schemas | https://docs.stripe.com/extensions/custom-actions/how-custom-actions-work |
+| Custom-action script implementation | https://docs.stripe.com/extensions/custom-actions/build-with-script |
+| Custom-action remote-function implementation | https://docs.stripe.com/extensions/custom-actions/build-with-remote-function |
+| Script endpoint declarations and calls | https://docs.stripe.com/extensions/invoke-endpoints |
+| Extension configuration and schemas | https://docs.stripe.com/extensions/scripts/define-config-and-schemas |
+| Extension run debugging | https://docs.stripe.com/workbench/guides#view-extension-runs |
 
 ## How to use this list
 
 1. Identify which topics are relevant to the app you’re building (based on discovery answers)
-2. WebFetch each relevant page BEFORE writing code
+2. Read each relevant page before writing code
 3. Follow the patterns shown in the docs exactly — field names, import paths, constructor signatures
 4. If a pattern in your training data conflicts with what the docs show, the docs win
 

@@ -14,7 +14,7 @@ allowed-tools:
 
 ---
 
-# `stripe pay`
+# stripe pay
 
 Use `stripe pay` to send money from the authenticated Stripe business to another Stripe business identified by a [Stripe Profile](https://docs.stripe.com/get-started/account/profile.md) handle, for example `@recipient`.
 

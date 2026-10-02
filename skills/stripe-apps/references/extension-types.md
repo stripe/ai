@@ -69,7 +69,7 @@ Combines a UI extension with a backend server. The UI can show data from externa
 
 **Read:** all reference files
 
-### 4. Extension interfaces — “plug into Stripe’s billing or payments engine” (private preview)
+### 4. Extension interfaces — “plug into the Stripe billing or payments engine”
 
 Lets your app change how Stripe processes billing or payments. Available types:
 
@@ -84,12 +84,7 @@ Lets your app change how Stripe processes billing or payments. Available types:
 
 - Custom payment routing
 
-**Private preview:** Extension interfaces are not generally available. If the user asks for this:
-
-1. Explain it’s in private preview
-2. Tell them to check the Stripe Apps documentation for the latest access information
-3. Ask them to check access and return when they have it
-4. Do not attempt to build anything until access is confirmed
+**Availability:** Read the [extension-point catalog](https://docs.stripe.com/extensions/extension-points.md) and the selected interface’s product documentation. Use its current applicability, supported implementation types, and account access requirements. Don’t assume all interfaces are in private preview. Ask for access confirmation only if that interface requires it and access hasn’t already been established.
 
 ### 5. Embedded apps — “embed a third-party Stripe App inside your platform” (private preview)
 

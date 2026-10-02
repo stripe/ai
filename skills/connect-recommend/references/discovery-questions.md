@@ -301,7 +301,7 @@ Options:
 - “15%”
 - “Other (I’ll specify)”
 
-#### Q6b: `application_fee_amount` calculation (conditional)
+#### Q6b: application_fee_amount calculation (conditional)
 
 Ask only when charge pattern is destination. Don’t ask about `application_fee_amount` for separate charges and transfers — use transfer math instead. For direct charges with Stripe-owned pricing (`fees_collector: "stripe"`), the connected account pays Stripe fees and this question is moot. For direct charges with platform-owned pricing (`fees_collector: "application"`), the platform pays Stripe fees — use the Platform Pricing Tool.
 
