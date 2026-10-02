@@ -4,26 +4,34 @@ import {CallbackManagerForToolRun} from '@langchain/core/callbacks/manager';
 import {RunnableConfig} from '@langchain/core/runnables';
 import {jsonSchemaToZod} from '../shared/schema-utils';
 import {ToolkitCore, ToolkitConfig, McpTool} from '../shared/toolkit-core';
-import type {StripeMcpClient} from '../shared/mcp-client';
+
+/**
+ * A function that executes a tool call and returns the result.
+ */
+type ToolCallFn = (
+  name: string,
+  args: Record<string, unknown>
+) => Promise<string>;
 
 /**
  * A LangChain StructuredTool that executes Stripe operations via MCP.
+ * Routes tool calls through ToolkitCore to reach the correct MCP server.
  */
 class StripeTool extends StructuredTool {
-  private mcpClient: StripeMcpClient;
+  private callToolFn: ToolCallFn;
   method: string;
   name: string;
   description: string;
   schema: z.ZodObject<any, any, any, any>;
 
   constructor(
-    mcpClient: StripeMcpClient,
+    callToolFn: ToolCallFn,
     method: string,
     description: string,
     schema: z.ZodObject<any, any, any, any>
   ) {
     super();
-    this.mcpClient = mcpClient;
+    this.callToolFn = callToolFn;
     this.method = method;
     this.name = method;
     this.description = description;
@@ -35,7 +43,7 @@ class StripeTool extends StructuredTool {
     _runManager?: CallbackManagerForToolRun,
     _parentConfig?: RunnableConfig
   ): Promise<any> {
-    return this.mcpClient.callTool(this.method, arg);
+    return this.callToolFn(this.method, arg);
   }
 }
 
@@ -58,10 +66,15 @@ class StripeAgentToolkit
   }
 
   protected convertTools(mcpTools: McpTool[]): StripeTool[] {
+    // Bind the routing function so tools from additional servers
+    // are routed correctly
+    const callToolFn: ToolCallFn = (name, args) =>
+      this.routeToolCall(name, args);
+
     return mcpTools.map((tool) => {
       const zodSchema = jsonSchemaToZod(tool.inputSchema);
       return new StripeTool(
-        this.mcpClient,
+        callToolFn,
         tool.name,
         tool.description || tool.name,
         zodSchema
