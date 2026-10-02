@@ -4,6 +4,7 @@ GEM
     base64 (0.3.0)
     dotenv (2.8.1)
     ffi (1.17.3-arm64-darwin)
+    ffi (1.17.3-x86_64-linux-gnu)
     json (2.7.6)
     listen (3.10.0)
       logger
@@ -43,6 +44,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-25
+  x86_64-linux
 
 DEPENDENCIES
   dotenv (= 2.8.1)
