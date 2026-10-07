@@ -69,7 +69,7 @@ Recommended [Connect embedded components](https://docs.stripe.com/connect/suppor
 [Note any charge-pattern caveats, if relevant]
 
 ### F. Webhook integration
-Use webhooks for reliable payment confirmation, especially for async payment methods. Always verify incoming webhook signatures before processing event data ([webhook signature verification](https://stripe.com/docs/webhooks/signatures)). Specific events and implementation details are covered in the build skill.
+Use webhooks for reliable payment confirmation, especially for async payment methods. Always verify incoming webhook signatures before processing event data ([webhook signature verification](https://stripe.com/docs/events/manage-webhook-endpoints#signature-errors)). Specific events and implementation details are covered in the build skill.
 
 ### G. Onboarding status gating
 Verify capability statuses with `stripe.v2.core.accounts.retrieve(id)` before enabling payouts and transfers:

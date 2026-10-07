@@ -211,7 +211,7 @@ const paymentIntent = await stripe.paymentIntents.create({
 // Step 2: After payment_intent.succeeded webhook fires — latest_charge is null
 // at creation time and only populated on the confirmed PaymentIntent from the event
 // IMPORTANT: Always verify the webhook signature before processing event data.
-// See https://stripe.com/docs/webhooks/signatures for verification steps.
+// See https://stripe.com/docs/events/manage-webhook-endpoints#signature-errors for verification steps.
 const confirmedIntent = event.data.object; // payment_intent.succeeded payload
 const transfer = await stripe.transfers.create({
   amount: 8500, // $85.00 to connected account
@@ -235,7 +235,7 @@ await stripe.paymentIntents.create({
 
 // After payment_intent.succeeded webhook fires — latest_charge is null at creation time.
 // IMPORTANT: Always verify the webhook signature before processing event data.
-// See https://stripe.com/docs/webhooks/signatures for verification steps.
+// See https://stripe.com/docs/events/manage-webhook-endpoints#signature-errors for verification steps.
 const confirmedIntent = event.data.object; // payment_intent.succeeded payload
 const chargeId = confirmedIntent.latest_charge;
 
