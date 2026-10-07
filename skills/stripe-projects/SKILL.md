@@ -72,21 +72,14 @@ Check if a project is already initialized:
 stripe projects status --json
 ```
 
-If not initialized, run a preflight check first to reveal all blockers at once:
+If not initialized, run:
 
 ```bash
-stripe projects init --preflight --json
+stripe projects init --accept-tos --yes --json
 ```
 
-If all preflight checks pass, or the only failure is `TOS_ACCEPTANCE_REQUIRED`, proceed:
-
-```bash
-stripe projects init --accept-tos --yes
-```
-
-If any check fails with `BROWSER_AUTH_REQUIRED`, `PROJECTS_SESSION_UNUSABLE`, or `ACCOUNT_NOT_ELIGIBLE`, stop here. Report that check’s message and remedy to the user verbatim and let them resolve it — clearing these requires a browser sign-in or a Dashboard visit you cannot perform. Do not run `stripe projects init` yourself and do not re-run the preflight: neither clears the blocker for you, since only the user can complete a browser sign-in or a Dashboard step.
-
-Follow the remedy the failing check prints rather than assuming `stripe login` is the fix. If a Stripe CLI session already exists, `stripe login` reports that you are already logged in and exits 0 without changing anything — an exit code of 0 from a login command does not mean the blocker cleared.
+- If it fails with `BROWSER_AUTH_REQUIRED` and `details.reason` is `handoff_prepared`, show the user `details.browser_url` and `details.verification_code`. Ask them to approve in the browser and wait until they confirm. Then rerun the same command. Rerunning re-presents the same code until it expires, so don’t start a separate `stripe login`.
+- For any other failure, relay the error’s message and remedy to the user and follow it.
 
 **Important:** `stripe projects init` installs the `stripe-projects-cli` skill locally at `.claude/skills/stripe-projects-cli`. This skill contains the full post-init command reference.
 
@@ -163,7 +156,7 @@ stripe projects variables delete <name> --yes
 
 | Error code | Cause | Recovery |
 | --- | --- | --- |
-| `BROWSER_AUTH_REQUIRED` | No Stripe session and browser sign-in needed | Tell the user to run `stripe projects init` themselves, in a terminal where they can finish the browser sign-in — you cannot fix this, and re-running it yourself will not clear it |
+| `BROWSER_AUTH_REQUIRED` | No Stripe session and browser sign-in needed | If `details.reason` is `handoff_prepared`, show the user `details.browser_url` and `details.verification_code` and rerun the same init command after they approve. Otherwise relay the error’s message and remedy |
 | `PROJECTS_SESSION_UNUSABLE` | A Stripe CLI session exists, but Projects cannot read live-mode credentials from it | Report the message and remedy verbatim and stop. Do NOT retry, and do NOT run `stripe login` — it reports you are already logged in and exits 0 |
 | `ACCOUNT_NOT_ELIGIBLE` | Account not onboarded for Projects | Tell the user to run `stripe projects switch-account` to choose an account, or continue setup for this account; report the remedy the CLI printed and stop |
 | `TOS_ACCEPTANCE_REQUIRED` | Developer or provider terms not accepted | Re-run with `--accept-tos` |
