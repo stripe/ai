@@ -16,6 +16,11 @@ const commandOptions = {
   timeout: CLI_COMMAND_TIMEOUT_MS,
 };
 
+const guidanceCliCommandOptions = {
+  ...commandOptions,
+  env: { ...process.env, STRIPE_CLI_TELEMETRY_OPTOUT: '1' },
+};
+
 const silentCommandOptions = {
   ...commandOptions,
   stdio: 'ignore',
@@ -26,7 +31,7 @@ function parseVersion(output) {
 }
 
 function getInstalledCli(run) {
-  const result = run('stripe', ['--version'], commandOptions);
+  const result = run('stripe', ['--version'], guidanceCliCommandOptions);
   return {
     installed: result.error?.code !== 'ENOENT',
     version:
@@ -51,7 +56,11 @@ export function cliInstalled(run = spawnSync) {
 
 export function cliLoggedIn(run = spawnSync) {
   try {
-    const result = run('stripe', ['whoami', '--format', 'json'], commandOptions);
+    const result = run(
+      'stripe',
+      ['whoami', '--format', 'json'],
+      guidanceCliCommandOptions,
+    );
     const payload = JSON.parse(result.stdout ?? '');
     return payload.authenticated;
   } catch {
