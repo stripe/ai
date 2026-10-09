@@ -14,3 +14,8 @@ Skills in `providers/*/plugin/skills/` are automatically synced from [docs.strip
 
 To manually trigger a sync, go to the [workflow page](https://github.com/stripe/agent-toolkit/actions/workflows/sync-skills.yml) and click "Run workflow".
 
+## Hooks
+
+**Do not edit files in provider/scripts directories manually.**
+
+Files in `providers/*/scripts` are currently manually synced from `providers/shared-provider-scripts/provider-hooks` using `node scripts/copy-hook-scripts.js`.
