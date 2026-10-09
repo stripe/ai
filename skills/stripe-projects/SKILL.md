@@ -37,7 +37,7 @@ Check if the Stripe CLI is available:
 which stripe && stripe --version
 ```
 
-If not installed or below version 1.40.0:
+If the CLI is missing or its output says a newer version is required, install or upgrade to the current release:
 
 - **macOS (Homebrew):** `brew install stripe/stripe-cli/stripe` (or `brew upgrade stripe/stripe-cli/stripe`)
 - **Other platforms:** Direct the user to https://docs.stripe.com/stripe-cli/install for up-to-date instructions.
@@ -72,28 +72,22 @@ Check if a project is already initialized:
 stripe projects status --json
 ```
 
-If not initialized, run:
+If status reports that this workspace has no initialized project, run:
 
 ```bash
 stripe projects init --accept-tos --yes --json
 ```
 
-- If it fails with `BROWSER_AUTH_REQUIRED` and `details.reason` is `handoff_prepared`, show the user `details.browser_url` and `details.verification_code`. Ask them to approve in the browser and wait until they confirm. Then rerun the same command. Rerunning re-presents the same code until it expires, so don’t start a separate `stripe login`.
-- For any other failure, relay the error’s message and remedy to the user and follow it.
+- If init returns a browser pairing handoff (`BROWSER_AUTH_REQUIRED` with `details.reason` set to `handoff_prepared`), show the user `details.browser_url` and `details.verification_code`. Wait for them to approve in the browser and confirm, then retry the same init command with its original arguments. Rerunning re-presents the same code until it expires; don’t start a separate `stripe login`.
+- For other status or init failures, follow the CLI’s message, next steps, and retry conditions. Share any required action with the user. Don’t treat every status failure as an uninitialized project or retry a failed mutation without CLI guidance.
 
-**Important:** `stripe projects init` installs the `stripe-projects-cli` skill locally at `.claude/skills/stripe-projects-cli`. This skill contains the full post-init command reference.
+`stripe projects init` installs the local `stripe-projects-cli` skill with the post-init command reference.
 
 ### Step 4: Hand Off to stripe-projects-cli
 
-Verify the skill was installed:
+Use Read to open `.agents/skills/stripe-projects-cli/SKILL.md`, falling back to `.claude/skills/stripe-projects-cli/SKILL.md` if needed. If neither file exists, retry `stripe projects init --accept-tos --yes --json` **once** to repair the installation, then check both paths again. If init fails or the skill is still missing, follow the CLI’s message and next steps, report the problem to the user, and stop. Do not keep retrying init.
 
-```bash
-test -f .claude/skills/stripe-projects-cli/SKILL.md && echo "OK" || echo "MISSING"
-```
-
-If `MISSING`: re-run `stripe projects init --accept-tos --yes` **once** — the skill is bundled with the Projects plugin and installed during init. If the file is still missing after that single retry, or if init exits non-zero, report init’s error message to the user and stop. Do not keep re-running init.
-
-If `OK`: use the locally-installed `stripe-projects-cli` skill (invoke using the Skill tool with name `stripe-projects-cli`) to continue the workflow — adding services, managing credentials, and configuring the project.
+Continue with the locally installed skill to add the requested provider, manage credentials, or configure the project. Invoke `stripe-projects-cli` with the Skill tool when available; otherwise follow the `SKILL.md` you read directly. Let the CLI output guide any provider-specific next steps. Keep the user’s chosen project and account; don’t switch accounts automatically. Browser approval alone does not establish Projects readiness.
 
 ### Step 5: Summarize and Suggest
 
@@ -152,16 +146,6 @@ stripe projects variables list --json
 stripe projects variables delete <name> --yes
 ```
 
-## Error Handling
+## Command results
 
-| Error code | Cause | Recovery |
-| --- | --- | --- |
-| `BROWSER_AUTH_REQUIRED` | No Stripe session and browser sign-in needed | If `details.reason` is `handoff_prepared`, show the user `details.browser_url` and `details.verification_code` and rerun the same init command after they approve. Otherwise relay the error’s message and remedy |
-| `PROJECTS_SESSION_UNUSABLE` | A Stripe CLI session exists, but Projects cannot read live-mode credentials from it | Report the message and remedy verbatim and stop. Do NOT retry, and do NOT run `stripe login` — it reports you are already logged in and exits 0 |
-| `ACCOUNT_NOT_ELIGIBLE` | Account not onboarded for Projects | Tell the user to run `stripe projects switch-account` to choose an account, or continue setup for this account; report the remedy the CLI printed and stop |
-| `TOS_ACCEPTANCE_REQUIRED` | Developer or provider terms not accepted | Re-run with `--accept-tos` |
-| `PROVIDER_NOT_LINKED` | Provider requires OAuth linking | Run `stripe projects link <provider>` — may open a browser |
-| `PLAN_REQUIRED` | Deployable needs a plan provisioned first | Provision the plan listed in the error, then retry |
-| `UNKNOWN_ERROR` | Unexpected failure | Show the full error message to the user and suggest running with `--debug` for diagnostics |
-| Service not in catalog | Query returned 0 results | Inform user; suggest `stripe projects catalog --json` to browse alternatives |
-| CLI not found | Stripe CLI not installed | Install using Homebrew (macOS) or follow https://docs.stripe.com/stripe-cli/install |
+Use each CLI response as the source for its message, next steps, and retry conditions. Present browser handoffs and other user actions without exposing account identifiers, credentials, or secret values. Wait for the user where the CLI requires their action, then retry only the command and arguments the CLI says can be retried. Leave account selection and provider choices with the user; don’t infer eligibility, approval, or a recovery command from an error code alone.

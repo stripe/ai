@@ -9,7 +9,7 @@
       "name": "stripe",
       "source": "./providers/claude/plugin/",
       "description": "Stripe",
-      "version": "0.11.12",
+      "version": "0.11.13",
       "author": {
         "name": "Stripe"
       }
