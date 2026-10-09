@@ -7,9 +7,9 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { getAdapter } from '../../../../../providers/provider_hooks/hook_adapters/adapter.mjs';
-import { shouldEmitPerTurnFeedback } from '../../../../../providers/provider_hooks/feedback.mjs';
-import { lastTurnMentioned } from '../../../../../providers/provider_hooks/transcriptHelpers.mjs';
+import { getAdapter } from '../../../providers/shared-provider-scripts/provider-hooks/hook-adapters/adapter.mjs';
+import { shouldEmitPerTurnFeedback } from '../../../providers/shared-provider-scripts/provider-hooks/feedback.mjs';
+import { lastTurnMentioned } from '../../../providers/shared-provider-scripts/provider-hooks/transcriptHelpers.mjs';
 
 const claude = getAdapter('claude');
 

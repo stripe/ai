@@ -17,7 +17,7 @@ import {
   TOOL_FAILURE_FEEDBACK_MESSAGE,
 } from './feedback.mjs';
 import { executeHookOutput, readHookEvent, runHook, sample } from './hookHelpers.mjs';
-import { getAdapter } from './hook_adapters/adapter.mjs';
+import { getAdapter } from './hook-adapters/adapter.mjs';
 
 export function handleSessionStart(event) {
   if (event.new_session) {

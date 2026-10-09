@@ -16,6 +16,6 @@ To manually trigger a sync, go to the [workflow page](https://github.com/stripe/
 
 ## Hooks
 
-**Do not edit scripts in provider directories manually.**
+**Do not edit files in provider/scripts directories manually.**
 
-
+Files in `providers/*/scripts` are currently manually synced from `providers/shared-provider-scripts/provider-hooks` using `node scripts/copy-hook-scripts.js`.

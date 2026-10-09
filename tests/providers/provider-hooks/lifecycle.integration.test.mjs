@@ -16,17 +16,17 @@ import {
   CLI_NOT_INSTALLED_MESSAGE,
   CLI_NOT_LOGGED_IN_MESSAGE,
   CLI_OUTDATED_MESSAGE,
-} from '../../../../../providers/provider_hooks/cli.mjs';
+} from '../../../providers/shared-provider-scripts/provider-hooks/cli.mjs';
 import {
   AGENT_FEEDBACK_MESSAGE,
   PER_BATCH_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
   TOOL_FAILURE_FEEDBACK_MESSAGE,
-} from '../../../../../providers/provider_hooks/feedback.mjs';
+} from '../../../providers/shared-provider-scripts/provider-hooks/feedback.mjs';
 
 const SCRIPTS_ROOT = fileURLToPath(
   new URL(
-    '../../../../../providers/provider_hooks/',
+    '../../../providers/shared-provider-scripts/provider-hooks/',
     import.meta.url,
   ),
 );

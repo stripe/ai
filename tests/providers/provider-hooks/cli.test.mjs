@@ -4,7 +4,7 @@ import {
   cliLoggedIn,
   getStripeCliGuidance,
   reportSkillUsage,
-} from '../../../../../providers/provider_hooks/cli.mjs';
+} from '../../../providers/shared-provider-scripts/provider-hooks/cli.mjs';
 
 function fakeWhoami(status, stdout) {
   return (command, args) => {
