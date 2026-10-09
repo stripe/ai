@@ -9,7 +9,8 @@
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/sessionStart.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/sessionStart.mjs",
+              "claude"
             ],
             "timeout": 10
           }
@@ -24,7 +25,8 @@
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUse.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUse.mjs",
+              "claude"
             ],
             "timeout": 5
           }
@@ -37,7 +39,8 @@
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUse.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUse.mjs",
+              "claude"
             ],
             "timeout": 5
           }
@@ -52,7 +55,8 @@
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUseFailure.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUseFailure.mjs",
+              "claude"
             ],
             "timeout": 5
           }
@@ -65,7 +69,8 @@
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUseFailure.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolUseFailure.mjs",
+              "claude"
             ],
             "timeout": 5
           }
@@ -79,7 +84,8 @@
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolBatch.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/postToolBatch.mjs",
+              "claude"
             ],
             "timeout": 5
           }
@@ -93,7 +99,8 @@
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/userPromptSubmit.mjs"
+              "${CLAUDE_PLUGIN_ROOT}/scripts/lifecycle/userPromptSubmit.mjs",
+              "claude"
             ],
             "timeout": 5
           }

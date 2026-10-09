@@ -16,16 +16,19 @@ import {
   CLI_NOT_INSTALLED_MESSAGE,
   CLI_NOT_LOGGED_IN_MESSAGE,
   CLI_OUTDATED_MESSAGE,
-} from '../../../../../providers/claude/plugin/scripts/cli.mjs';
+} from '../../../../../providers/provider_hooks/cli.mjs';
 import {
   AGENT_FEEDBACK_MESSAGE,
   PER_BATCH_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
   TOOL_FAILURE_FEEDBACK_MESSAGE,
-} from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
+} from '../../../../../providers/provider_hooks/feedback.mjs';
 
 const SCRIPTS_ROOT = fileURLToPath(
-  new URL('../../../../../providers/claude/plugin/scripts/', import.meta.url),
+  new URL(
+    '../../../../../providers/provider_hooks/',
+    import.meta.url,
+  ),
 );
 
 function writeTranscriptEntries(t, entries) {
@@ -49,7 +52,7 @@ function writeTranscript(t, prompt) {
 }
 
 function runLifecycle(script, event, env = {}) {
-  return spawnSync(process.execPath, [join(SCRIPTS_ROOT, script)], {
+  return spawnSync(process.execPath, [join(SCRIPTS_ROOT, script), 'claude'], {
     encoding: 'utf8',
     env: {
       ...process.env,

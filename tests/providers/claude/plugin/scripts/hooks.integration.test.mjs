@@ -9,11 +9,11 @@ import {
   it,
 } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { CLI_NOT_INSTALLED_MESSAGE } from '../../../../../providers/claude/plugin/scripts/cli.mjs';
+import { CLI_NOT_INSTALLED_MESSAGE } from '../../../../../providers/provider_hooks/cli.mjs';
 import {
   PER_BATCH_FEEDBACK_MESSAGE,
   PER_TURN_FEEDBACK_MESSAGE,
-} from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
+} from '../../../../../providers/provider_hooks/feedback.mjs';
 
 const PLUGIN_ROOT = fileURLToPath(
   new URL('../../../../../providers/claude/plugin', import.meta.url),
