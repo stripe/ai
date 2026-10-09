@@ -3,6 +3,7 @@
  */
 
 import Stripe from 'stripe';
+import Anthropic from '@anthropic-ai/sdk';
 import {createTokenMeter} from '../token-meter';
 import type {MeterConfig} from '../types';
 
@@ -457,6 +458,112 @@ describe('TokenMeter - Anthropic Provider', () => {
           }),
         })
       );
+    });
+  });
+
+  describe('Messages - Streaming cumulative usage', () => {
+    it.each([
+      {
+        name: 'replace the initial input count with the final cumulative count',
+        updates: [{input_tokens: 10682, output_tokens: 510}],
+        inputTokens: 10682,
+      },
+      {
+        name: 'use the last cumulative count without adding earlier counts',
+        updates: [
+          {input_tokens: 5000, output_tokens: 100},
+          {input_tokens: 10682, output_tokens: 510},
+        ],
+        inputTokens: 10682,
+      },
+      {
+        name: 'retain the initial input count when the delta omits it',
+        updates: [{output_tokens: 510}],
+        inputTokens: 25,
+      },
+      {
+        name: 'retain the initial input count when the delta supplies null',
+        updates: [{input_tokens: null, output_tokens: 510}],
+        inputTokens: 25,
+      },
+      {
+        name: 'retain an updated input count when a later delta omits it',
+        updates: [
+          {input_tokens: 10682, output_tokens: 100},
+          {output_tokens: 510},
+        ],
+        inputTokens: 10682,
+      },
+      {
+        name: 'retain an updated input count when a later delta supplies null',
+        updates: [
+          {input_tokens: 10682, output_tokens: 100},
+          {input_tokens: null, output_tokens: 510},
+        ],
+        inputTokens: 10682,
+      },
+      {
+        name: 'accept an explicit zero input count',
+        updates: [{input_tokens: 0, output_tokens: 510}],
+        inputTokens: 0,
+      },
+    ])('should $name', async ({updates, inputTokens}) => {
+      const events = [
+        {
+          type: 'message_start',
+          message: {
+            id: 'msg_cumulative',
+            type: 'message',
+            role: 'assistant',
+            content: [],
+            model: 'claude-3-5-sonnet-20241022',
+            stop_reason: null,
+            stop_sequence: null,
+            usage: {input_tokens: 25, output_tokens: 1},
+          },
+        },
+        ...updates.map(usage => ({
+          type: 'message_delta',
+          delta: {stop_reason: 'end_turn', stop_sequence: null},
+          usage,
+        })),
+        {type: 'message_stop'},
+      ];
+      const client = new Anthropic({
+        apiKey: 'test_anthropic_key',
+        fetch: async () => new Response(
+          events.map(event =>
+            `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`
+          ).join(''),
+          {headers: {'Content-Type': 'text/event-stream'}}
+        ),
+      });
+      const stream = await client.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1024,
+        messages: [{role: 'user', content: 'Hello'}],
+        stream: true,
+      });
+      const meter = createTokenMeter(TEST_API_KEY, config);
+      const received = [];
+
+      for await (const event of meter.trackUsageStreamAnthropic(stream, 'cus_123')) {
+        received.push(event);
+      }
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(received).toEqual(events);
+      const payload = {
+        stripe_customer_id: 'cus_123',
+        model: 'anthropic/claude-3.5-sonnet',
+      };
+      expect(mockMeterEventsCreate.mock.calls.map(([event]) => event.payload))
+        .toEqual([
+          ...(inputTokens > 0
+            ? [{...payload, value: inputTokens.toString(), token_type: 'input'}]
+            : []),
+          {...payload, value: '510', token_type: 'output'},
+        ]);
     });
   });
 
