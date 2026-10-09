@@ -10,6 +10,7 @@ import {
   buildHeaders,
 } from './cli';
 import {extractClientName, buildUserAgent} from './userAgent';
+import {buildForwardingErrorResponse} from './forwardingError';
 
 const MCP_SERVER_URL = 'https://mcp.stripe.com';
 
@@ -83,6 +84,17 @@ export async function main(): Promise<void> {
       await httpTransport!.send(message);
     } catch (error) {
       console.error(red('Error forwarding message to server:'), error);
+
+      // Answer the request with an error so the client doesn't wait for a
+      // response that will never arrive.
+      const response = buildForwardingErrorResponse(message, error);
+      if (response) {
+        try {
+          await stdioTransport.send(response);
+        } catch (sendError) {
+          console.error(red('Error forwarding message to client:'), sendError);
+        }
+      }
     }
   };
 
