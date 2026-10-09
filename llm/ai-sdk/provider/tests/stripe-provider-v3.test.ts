@@ -4,6 +4,7 @@
 
 import {createStripeV3, stripeV3} from '../index';
 import {StripeLanguageModelV3} from '../stripe-language-model-v3';
+import type {LanguageModelV3CallOptions} from '@ai-sdk/provider';
 
 describe('Stripe Provider V3', () => {
   describe('createStripeV3', () => {
@@ -276,6 +277,42 @@ describe('Stripe Provider V3', () => {
       it('should normalize opus-4-1 to opus-4.1', () => {
         const model = provider('anthropic/opus-4-1');
         expect(model.modelId).toBe('anthropic/opus-4.1');
+      });
+
+      it('should apply the 64K default to normalized Claude 3.7 Sonnet models', () => {
+        const model = provider('anthropic/claude-3-7-sonnet-20250115');
+        const options: LanguageModelV3CallOptions = {
+          prompt: [],
+        };
+
+        // @ts-expect-error - Accessing private method for testing
+        const {args} = model.getArgs(options);
+
+        expect(args.max_tokens).toBe(64000);
+      });
+
+      it('should apply the 8K default to normalized Claude 3.5 Haiku models', () => {
+        const model = provider('anthropic/claude-3-5-haiku-20241022');
+        const options: LanguageModelV3CallOptions = {
+          prompt: [],
+        };
+
+        // @ts-expect-error - Accessing private method for testing
+        const {args} = model.getArgs(options);
+
+        expect(args.max_tokens).toBe(8192);
+      });
+
+      it('should apply the 64K default to normalized Haiku 4.5 models', () => {
+        const model = provider('anthropic/claude-haiku-4-5-latest');
+        const options: LanguageModelV3CallOptions = {
+          prompt: [],
+        };
+
+        // @ts-expect-error - Accessing private method for testing
+        const {args} = model.getArgs(options);
+
+        expect(args.max_tokens).toBe(64000);
       });
     });
 
