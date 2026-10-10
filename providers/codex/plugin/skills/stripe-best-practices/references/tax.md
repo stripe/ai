@@ -119,6 +119,8 @@ As soon as you know the liable entity:
 
 ## Threshold and nexus monitoring
 
+**If you have execution access** (MCP tools or the Stripe CLI with a valid token), use the GetTaxThresholdMonitoring MCP dynamic tool or the `get_tax_threshold_monitoring` CLI tool to retrieve the account’s current threshold monitoring results. Report the relevant jurisdictions and when the results were computed, if that timestamp is available. If a jurisdiction is absent or its status is undetermined, say so rather than inferring an obligation.
+
 The [threshold monitoring](https://docs.stripe.com/tax/monitoring.md) tool highlights *potential* registration obligations in Dashboard → Tax → Locations → Needs attention. Stripe sends email and Dashboard alerts. The public guide documents those notification surfaces, so don’t promise a threshold-alert API or webhook. Monitoring doesn’t cover physical-presence obligations. Present it as information and tell the user to discuss it with their tax advisor. It’s up to the user to confirm whether registration is required. Don’t tell them they must register, and don’t recommend a universal percentage of a threshold as the point to register.
 
 Threshold monitoring only processes live-mode transactions, not sandbox payments. Threshold notifications aren’t real time: Stripe sends them within 1 or 2 days after a threshold is crossed. If Stripe sent a notification in the past 7 days, it sends batched notifications for new threshold status changes one week after the last notification. Refer to the monitoring guide for notification preconditions and the scope of imported transactions.

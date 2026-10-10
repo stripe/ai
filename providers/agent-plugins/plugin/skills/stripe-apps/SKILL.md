@@ -18,7 +18,7 @@ For a capability question, check native Stripe features and the documented appli
 
 ## Choose the relevant documentation
 
-Use information already supplied by the user or existing app. Read [references/discovery.md](https://docs.stripe.com/references/discovery.md) when you need to clarify the app’s requirements, and [references/extension-types.md](https://docs.stripe.com/references/extension-types.md) for an overview of app architectures. Ask only for missing information that affects the task.
+Use information already supplied by the user or existing app. Read <references/discovery.md> when you need to clarify the app’s requirements, and <references/extension-types.md> for an overview of app architectures. Ask only for missing information that affects the task.
 
 ### Product capabilities
 
@@ -37,13 +37,13 @@ The `references/*.md` files are bundled with this skill. After selecting the cap
 
 | Task | Read |
 | --- | --- |
-| Build or modify any Dashboard UI, including drawers and full-page apps | [references/ui-extensions.md](https://docs.stripe.com/references/ui-extensions.md), then each selected component’s current API documentation |
-| Author, test, or debug a script extension | [references/script-extensions.md](https://docs.stripe.com/references/script-extensions.md), then the selected extension point’s implementation guide |
-| Build a custom-action script | [references/script-extensions.md](https://docs.stripe.com/references/script-extensions.md) and [build a custom action with a script](https://docs.stripe.com/extensions/custom-actions/build-with-script.md) |
+| Build or modify any Dashboard UI, including drawers and full-page apps | <references/ui-extensions.md>, then each selected component’s current API documentation |
+| Author, test, or debug a script extension | <references/script-extensions.md>, then the selected extension point’s implementation guide |
+| Build a custom-action script | <references/script-extensions.md> and [build a custom action with a script](https://docs.stripe.com/extensions/custom-actions/build-with-script.md) |
 | Build a custom-action remote function | [Build a custom action with a remote function](https://docs.stripe.com/extensions/custom-actions/build-with-remote-function.md) |
-| Build a self-hosted UI back-end or webhook service | [references/backend.md](https://docs.stripe.com/references/backend.md) and [references/authentication.md](https://docs.stripe.com/references/authentication.md); also load [references/webhooks.md](https://docs.stripe.com/references/webhooks.md) when receiving Stripe events |
-| Store app credentials with the Secret Store API | The Secret Store API section in [references/backend.md](https://docs.stripe.com/references/backend.md) and [store secrets](https://docs.stripe.com/stripe-apps/store-secrets.md), including for apps without a self-hosted back-end |
-| Look up APIs, SDK patterns, configuration, or additional extension documentation | [references/canonical-docs.md](https://docs.stripe.com/references/canonical-docs.md) |
+| Build a self-hosted UI back-end or webhook service | <references/backend.md> and <references/authentication.md>; also load <references/webhooks.md> when receiving Stripe events |
+| Store app credentials with the Secret Store API | The Secret Store API section in <references/backend.md> and [store secrets](https://docs.stripe.com/stripe-apps/store-secrets.md), including for apps without a self-hosted back-end |
+| Look up APIs, SDK patterns, configuration, or additional extension documentation | <references/canonical-docs.md> |
 
 Use the UI reference for layout and composition, and current component documentation for import paths, props, and styling APIs. For scripts and remote functions, follow the selected extension’s documentation; UI and self-hosted back-end instructions don’t define their runtime capabilities.
 
@@ -53,12 +53,12 @@ Read these references when the corresponding task is needed. Reuse existing apps
 
 | Task | Read |
 | --- | --- |
-| Scaffold, build, test, preview, or upload an app | [references/workflow.md](https://docs.stripe.com/references/workflow.md), together with the selected implementation guide |
-| Choose authentication for access to Stripe APIs | [references/authentication.md](https://docs.stripe.com/references/authentication.md) |
-| Receive Stripe events | [references/webhooks.md](https://docs.stripe.com/references/webhooks.md) |
-| Build a first-run setup experience | [references/onboarding-ux.md](https://docs.stripe.com/references/onboarding-ux.md) and the UI reference |
-| Release versions, change installed permissions, or publish to the marketplace | [references/publishing.md](https://docs.stripe.com/references/publishing.md) |
-| Submit feedback after running app toolchain commands | [references/feedback.md](https://docs.stripe.com/references/feedback.md) |
+| Scaffold, build, test, preview, or upload an app | <references/workflow.md>, together with the selected implementation guide |
+| Choose authentication for access to Stripe APIs | <references/authentication.md> |
+| Receive Stripe events | <references/webhooks.md> |
+| Build a first-run setup experience | <references/onboarding-ux.md> and the UI reference |
+| Release versions, change installed permissions, or publish to the marketplace | <references/publishing.md> |
+| Submit feedback after running app toolchain commands | <references/feedback.md> |
 
 ## Load bundled reference files
 
