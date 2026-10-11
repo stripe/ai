@@ -9,7 +9,7 @@
       "name": "stripe",
       "source": "./providers/cursor/plugin/",
       "description": "Stripe",
-      "version": "0.9.14",
+      "version": "0.9.15",
       "author": {
         "name": "Stripe"
       }
