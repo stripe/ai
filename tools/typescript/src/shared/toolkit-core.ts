@@ -1,4 +1,5 @@
 import {StripeMcpClient, type McpTool} from './mcp-client';
+import {MultiMcpClient} from './multi-mcp-client';
 import {AsyncInitializer} from './async-initializer';
 import {type Configuration} from './configuration';
 
@@ -16,6 +17,10 @@ export interface ToolkitConfig {
  * Base class for all Stripe Agent Toolkit implementations.
  * Subclasses override convertTools() to transform MCP tools into framework-specific formats.
  *
+ * Supports additional MCP servers whose tools are merged with the core Stripe
+ * tools. When a tool call is invoked, it is automatically routed to the
+ * server that provides it.
+ *
  * @template T - The type of tools returned by this toolkit (e.g., ChatCompletionTool[], StripeTool[])
  */
 export class ToolkitCore<T = McpTool[]> {
@@ -23,6 +28,12 @@ export class ToolkitCore<T = McpTool[]> {
    * The MCP client that handles connections to mcp.stripe.com and tool execution.
    */
   readonly mcpClient: StripeMcpClient;
+
+  /**
+   * Optional client for additional MCP servers (e.g. batch payment providers).
+   */
+  private additionalClient: MultiMcpClient | null = null;
+
   readonly configuration: Configuration;
   private _initializer = new AsyncInitializer();
   private _tools: T;
@@ -38,6 +49,13 @@ export class ToolkitCore<T = McpTool[]> {
     });
     this.configuration = config.configuration;
     this._tools = emptyTools;
+
+    if (
+      config.configuration.additionalMcpServers &&
+      config.configuration.additionalMcpServers.length > 0
+    ) {
+      this.additionalClient = new MultiMcpClient();
+    }
   }
 
   /**
@@ -52,13 +70,31 @@ export class ToolkitCore<T = McpTool[]> {
   /**
    * Initialize the toolkit by connecting to the MCP server and fetching tools.
    * The server filters tools based on RAK permissions.
+   *
+   * If additional MCP servers are configured, their tools are fetched and
+   * merged with the core Stripe tools.
    */
   async initialize(): Promise<void> {
     await this._initializer.initialize(async () => {
       await this.mcpClient.connect();
 
       const remoteTools = this.mcpClient.getTools();
-      this._tools = this.convertTools(remoteTools);
+      let allTools = [...remoteTools];
+
+      // Connect additional MCP servers and merge their tools.
+      // Stripe tool names are reserved — additional servers cannot shadow them.
+      if (this.additionalClient && this.configuration.additionalMcpServers) {
+        const stripeToolNames = remoteTools.map((t) => t.name);
+        this.additionalClient.setReservedNames(stripeToolNames);
+
+        await this.additionalClient.connect(
+          this.configuration.additionalMcpServers
+        );
+        const additionalTools = this.additionalClient.getTools();
+        allTools = [...allTools, ...additionalTools];
+      }
+
+      this._tools = this.convertTools(allTools);
     });
   }
 
@@ -87,6 +123,29 @@ export class ToolkitCore<T = McpTool[]> {
   }
 
   /**
+   * Route a tool call to the correct MCP server and return the result.
+   * Core Stripe tools always take priority. Additional server tools are
+   * only called for names that do not exist in the Stripe tool set.
+   */
+  routeToolCall(
+    name: string,
+    args: Record<string, unknown>,
+    options?: {customer?: string}
+  ): Promise<string> {
+    this.ensureInitialized();
+
+    // Additional servers only handle tools that Stripe does not own.
+    // The collision guard in MultiMcpClient already prevents shadowing,
+    // but this ordering provides defense-in-depth.
+    if (this.additionalClient && this.additionalClient.hasTool(name)) {
+      return this.additionalClient.callTool(name, args);
+    }
+
+    // Default: route to the primary Stripe MCP server
+    return this.mcpClient.callTool(name, args, options);
+  }
+
+  /**
    * Close the MCP connection and clean up resources.
    */
   async close(emptyTools: T): Promise<void> {
@@ -95,6 +154,11 @@ export class ToolkitCore<T = McpTool[]> {
     }
 
     await this.mcpClient.disconnect();
+
+    if (this.additionalClient) {
+      await this.additionalClient.disconnect();
+    }
+
     this._initializer.reset();
     this._tools = emptyTools;
   }
