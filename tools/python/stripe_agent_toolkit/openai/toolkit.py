@@ -25,9 +25,7 @@ class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
     """
 
     def __init__(
-        self,
-        secret_key: str,
-        configuration: Optional[Configuration] = None
+        self, secret_key: str, configuration: Optional[Configuration] = None
     ):
         super().__init__(secret_key, configuration)
 
@@ -35,10 +33,7 @@ class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
         """Return empty list of tools."""
         return []
 
-    def _convert_tools(
-        self,
-        mcp_tools: List[McpTool]
-    ) -> List[FunctionTool]:
+    def _convert_tools(self, mcp_tools: List[McpTool]) -> List[FunctionTool]:
         """Convert MCP tools to OpenAI FunctionTool instances."""
         tools = []
         for mcp_tool in mcp_tools:
@@ -51,8 +46,7 @@ class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
         tool_name = mcp_tool["name"]
 
         async def on_invoke_tool(
-            ctx: RunContextWrapper[Any],
-            input_str: str
+            ctx: RunContextWrapper[Any], input_str: str
         ) -> str:
             args = json.loads(input_str)
             return await toolkit.run_tool(tool_name, args)
@@ -77,7 +71,7 @@ class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
             description=mcp_tool.get("description", tool_name),
             params_json_schema=parameters,
             on_invoke_tool=on_invoke_tool,
-            strict_json_schema=False
+            strict_json_schema=False,
         )
 
     @property
@@ -92,8 +86,7 @@ class StripeAgentToolkit(ToolkitCore[List[FunctionTool]]):
 
 
 async def create_stripe_agent_toolkit(
-    secret_key: str,
-    configuration: Optional[Configuration] = None
+    secret_key: str, configuration: Optional[Configuration] = None
 ) -> StripeAgentToolkit:
     """
     Factory function to create and initialize a StripeAgentToolkit.

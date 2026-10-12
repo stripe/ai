@@ -19,9 +19,7 @@ async def main():
         tools = stripe_agent_toolkit.get_tools()
 
         # Create agent with Stripe tools
-        agent = Agent(
-            tools=tools
-        )
+        agent = Agent(tools=tools)
 
         # Test the agent
         response = agent("""

@@ -33,18 +33,18 @@ class ToolkitCore(ABC, Generic[T]):
     """
 
     def __init__(
-        self,
-        secret_key: str,
-        configuration: Optional[Configuration] = None
+        self, secret_key: str, configuration: Optional[Configuration] = None
     ):
         self._configuration = configuration or {}
         context = self._configuration.get("context") or {}
-        self._mcp_client = StripeMcpClient({
-            "secret_key": secret_key,
-            "account": context.get("account"),
-            "customer": context.get("customer"),
-            "mode": context.get("mode"),
-        })
+        self._mcp_client = StripeMcpClient(
+            {
+                "secret_key": secret_key,
+                "account": context.get("account"),
+                "customer": context.get("customer"),
+                "mode": context.get("mode"),
+            }
+        )
         self._initializer = AsyncInitializer()
         self._tools: T = self._empty_tools()
 
@@ -145,10 +145,7 @@ class ToolkitCore(ABC, Generic[T]):
         return self._mcp_client
 
     async def run_tool(
-        self,
-        method: str,
-        args: Dict[str, Any],
-        customer: Optional[str] = None
+        self, method: str, args: Dict[str, Any], customer: Optional[str] = None
     ) -> str:
         """
         Execute a tool via MCP.

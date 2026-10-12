@@ -3,6 +3,7 @@ import os
 from pydantic import BaseModel, Field
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from agents import Agent, Runner
@@ -14,8 +15,12 @@ from stripe_agent_toolkit.openai.toolkit import create_stripe_agent_toolkit
 class InvoiceOutput(BaseModel):
     name: str = Field(description="The name of the customer")
     email: str = Field(description="The email of the customer")
-    service: str = Field(description="The service that the customer is invoiced for")
-    amount_due: int = Field(description="The dollar amount due for the invoice. Convert text to dollar amounts if needed.")
+    service: str = Field(
+        description="The service that the customer is invoiced for"
+    )
+    amount_due: int = Field(
+        description="The dollar amount due for the invoice. Convert text to dollar amounts if needed."
+    )
     id: str = Field(description="The id of the stripe invoice")
 
 
@@ -46,7 +51,7 @@ async def main():
                 )
             ],
             output_type=InvoiceListOutput,
-            handoffs=[invoice_agent]
+            handoffs=[invoice_agent],
         )
 
         assignment = "Search for all customers that haven't paid across all of my documents. Handoff to the invoice agent to create, finalize, and send an invoice for each."
