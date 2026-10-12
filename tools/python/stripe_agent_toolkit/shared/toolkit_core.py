@@ -38,6 +38,7 @@ class ToolkitCore(ABC, Generic[T]):
         configuration: Optional[Configuration] = None
     ):
         self._configuration = configuration or {}
+        self._validate_configuration(self._configuration)
         context = self._configuration.get("context") or {}
         self._mcp_client = StripeMcpClient({
             "secret_key": secret_key,
@@ -47,6 +48,27 @@ class ToolkitCore(ABC, Generic[T]):
         })
         self._initializer = AsyncInitializer()
         self._tools: T = self._empty_tools()
+
+    def _validate_configuration(self, config: Dict[str, Any]) -> None:
+        """Validate configuration keys and warn on unknown ones."""
+        valid_keys = {"context"}
+        unknown_keys = set(config.keys()) - valid_keys
+        
+        if "actions" in unknown_keys:
+            warnings.warn(
+                "[StripeAgentToolkit] The 'actions' configuration key from v0.6.x is no longer supported. "
+                "Tool access restrictions must be managed at the LLM level or via separate authorization logic. "
+                "The 'actions' key will be ignored.",
+                DeprecationWarning,
+                stacklevel=3
+            )
+        
+        for key in unknown_keys - {"actions"}:
+            warnings.warn(
+                f"[StripeAgentToolkit] Unknown configuration key '{key}' will be ignored.",
+                UserWarning,
+                stacklevel=3
+            )
 
     @abstractmethod
     def _empty_tools(self) -> T:
