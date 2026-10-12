@@ -1,19 +1,7 @@
-import {
-  closeSync,
-  fstatSync,
-  openSync,
-  readSync,
-} from 'node:fs';
+import { closeSync, fstatSync, openSync, readSync } from 'node:fs';
 import { TRANSCRIPT_READ_CHUNK_BYTES } from './constants.mjs';
 
-export function lastTurnMentioned(pattern, event) {
-  return (
-    matchesPattern(event?.last_assistant_message, pattern) ||
-    transcriptLastTurnMatches(event?.transcript_path, pattern)
-  );
-}
-
-function valueAsText(value) {
+export function valueAsText(value) {
   if (typeof value === 'string') {
     return value;
   }
@@ -23,81 +11,15 @@ function valueAsText(value) {
   return JSON.stringify(value);
 }
 
-function matchesPattern(value, pattern) {
+export function matchesPattern(value, pattern) {
   pattern.lastIndex = 0;
   return pattern.test(valueAsText(value));
 }
 
-function contentBlockAsText(block) {
-  if (typeof block === 'string') {
-    return block;
-  }
-  if (!block || typeof block !== 'object') {
-    return '';
-  }
-
-  if (block.type === 'text') {
-    return valueAsText(block.text);
-  }
-  if (block.type === 'tool_use') {
-    return `${valueAsText(block.name)}\n${valueAsText(block.input)}`;
-  }
-  if (block.type === 'tool_result') {
-    return contentAsText(block.content);
-  }
-  return '';
-}
-
-function contentAsText(content) {
-  if (typeof content === 'string') {
-    return content;
-  }
-  if (!Array.isArray(content)) {
-    return '';
-  }
-  return content.map(contentBlockAsText).join('\n');
-}
-
-function hookOutputAsText(attachment) {
-  if (
-    typeof attachment?.type !== 'string' ||
-    !attachment.type.startsWith('hook_')
-  ) {
-    return '';
-  }
-
-  return [
-    attachment.content,
-    attachment.stdout,
-    attachment.stderr,
-  ]
-    .map(valueAsText)
-    .join('\n');
-}
-
-function transcriptEntryText(entry) {
-  return [
-    contentAsText(entry?.message?.content),
-    hookOutputAsText(entry?.attachment),
-  ].join('\n');
-}
-
-function isHumanPrompt(entry) {
-  if (
-    entry?.type !== 'user' ||
-    entry.isMeta === true ||
-    entry.isSynthetic === true
-  ) {
-    return false;
-  }
-
-  const content = entry.message?.content;
-  if (typeof content === 'string') {
-    return true;
-  }
+export function lastTurnMentioned(pattern, event, adapter) {
   return (
-    Array.isArray(content) &&
-    content.some((block) => block?.type !== 'tool_result')
+    matchesPattern(event?.lastAssistantMessage, pattern) ||
+    transcriptLastTurnMatches(event?.transcriptPath, pattern, adapter)
   );
 }
 
@@ -117,20 +39,11 @@ function* readLinesFromEnd(transcriptPath) {
     let leadingBytes = Buffer.alloc(0);
 
     while (position > 0) {
-      const bytesToRead = Math.min(
-        TRANSCRIPT_READ_CHUNK_BYTES,
-        position,
-      );
+      const bytesToRead = Math.min(TRANSCRIPT_READ_CHUNK_BYTES, position);
       position -= bytesToRead;
 
       const chunk = Buffer.allocUnsafe(bytesToRead);
-      const bytesRead = readSync(
-        file,
-        chunk,
-        0,
-        bytesToRead,
-        position,
-      );
+      const bytesRead = readSync(file, chunk, 0, bytesToRead, position);
       const buffered = Buffer.concat([
         chunk.subarray(0, bytesRead),
         leadingBytes,
@@ -160,22 +73,23 @@ function* readLinesFromEnd(transcriptPath) {
   }
 }
 
-function transcriptLastTurnMatches(transcriptPath, pattern) {
+function transcriptLastTurnMatches(transcriptPath, pattern, adapter) {
   if (typeof transcriptPath !== 'string' || !transcriptPath) {
     return false;
   }
 
   let matched = false;
   for (const line of readLinesFromEnd(transcriptPath)) {
-    const entry = parseTranscriptLine(line);
-    if (!entry) {
+    const raw = parseTranscriptLine(line);
+    if (!raw) {
       continue;
     }
 
-    if (matchesPattern(transcriptEntryText(entry), pattern)) {
+    const entry = adapter.normalizeTranscriptEntry(raw);
+    if (matchesPattern(entry.text, pattern)) {
       matched = true;
     }
-    if (isHumanPrompt(entry)) {
+    if (entry.isHumanPrompt) {
       return matched;
     }
   }

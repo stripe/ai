@@ -61,92 +61,22 @@ export function composeFeedbackMessage(...sentences) {
   return sentences.filter(Boolean).join(' ');
 }
 
-export function isStripeToolCall(event, argumentsValue) {
-  const toolName = event?.tool_name;
-
-  if (
-    typeof toolName === 'string' &&
-    (toolName.startsWith('mcp__plugin_stripe_stripe__') ||
-      toolName.startsWith('mcp__stripe__'))
-  ) {
-    return true;
-  }
-
-  return getStripeSkillName(event, argumentsValue) !== undefined;
-}
-
-export function batchIncludesStripeTool(event) {
-  return batchToolCalls(event).some((call) =>
-    isStripeToolCall(call, call.tool_input),
-  );
-}
-
-export function batchIncludesFailedStripeTool(event) {
-  return batchToolCalls(event).some(
-    (call) =>
-      isStripeToolCall(call, call.tool_input) &&
-      toolResponseLooksFailed(call.tool_response),
-  );
-}
-
 // Metronome work often never says "stripe" by name.
 const STRIPE_MENTION_PATTERN = /stripe|metronome/i;
 
-export function completedAgentWorkMentionsStripe(event) {
+export function completedAgentWorkMentionsStripe(tool) {
   return (
-    event?.tool_name === 'Agent' &&
-    event?.tool_response?.status === 'completed' &&
+    tool.agentWork?.completed === true &&
     valuesMention(
       STRIPE_MENTION_PATTERN,
-      event.tool_input?.prompt,
-      event.tool_response?.content,
+      tool.agentWork.prompt,
+      tool.agentWork.content,
     )
   );
 }
 
-export function getStripeSkillName(event, argumentsValue) {
-  const skillName = argumentsValue?.skill;
-  if (
-    event?.tool_name !== 'Skill' ||
-    typeof skillName !== 'string' ||
-    !skillName.startsWith('stripe:')
-  ) {
-    return undefined;
-  }
-
-  return skillName.slice('stripe:'.length);
-}
-
-export function shouldEmitPerTurnFeedback(event) {
-  return lastTurnMentioned(STRIPE_MENTION_PATTERN, event);
-}
-
-function batchToolCalls(event) {
-  return Array.isArray(event?.tool_calls)
-    ? event.tool_calls.filter(
-        (call) => call && typeof call === 'object',
-      )
-    : [];
-}
-
-function toolResponseLooksFailed(response) {
-  if (Array.isArray(response)) {
-    return response.some(toolResponseLooksFailed);
-  }
-  if (response && typeof response === 'object') {
-    return (
-      response.is_error === true ||
-      response.isError === true ||
-      toolResponseLooksFailed(response.error) ||
-      toolResponseLooksFailed(response.content)
-    );
-  }
-  return (
-    typeof response === 'string' &&
-    /^(?:error\b|exit code \d+\b|mcp error\b|tool use error\b|<tool_use_error>)/i.test(
-      response.trimStart(),
-    )
-  );
+export function shouldEmitPerTurnFeedback(event, adapter) {
+  return lastTurnMentioned(STRIPE_MENTION_PATTERN, event, adapter);
 }
 
 function valuesMention(pattern, ...values) {

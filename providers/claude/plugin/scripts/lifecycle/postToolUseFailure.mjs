@@ -1,19 +1,12 @@
 #!/usr/bin/env node
 
-import {
-  isStripeToolCall,
-  TOOL_FAILURE_FEEDBACK_MESSAGE,
-} from '../feedback.mjs';
-import {
-  emitHardSteer,
-  getHookArguments,
-  readHookEvent,
-  runHook,
-} from '../hookHelpers.mjs';
+import { TOOL_FAILED } from '../constants.mjs';
+import { handleToolFailed, runLifecycleHook } from '../hookHandlers.mjs';
 
-await runHook(async () => {
-  const event = await readHookEvent();
-  if (isStripeToolCall(event, getHookArguments(event))) {
-    emitHardSteer(TOOL_FAILURE_FEEDBACK_MESSAGE);
-  }
+const provider = process.argv[2];
+
+await runLifecycleHook({
+  provider,
+  eventType: TOOL_FAILED,
+  handler: handleToolFailed,
 });

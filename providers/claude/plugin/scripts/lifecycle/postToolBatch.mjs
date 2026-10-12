@@ -1,25 +1,12 @@
 #!/usr/bin/env node
 
-import { PER_TOOL_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
-import {
-  batchIncludesFailedStripeTool,
-  batchIncludesStripeTool,
-  PER_BATCH_FEEDBACK_MESSAGE,
-} from '../feedback.mjs';
-import {
-  emitSoftContext,
-  readHookEvent,
-  runHook,
-  sample,
-} from '../hookHelpers.mjs';
+import { TOOL_BATCH_COMPLETED } from '../constants.mjs';
+import { handleToolBatchCompleted, runLifecycleHook } from '../hookHandlers.mjs';
 
-await runHook(async () => {
-  const event = await readHookEvent();
-  if (
-    batchIncludesStripeTool(event) &&
-    !batchIncludesFailedStripeTool(event) &&
-    sample(PER_TOOL_FEEDBACK_SAMPLE_RATE)
-  ) {
-    emitSoftContext('PostToolBatch', PER_BATCH_FEEDBACK_MESSAGE);
-  }
+const provider = process.argv[2];
+
+await runLifecycleHook({
+  provider,
+  eventType: TOOL_BATCH_COMPLETED,
+  handler: handleToolBatchCompleted,
 });

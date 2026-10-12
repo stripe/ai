@@ -7,8 +7,11 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { shouldEmitPerTurnFeedback } from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
-import { lastTurnMentioned } from '../../../../../providers/claude/plugin/scripts/transcriptHelpers.mjs';
+import { getAdapter } from '../../../providers/shared-provider-scripts/provider-hooks/hook-adapters/adapter.mjs';
+import { shouldEmitPerTurnFeedback } from '../../../providers/shared-provider-scripts/provider-hooks/feedback.mjs';
+import { lastTurnMentioned } from '../../../providers/shared-provider-scripts/provider-hooks/transcriptHelpers.mjs';
+
+const claude = getAdapter('claude');
 
 function writeTranscript(t, entries) {
   const directory = mkdtempSync(join(tmpdir(), 'stripe-transcript-'));
@@ -47,10 +50,11 @@ test('ignores matches before the latest user turn', (t) => {
   ]);
 
   assert.equal(
-    lastTurnMentioned(/stripe/i, {
-      transcript_path: transcriptPath,
-      last_assistant_message: 'Use display: grid.',
-    }),
+    lastTurnMentioned(
+      /stripe/i,
+      { transcriptPath, lastAssistantMessage: 'Use display: grid.' },
+      claude,
+    ),
     false,
   );
 });
@@ -67,9 +71,7 @@ test('requires a previous user turn', (t) => {
   ]);
 
   assert.equal(
-    lastTurnMentioned(/stripe/i, {
-      transcript_path: transcriptPath,
-    }),
+    lastTurnMentioned(/stripe/i, { transcriptPath }, claude),
     false,
   );
 });
@@ -114,10 +116,11 @@ test('finds a pattern in tool inputs, tool results, and hook output', (t) => {
       assistantContent([{ type: 'text', text: 'Done.' }]),
     ]);
     assert.equal(
-      lastTurnMentioned(/stripe/i, {
-        transcript_path: transcriptPath,
-        last_assistant_message: 'Done.',
-      }),
+      lastTurnMentioned(
+        /stripe/i,
+        { transcriptPath, lastAssistantMessage: 'Done.' },
+        claude,
+      ),
       true,
     );
   }
@@ -136,17 +139,19 @@ test('checks the final assistant message but ignores transcript metadata', (t) =
   ]);
 
   assert.equal(
-    lastTurnMentioned(/stripe/i, {
-      transcript_path: transcriptPath,
-      last_assistant_message: 'Done.',
-    }),
+    lastTurnMentioned(
+      /stripe/i,
+      { transcriptPath, lastAssistantMessage: 'Done.' },
+      claude,
+    ),
     false,
   );
   assert.equal(
-    lastTurnMentioned(/stripe/i, {
-      transcript_path: transcriptPath,
-      last_assistant_message: 'The Stripe client is ready.',
-    }),
+    lastTurnMentioned(
+      /stripe/i,
+      { transcriptPath, lastAssistantMessage: 'The Stripe client is ready.' },
+      claude,
+    ),
     true,
   );
 });
@@ -158,10 +163,11 @@ test('accepts patterns unrelated to Stripe', (t) => {
   ]);
 
   assert.equal(
-    lastTurnMentioned(/checkout/i, {
-      transcript_path: transcriptPath,
-      last_assistant_message: 'Done.',
-    }),
+    lastTurnMentioned(
+      /checkout/i,
+      { transcriptPath, lastAssistantMessage: 'Done.' },
+      claude,
+    ),
     true,
   );
 });
@@ -173,10 +179,10 @@ test('provides per-turn Stripe feedback logic', (t) => {
   ]);
 
   assert.equal(
-    shouldEmitPerTurnFeedback({
-      transcript_path: transcriptPath,
-      last_assistant_message: 'Done.',
-    }),
+    shouldEmitPerTurnFeedback(
+      { transcriptPath, lastAssistantMessage: 'Done.' },
+      claude,
+    ),
     true,
   );
 });
@@ -188,10 +194,10 @@ test('treats Metronome work as Stripe work for per-turn feedback', (t) => {
   ]);
 
   assert.equal(
-    shouldEmitPerTurnFeedback({
-      transcript_path: transcriptPath,
-      last_assistant_message: 'Done.',
-    }),
+    shouldEmitPerTurnFeedback(
+      { transcriptPath, lastAssistantMessage: 'Done.' },
+      claude,
+    ),
     true,
   );
 });
@@ -215,18 +221,21 @@ test('reads a latest-turn entry larger than one transcript chunk', (t) => {
   ]);
 
   assert.equal(
-    lastTurnMentioned(/stripe/i, {
-      transcript_path: transcriptPath,
-      last_assistant_message: 'Done.',
-    }),
+    lastTurnMentioned(
+      /stripe/i,
+      { transcriptPath, lastAssistantMessage: 'Done.' },
+      claude,
+    ),
     true,
   );
 });
 
 test('throws when the transcript file is missing', () => {
   assert.throws(() =>
-    lastTurnMentioned(/stripe/i, {
-      transcript_path: join(tmpdir(), 'missing-stripe-transcript.jsonl'),
-    }),
+    lastTurnMentioned(
+      /stripe/i,
+      { transcriptPath: join(tmpdir(), 'missing-stripe-transcript.jsonl') },
+      claude,
+    ),
   );
 });

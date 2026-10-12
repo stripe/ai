@@ -1,20 +1,12 @@
 #!/usr/bin/env node
 
-import { getStripeCliGuidance } from '../cli.mjs';
-import {
-  emitSoftContext,
-  readHookEvent,
-  runHook,
-} from '../hookHelpers.mjs';
+import { SESSION_START } from '../constants.mjs';
+import { handleSessionStart, runLifecycleHook } from '../hookHandlers.mjs';
 
-await runHook(async () => {
-  const event = await readHookEvent();
-  if (event.source !== 'startup') {
-    return;
-  }
+const provider = process.argv[2];
 
-  const message = getStripeCliGuidance();
-  if (message) {
-    emitSoftContext('SessionStart', message);
-  }
+await runLifecycleHook({
+  provider,
+  eventType: SESSION_START,
+  handler: handleSessionStart,
 });

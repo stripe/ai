@@ -1,23 +1,12 @@
 #!/usr/bin/env node
 
-import { PER_TURN_FEEDBACK_SAMPLE_RATE } from '../constants.mjs';
-import {
-  PER_TURN_FEEDBACK_MESSAGE,
-  shouldEmitPerTurnFeedback,
-} from '../feedback.mjs';
-import {
-  emitSoftContext,
-  readHookEvent,
-  runHook,
-  sample,
-} from '../hookHelpers.mjs';
+import { USER_PROMPT_SUBMITTED } from '../constants.mjs';
+import { handlePromptSubmitted, runLifecycleHook } from '../hookHandlers.mjs';
 
-await runHook(async () => {
-  const event = await readHookEvent();
-  if (
-    sample(PER_TURN_FEEDBACK_SAMPLE_RATE) &&
-    shouldEmitPerTurnFeedback(event)
-  ) {
-    emitSoftContext('UserPromptSubmit', PER_TURN_FEEDBACK_MESSAGE);
-  }
+const provider = process.argv[2];
+
+await runLifecycleHook({
+  provider,
+  eventType: USER_PROMPT_SUBMITTED,
+  handler: handlePromptSubmitted,
 });
