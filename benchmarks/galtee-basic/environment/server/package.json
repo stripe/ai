@@ -10,9 +10,9 @@
   "author": "stripe-demos",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "1.20.4",
+    "body-parser": "1.20.5",
     "dotenv": "16.0.0",
-    "express": "4.22.1",
+    "express": "4.22.2",
     "stripe": "10.0.0"
   }
 }
