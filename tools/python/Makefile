@@ -10,7 +10,7 @@ $(VENV_NAME)/bin/python: requirements.txt
 	$(UV) pip install --python $(VENV_NAME)/bin/python -r requirements.txt
 
 test: venv
-	${VENV_NAME}/bin/python -m unittest discover tests
+	${VENV_NAME}/bin/python -m pytest
 
 build: venv
 	cp ../../LICENSE LICENSE
