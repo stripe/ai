@@ -1,5 +1,6 @@
 import {parseArgs, validateApiKey, validateStripeAccount} from '../cli';
 import {extractClientName, buildUserAgent} from '../userAgent';
+import {buildForwardingErrorResponse} from '../forwardingError';
 
 describe('extractClientName', () => {
   it('should extract client name from a valid initialize request', () => {
@@ -208,5 +209,61 @@ describe('--tools deprecation', () => {
     const args = ['--api-key=sk_test_123', '--tools=all'];
     const options = parseArgs(args);
     expect(options.apiKey).toBe('sk_test_123');
+  });
+});
+
+describe('buildForwardingErrorResponse', () => {
+  const error = new Error('Error POSTing to endpoint (HTTP 401): Unauthorized');
+
+  it('should return an error response for a request', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      id: 0,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2024-11-05',
+        capabilities: {},
+        clientInfo: {name: 'cursor', version: '1.0.0'},
+      },
+    };
+    expect(buildForwardingErrorResponse(message, error)).toEqual({
+      jsonrpc: '2.0',
+      id: 0,
+      error: {
+        code: -32603,
+        message:
+          'Error forwarding request to the Stripe MCP server: ' +
+          'Error POSTing to endpoint (HTTP 401): Unauthorized',
+      },
+    });
+  });
+
+  it('should keep string request ids', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      id: 'abc',
+      method: 'tools/list',
+    };
+    expect(buildForwardingErrorResponse(message, error)?.id).toBe('abc');
+  });
+
+  it('should handle non-Error values', () => {
+    const message = {jsonrpc: '2.0' as const, id: 1, method: 'tools/list'};
+    expect(
+      buildForwardingErrorResponse(message, 'fetch failed')?.error.message
+    ).toBe('Error forwarding request to the Stripe MCP server: fetch failed');
+  });
+
+  it('should return undefined for notifications', () => {
+    const message = {
+      jsonrpc: '2.0' as const,
+      method: 'notifications/initialized',
+    };
+    expect(buildForwardingErrorResponse(message, error)).toBeUndefined();
+  });
+
+  it('should return undefined for responses', () => {
+    const message = {jsonrpc: '2.0' as const, id: 0, result: {}};
+    expect(buildForwardingErrorResponse(message, error)).toBeUndefined();
   });
 });
