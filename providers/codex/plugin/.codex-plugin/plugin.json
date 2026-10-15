@@ -1,6 +1,10 @@
 {
   "name": "stripe",
+<<<<<<< HEAD
   "version": "5.8.23",
+=======
+  "version": "8.0.1",
+>>>>>>> daf5211 (bumping agent plugin above currently published OpenAI version)
   "description": "Payments and business tools",
   "author": {
     "name": "Stripe",
