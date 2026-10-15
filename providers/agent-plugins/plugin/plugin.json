@@ -13,8 +13,29 @@
   "keywords": [
     "stripe",
     "payments",
+    "subscriptions",
     "webhooks",
     "api",
     "security"
-  ]
+  ],
+  "extensions": {
+    "com.openai": {
+      "displayName": "Stripe",
+      "shortDescription": "Accept payments and grow your business.",
+      "longDescription": "Accept payments, offer financial services, and implement custom revenue models with Stripe. Includes best practices, API/SDK upgrade guidance, and the Stripe MCP server.",
+      "developerName": "Stripe",
+      "category": "Finance",
+      "websiteURL": "https://stripe.com",
+      "privacyPolicyURL": "https://stripe.com/privacy",
+      "termsOfServiceURL": "https://stripe.com/legal/ssa",
+      "defaultPrompt": [
+        "Use My Plugin to summarize new CRM notes.",
+        "Use My Plugin to triage new customer follow-ups."
+      ],
+      "brandColor": "#533AFD",
+      "composerIcon": "./assets/parallelogram.png",
+      "logo": "./assets/parallelogram.png",
+      "hooks": []
+    }
+  }
 }
