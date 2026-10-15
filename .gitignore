@@ -11,6 +11,7 @@ node_modules/
 junk/
 
 # Distribution / packaging
+**/*.zip
 .Python
 build/
 develop-eggs/
