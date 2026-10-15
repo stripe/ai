@@ -40,7 +40,6 @@ const REPO_ROOT = path.join(__dirname, "..");
 const SKILLS_DIR = path.join(__dirname, "../skills");
 const PLUGIN_SKILLS_DIRS = [
   path.join(__dirname, "../providers/claude/plugin/skills"),
-  path.join(__dirname, "../providers/codex/plugin/skills"),
   path.join(__dirname, "../providers/cursor/plugin/skills"),
   path.join(__dirname, "../providers/grok/plugin/skills"),
   path.join(__dirname, "../providers/agent-plugins/plugin/skills"),
@@ -50,7 +49,6 @@ const ALL_OUTPUT_DIRS = [SKILLS_DIR, ...PLUGIN_SKILLS_DIRS];
 const VERSION_FILES = [
   path.join(__dirname, "../.claude-plugin/marketplace.json"),
   path.join(__dirname, "../providers/claude/plugin/.claude-plugin/plugin.json"),
-  path.join(__dirname, "../providers/codex/plugin/.codex-plugin/plugin.json"),
   path.join(__dirname, "../.cursor-plugin/marketplace.json"),
   path.join(__dirname, "../providers/cursor/plugin/.cursor-plugin/plugin.json"),
   path.join(__dirname, "../.grok-plugin/marketplace.json"),

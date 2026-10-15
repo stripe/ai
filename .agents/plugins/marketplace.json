@@ -4,17 +4,20 @@
       "name": "Stripe",
       "email": "support@stripe.com"
     },
+    "interface": {
+        "displayName": "Stripe plugins"
+    },
     "plugins": [
       {
         "name": "stripe",
         "source": {
             "source": "git-subdir",
             "url": "https://github.com/stripe/ai.git",
-            "path": "providers/codex/plugin",
+            "path": "providers/agent-plugins/plugin",
             "ref": "main"
         },
         "policy": {
-            "installation": "AVAILABLE",
+            "installation": "INSTALLED_BY_DEFAULT",
             "authentication": "ON_INSTALL"
         },
         "category": "Finance"
