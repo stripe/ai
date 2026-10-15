@@ -1,7 +1,7 @@
 {
   "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
   "schema_version": 1,
-  "tools":{},
+  "tools": {},
   "test_cases": [
     {
       "description": "Get refunded payments and their reason",
@@ -36,16 +36,16 @@
   ],
   "negative_test_cases": [
     {
-      "description": "Review the Stripe integration code in this file and suggest improvements to error handling",
-      "user_prompt": "Review the Stripe integration code in this file and suggest improvements to error handling"
+      "description": "Debug application code where Stripe is incidental to the surrounding product context",
+      "user_prompt": "The settings page in our Stripe-powered SaaS application becomes unresponsive when users open the navigation menu. Review this React component and fix its state-management bug. The component does not call Stripe or process Stripe data."
     },
     {
-      "description": "Write documentation explaining how to set up Stripe webhooks in our application",
-      "user_prompt": "Write documentation explaining how to set up Stripe webhooks in our application"
+      "description": "Research Stripe as a company rather than its products, APIs, documentation, or user data",
+      "user_prompt": "Compare Stripe and Airbnb as potential employers based on their engineering cultures, office policies, and employee reviews."
     },
     {
-      "description": "My Stripe webhook endpoint is returning a 500 error in local development. Help me debug what's wrong with the code.",
-      "user_prompt": "My Stripe webhook endpoint is returning a 500 error in local development. Help me debug what's wrong with the code."
+      "description": "Provide general accounting advice when Stripe is merely the source of funds",
+      "user_prompt": "My business receives most of its revenue through Stripe. Explain whether I should elect S corporation status and estimate the personal tax consequences using the income figures below."
     }
   ]
 }
