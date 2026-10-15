@@ -91,6 +91,9 @@
         "demo_recording_url": "https://www.youtube.com/watch?v=LbfBDvzeXec",
         "commerce": false,
         "commerce_description": "This plugin does not sell products or process payments."
+      },
+      "publication": {
+        "release_notes": "Assorted updates to Stripe's skills."
       }
     }
   }
