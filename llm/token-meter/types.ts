@@ -1,5 +1,5 @@
 /**
- * Type definitions for token-billing
+ * Type definitions for token-meter
  * Re-exports shared types for backward compatibility
  */
 
