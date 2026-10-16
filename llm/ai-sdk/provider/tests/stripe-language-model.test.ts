@@ -273,6 +273,18 @@ describe('StripeLanguageModel', () => {
       }).toThrow('Tool calling is not supported by the Stripe AI SDK Provider');
     });
 
+    it('should throw error when tool choice is provided without tools', () => {
+      const options: LanguageModelV2CallOptions = {
+        prompt: [],
+        toolChoice: {type: 'auto'},
+      };
+
+      expect(() => {
+        // @ts-expect-error - Accessing private method for testing
+        model.getArgs(options);
+      }).toThrow('Tool calling is not supported by the Stripe AI SDK Provider');
+    });
+
     it('should not throw error when no tools are provided', () => {
       const options: LanguageModelV2CallOptions = {
         prompt: [
@@ -629,4 +641,3 @@ describe('StripeLanguageModel', () => {
     });
   });
 });
-
