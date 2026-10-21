@@ -6,7 +6,7 @@ import warnings
 
 from .mcp_client import StripeMcpClient, McpTool
 from .async_initializer import AsyncInitializer
-from ..configuration import Configuration
+from ..configuration import Configuration, warn_on_unsupported_configuration
 
 T = TypeVar("T")
 
@@ -38,6 +38,7 @@ class ToolkitCore(ABC, Generic[T]):
         configuration: Optional[Configuration] = None
     ):
         self._configuration = configuration or {}
+        warn_on_unsupported_configuration(self._configuration)
         context = self._configuration.get("context") or {}
         self._mcp_client = StripeMcpClient({
             "secret_key": secret_key,
