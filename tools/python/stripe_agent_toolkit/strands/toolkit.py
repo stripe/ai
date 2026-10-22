@@ -1,10 +1,9 @@
 """Stripe Agent Toolkit for Strands."""
 
-import asyncio
-import json
 from typing import List, Optional, Dict, Any, Callable, Awaitable
 
 from strands.tools.tools import PythonAgentTool as StrandTool
+from strands.types.tools import ToolResult, ToolUse
 
 from ..shared.toolkit_core import ToolkitCore
 from ..shared.mcp_client import McpTool
@@ -35,52 +34,19 @@ def create_strand_tool(
                 if isinstance(prop, dict):
                     prop.pop(key, None)
 
-    def callback_wrapper(tool_input: Any, **kwargs: Any) -> Dict[str, Any]:
-        """Wrapper to handle additional parameters from strands framework."""
+    async def tool_func(tool_use: ToolUse, **_: Any) -> ToolResult:
+        """Run the MCP tool for a Strands tool use request.
 
-        # Extract toolUseId for the response
-        tool_use_id = None
-        actual_params: Dict[str, Any] = {}
-
-        if isinstance(tool_input, dict) and "toolUseId" in tool_input:
-            tool_use_id = tool_input["toolUseId"]
-            # Extract the actual parameters from the nested input structure
-            actual_params = tool_input.get("input", {})
-        elif isinstance(tool_input, str):
-            # Parse JSON string input
-            try:
-                parsed = json.loads(tool_input)
-                tool_use_id = parsed.get("toolUseId")
-                actual_params = parsed.get("input", parsed)
-            except json.JSONDecodeError:
-                actual_params = {}
-        elif isinstance(tool_input, dict):
-            actual_params = tool_input.copy()
-
-        # Call the MCP client (need to run async in sync context)
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            import concurrent.futures
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                future = pool.submit(
-                    asyncio.run,
-                    run_tool(tool_name, actual_params)
-                )
-                result = future.result()
-        else:
-            result = loop.run_until_complete(
-                run_tool(tool_name, actual_params)
-            )
-
-        # Return in the format expected by strands
-        response: Dict[str, Any] = {
-            "content": [{"text": result}]
+        Strands awaits coroutine tool functions on the agent's own event
+        loop, so no sync/async bridging is needed here. Exceptions are
+        converted to an error ToolResult by the Strands tool executor.
+        """
+        result = await run_tool(tool_name, tool_use.get("input", {}))
+        return {
+            "toolUseId": tool_use["toolUseId"],
+            "status": "success",
+            "content": [{"text": result}],
         }
-
-        if tool_use_id:
-            response["toolUseId"] = tool_use_id
-
-        return response
 
     return StrandTool(
         tool_name=tool_name,
@@ -91,7 +57,7 @@ def create_strand_tool(
                 "json": parameters
             }
         },
-        callback=callback_wrapper
+        tool_func=tool_func
     )
 
 
