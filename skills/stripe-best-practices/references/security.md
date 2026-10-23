@@ -52,7 +52,7 @@ Follow the principle of least privilege: give each RAK only the permissions it n
 Preferred migration approach:
 
 1. Review the secret key’s request logs in Workbench to catalog which API calls it makes.
-2. Create a RAK in test mode with matching permissions.
+2. Create a RAK in a sandbox with matching permissions.
 3. Use the [Stripe CLI](https://docs.stripe.com/cli.md)’s `stripe logs tail` command to watch logs.
 4. Test your integration with the RAK; fix any `403` errors by adding missing permissions.
 5. Create the equivalent live-mode RAK and replace the secret key.
