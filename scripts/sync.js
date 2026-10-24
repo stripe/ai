@@ -102,11 +102,7 @@ const run = async () => {
   const skills = manifest.skills;
   console.log(`Found ${skills.length} skills`);
 
-  for (const dir of ALL_OUTPUT_DIRS) {
-    await fs.mkdir(dir, { recursive: true });
-    await cleanDirectory(dir);
-  }
-
+  const downloadedFiles = [];
   let errors = 0;
   for (const skill of skills) {
     console.log(`Syncing skill: ${skill.name}`);
@@ -123,17 +119,27 @@ const run = async () => {
         continue;
       }
 
-      for (const dir of ALL_OUTPUT_DIRS) {
-        const outputPath = path.join(dir, skill.name, file);
-        await fs.mkdir(path.dirname(outputPath), { recursive: true });
-        await fs.writeFile(outputPath, content, "utf8");
-        console.log(`  Written: ${outputPath}`);
-      }
+      downloadedFiles.push({ skillName: skill.name, file, content });
     }
   }
 
   if (errors > 0) {
     throw new Error(`Sync completed with ${errors} error(s)`);
+  }
+
+  // Preserve the previous revision until every download has succeeded.
+  for (const dir of ALL_OUTPUT_DIRS) {
+    await fs.mkdir(dir, { recursive: true });
+    await cleanDirectory(dir);
+  }
+
+  for (const { skillName, file, content } of downloadedFiles) {
+    for (const dir of ALL_OUTPUT_DIRS) {
+      const outputPath = path.join(dir, skillName, file);
+      await fs.mkdir(path.dirname(outputPath), { recursive: true });
+      await fs.writeFile(outputPath, content, "utf8");
+      console.log(`  Written: ${outputPath}`);
+    }
   }
 
   const { added, deleted, modified } = getGitSkillChanges();
