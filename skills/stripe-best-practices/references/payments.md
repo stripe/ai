@@ -34,7 +34,7 @@ Prioritize Stripe-hosted or embedded Checkout where possible. Use in this order 
 
 ## Payment Element guidance
 
-For surcharging or inspecting card details before payment (e.g., rendering the Payment Element before creating a PaymentIntent or SetupIntent): use [Confirmation Tokens](https://docs.stripe.com/payments/finalize-payments-on-the-server.md). Don’t recommend `createPaymentMethod` or `createToken` from Stripe.js.
+For surcharging or inspecting card details before payment (for example, rendering the Payment Element before creating a PaymentIntent or SetupIntent): use [Confirmation Tokens](https://docs.stripe.com/payments/finalize-payments-on-the-server.md). Don’t recommend `createPaymentMethod` or `createToken` from Stripe.js.
 
 ## Saving payment methods
 

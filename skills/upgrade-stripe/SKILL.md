@@ -12,7 +12,7 @@ description: >-
 
 If the user specifies a target API version, use it. Otherwise, look up the current version on docs.stripe.com with any documentation or web tool available to you, for example `stripe docs /api/versioning` with the Stripe CLI. The [API versioning](https://docs.stripe.com/api/versioning.md) page states it in the sentence that begins “The current version is”.
 
-Bundled fallback API version: `2026-09-30.endive`. This value is only a snapshot from the last time this skill was generated, on 2026-10-23. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
+Bundled fallback API version: `2026-09-30.endive`. This value is only a snapshot from the last time this skill was generated, on 2026-10-24. Version identifiers start with their release date in YYYY-MM-DD format and new stable versions are released monthly, so a fallback version dated more than a month ago is probably stale. Use it only when you can’t reach docs.stripe.com. Never guess about a newer version number.
 
 Before making changes, compare the target with each API version the integration pins: client configuration, per-request overrides, and webhook endpoints. Unless the user explicitly asks for it, don’t move any pin to an older version or a stable pin to a preview version. If a pin already matches the target, report it as unchanged. State the selected target and its source. If live verification fails or is unavailable, say that the latest version remains unverified, and don’t claim the integration is on the latest version.
 
@@ -22,7 +22,7 @@ For SDKs that support explicit API version overrides, use the selected target in
 
 ## Understanding Stripe API Versioning
 
-Stripe uses date-based API versions (e.g., `2026-09-30.endive`, `2025-08-27.basil`, `2024-12-18.acacia`). Your account’s API version determines request/response behavior.
+Stripe uses date-based API versions (for example, `2026-09-30.endive`, `2025-08-27.basil`, `2024-12-18.acacia`). Your account’s API version determines request/response behavior.
 
 Starting with the 2024-09-30.acacia release, Stripe releases new API versions monthly with no breaking changes. Twice a year, a new major release (for example, Basil) starts with an API version containing breaking changes. You can safely upgrade to any monthly release without updating your code.
 
@@ -33,7 +33,7 @@ Starting with the 2024-09-30.acacia release, Stripe releases new API versions mo
 - New API resources
 - New optional request parameters
 - New properties in existing responses
-- Changes to opaque string lengths (e.g., object IDs)
+- Changes to opaque string lengths (for example, object IDs)
 - New webhook event types
 
 **Breaking Changes** (require code updates):
@@ -163,7 +163,7 @@ All mobile SDKs work with any Stripe API version you use on your backend unless 
 
 1. Review the [API changelog](https://docs.stripe.com/changelog.md) for changes between your current and target versions
 2. Check the [API upgrades guide](https://docs.stripe.com/upgrades.md) for migration guidance
-3. Update server-side SDK package version (e.g., `npm update stripe`, `pip install --upgrade stripe`)
+3. Update server-side SDK package version (for example, `npm update stripe`, `pip install --upgrade stripe`)
 4. Update the `apiVersion` parameter in your Stripe client initialization
 5. Test your integration against the new API version using the `Stripe-Version` header
 6. For each destination that receives snapshot events, review its configured API version. For webhook endpoints, follow [webhook versioning](https://docs.stripe.com/webhooks/versioning.md). For every v2 snapshot event destination — including webhook endpoints, Amazon EventBridge, and Azure Event Grid destinations — inspect [snapshot_api_version](https://docs.stripe.com/api/v2/core/event-destinations/object.md#v2_event_destination_object-snapshot_api_version) and, if it differs from the target, create and test a replacement destination because you can’t change it after creation. For a replacement webhook endpoint, save its new signing secret and configure the handler to accept both secrets during testing and cutover. After cutover, disable or delete the old destination to avoid duplicate delivery. Leave thin event destinations unchanged

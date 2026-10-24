@@ -118,7 +118,7 @@ Avoid: a single column of oversized full-width cards; a large empty right side o
 
 Aim for ~3–5 cards in one row (for example, Total spend · MRR · Refunds · Disputes). For *proportional* data (a total split into parts), prefer a progress/`MeterChart` treatment over a chart — see Charts.
 
-**[Recommended] Two-column detail (key/value).** Outer `stack: "x", gap: "xlarge"`; each column `width: "1/2", stack: "y", gap: "medium"`; each field `stack: "y", gap: "xxsmall"` with a `semibold` label above a regular value.
+**[Recommended] Two-column detail (key-value).** Outer `stack: "x", gap: "xlarge"`; each column `width: "1/2", stack: "y", gap: "medium"`; each field `stack: "y", gap: "xxsmall"` with a `semibold` label above a regular value.
 
 **[Recommended] Charts & data viz — pick the representation that fits the data.**
 
@@ -161,7 +161,7 @@ Reserve [BarChart](https://docs.stripe.com/stripe-apps/components/barchart.md) f
 | Top-level sections | `Tabs` / `Tab` (`ui/next`) | Distinct workflow areas; route-driven | [doc](https://docs.stripe.com/stripe-apps/components/tabs.md) |
 | Overview dashboard | `OverviewPage` + `PageModule` | Two-column summary; group content in modules | [doc](https://docs.stripe.com/stripe-apps/components/overviewpage.md) |
 | List of objects | `DataTable` | Sortable, status cells, row→detail, empty state, pagination | [doc](https://docs.stripe.com/stripe-apps/components/datatable.md) |
-| Single object detail | `DetailPage` (+ `PropertyList` for key/value) | Breadcrumb + two columns; top-level page, not inside `FullPageView` | [detail](https://docs.stripe.com/stripe-apps/components/detailpage.md) · [propertylist](https://docs.stripe.com/stripe-apps/components/propertylist.md) |
+| Single object detail | `DetailPage` (+ `PropertyList` for key-value) | Breadcrumb + two columns; top-level page, not inside `FullPageView` | [detail](https://docs.stripe.com/stripe-apps/components/detailpage.md) · [propertylist](https://docs.stripe.com/stripe-apps/components/propertylist.md) |
 | Create / edit | `FocusView` | Overlay drawer; `Button pending` on save | [doc](https://docs.stripe.com/stripe-apps/components/focusview.md) |
 | Data visualization | `LineChart` / `BarChart` / `MeterChart` / `Sparkline` (`ui/next`) | In a fixed-height `Box` in a `PageModule`; **read the doc for the `data` shape** | [line](https://docs.stripe.com/stripe-apps/components/linechart.md) · [bar](https://docs.stripe.com/stripe-apps/components/barchart.md) |
 | Layout / spacing | `Box`, `Inline` | The `stack`/`gap`/`padding` substrate (see §3) | [doc](https://docs.stripe.com/stripe-apps/components/box.md) |

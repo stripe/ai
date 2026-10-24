@@ -50,7 +50,7 @@ Check if there’s an existing project to scan:
    - Seller and provider patterns: `seller`, `vendor`, `operator`, `provider`, `merchant`, `host`, `creator`
    - Buyer patterns: `buyer`, `customer`, `rider`, `guest`, `client`
    - Payment patterns: `commission`, `fee`, `split`, `payout`, `transfer`, `earnings`
-   - Multi-party patterns: `marketplace`, `platform`, `connect`
+   - Multiparty patterns: `marketplace`, `platform`, `connect`
 
 3. Use codebase signals to corroborate or strengthen web research findings. For example, if the homepage says “marketplace” and the codebase has terms like `commission`, `payout`, `split`, `listing`, `booking`, `cart`, `order`, `storefront`, or `seller`/`vendor`/`provider` patterns, that’s stronger confirmation.
 
@@ -102,5 +102,5 @@ Return your analysis in this exact format:
 | **URL is a SPA with minimal HTML** | `WebFetch` may return little content. Fall back to `WebSearch`. Check meta tags and page title. |
 | **Pricing is behind a login** | Fee structure confidence drops to LOW. Note: “Pricing not publicly available.” |
 | **Company does multiple things** | Note the ambiguity. Classify based on the primary product. Set confidence to MEDIUM with reasoning about which facet you chose. |
-| **Not a marketplace or platform** | If the business is purely B2C with no multi-party payments, flag clearly: “This business appears to be a direct seller — standard Stripe integration may be more appropriate than Stripe Connect.” Set Business Model confidence to HIGH with value “not-connect”. |
+| **Not a marketplace or platform** | If the business is purely B2C with no multiparty payments, flag clearly: “This business appears to be a direct seller — standard Stripe integration may be more appropriate than Stripe Connect.” Set Business Model confidence to HIGH with value “not-connect”. |
 | **Conflicting signals** | Note the conflict explicitly. Set confidence to MEDIUM. Provide your best inference with reasoning about why you chose one interpretation over the other. |

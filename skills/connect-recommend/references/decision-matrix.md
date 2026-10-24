@@ -20,12 +20,12 @@ Instead, configure accounts using three independent dimensions:
 | **SaaS with payments (self-serve, minimal ops)** | `express` | `stripe` | `stripe` | Direct | Embedded | Default for self-serve SaaS platforms — lightweight dashboard, Stripe-managed pricing and negative balance liability (public preview) |
 | **SaaS with payments (self-serve, pricing control)** | `express` | `application` | `stripe` | Direct | Embedded | For self-serve SaaS platforms that want to control pricing while keeping Stripe-managed negative balance liability (public preview); pair with the Platform Pricing Tool |
 | **SaaS with payments (established merchants)** | `full` | `stripe` | `stripe` | Direct | Embedded | Sellers want independence, own Stripe accounts, own branding, and need full, independent Stripe operations |
-| **Crowdfunding** | `express` | `application` | `application` | Separate | Embedded | Multi-party splits and delayed release. Use transfer math (not `application_fee_amount`) and platform-owned loss liability for transfer reversals |
+| **Crowdfunding** | `express` | `application` | `application` | Separate | Embedded | Multiparty splits and delayed release. Use transfer math (not `application_fee_amount`) and platform-owned loss liability for transfer reversals |
 | **Subscription platforms** | `express` | `application` | `application` | Destination | Embedded | Recurring billing, platform manages subscriptions; platform-owned pricing + loss liability required for Express |
 | **E-commerce (white-label)** | `none` | `application` | `application` | Destination or Direct | Embedded | Full branding control. Use embedded components for white-label feel. Going fully custom (no embedded components) adds significant complexity — the platform must build and maintain all connected account UX including onboarding remediation, refund and dispute flows, and ongoing requirement collection. |
 | **Rental marketplace** | `express` | `application` | `application` | Destination | Embedded | Platform owns booking flow; platform-owned pricing + loss liability required for Express |
 | **Event ticketing** | `express` | `application` | `application` | Destination | Embedded | Platform manages event and ticket flow; platform-owned pricing + loss liability required for Express |
-| **B2B platforms** | `none` | `application` | `application` | Separate | Embedded | For complex enterprise multi-party flows, prefer Separate charges and transfers with transfer math. Don’t default to Destination in these scenarios. Often requires sales engagement for billing complexity — [Stripe sales](https://stripe.com/contact/sales). |
+| **B2B platforms** | `none` | `application` | `application` | Separate | Embedded | For complex enterprise multiparty flows, prefer Separate charges and transfers with transfer math. Don’t default to Destination in these scenarios. Often requires sales engagement for billing complexity — [Stripe sales](https://stripe.com/contact/sales). |
 
 **Note:** `fees` and `losses` columns refer to `defaults.responsibilities.fees_collector` and `defaults.responsibilities.losses_collector` in the v2 API. Values are `"stripe"` or `"application"` (your platform).
 
@@ -88,13 +88,13 @@ How many sellers per transaction?
 - If customers discover services on your platform and complete checkout in your platform flow (you own checkout UX, order confirmation, and payment operations) → **Destination**
 - Language saying payments should “belong to” or be “associated with” sellers, or that sellers should “run their own account,” is usually a payout expectation (who receives proceeds) or a dashboard-access preference, not a checkout-ownership signal. Destination charges satisfy payout expectations through automatic transfers and Express dashboard satisfies “own account” expectations. Only choose Direct when sellers independently own the checkout flow (their own payment page, their branding on statements, they handle refunds and disputes).
 - Choose **Direct** when the behavior is SaaS enablement: each seller runs their own payment relationship, customers pay the seller directly, seller branding appears on receipts and statements, and seller-side operations handle payment support, refunds, and disputes.
-- If multi-party splits needed → **Separate** (carts, one payment split across multiple parties)
+- If multiparty splits needed → **Separate** (carts, one payment split across multiple parties)
 - If “platform collects then pays out” → **Destination**
 - If “buyers pay sellers directly” → **Direct**
 - If one payment maps to one connected account and funds transfer immediately (payout timing to bank is controlled by payout schedule, not release logic) → **Destination**
 - If the platform needs to hold funds and only transfer to the connected account after a trigger (delivery, job completion, approval, campaign end) → **Separate** (use transfer math; don’t use `application_fee_amount`)
 - If one payment must be split across multiple connected accounts (for example, a multi-vendor cart) → **Separate**
-- For B2B enterprise flows with multi-party allocation, approval gates, or staged release, prefer **Separate** and do NOT default to **Destination**
+- For B2B enterprise flows with multiparty allocation, approval gates, or staged release, prefer **Separate** and do NOT default to **Destination**
 - If unsure and the flow is single-recipient, immediate-transfer marketplace behavior → **Destination** (safest default)
 
 #### Hybrid model guidance

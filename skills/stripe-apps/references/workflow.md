@@ -20,7 +20,7 @@ Follow this exact sequence for every new app. Do NOT skip or reorder steps.
 
 **BLOCKED:** Do NOT use `stripe apps create` — it does not scaffold correctly. Always use `stripe generate app`.
 
-**MANDATORY:** Do NOT create files manually when `stripe generate app` provides them. The scaffold creates a V2 workspace: `stripe-app.yaml`, `package.json`, `pnpm-workspace.yaml`, and `ui/src/views/App.tsx` with the correct structure. Only create files that the scaffold doesn’t provide (e.g., `server.js` for your backend). Modify scaffolded files as needed — don’t rewrite them from scratch.
+**MANDATORY:** Do NOT create files manually when `stripe generate app` provides them. The scaffold creates a V2 workspace: `stripe-app.yaml`, `package.json`, `pnpm-workspace.yaml`, and `ui/src/views/App.tsx` with the correct structure. Only create files that the scaffold doesn’t provide (for example, `server.js` for your backend). Modify scaffolded files as needed — don’t rewrite them from scratch.
 
 ## End-to-end build order (detailed)
 

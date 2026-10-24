@@ -72,7 +72,7 @@ Metronome publishes step-by-step skills for the tasks below. Read the linked ski
 When the user’s request doesn’t clearly fit a single domain above, consult:
 
 - [Metronome Documentation](https://docs.metronome.com/): Start here for any Metronome question.
-- [API Reference](https://docs.metronome.com/api-reference/): Full endpoint reference.
+- [API reference](https://docs.metronome.com/api-reference/): Full endpoint reference.
 - [LLM-friendly doc index](https://docs.metronome.com/llms.txt): Machine-readable documentation index.
 - [Stripe Integration Guide](https://docs.metronome.com/integrations/invoice-integrations/stripe.md): Syncing Metronome invoices with Stripe.
 - [How Metronome works with Stripe](https://docs.stripe.com/billing/how-metronome-works-with-stripe.md): The Stripe guide to the integration patterns and what stays on Stripe.

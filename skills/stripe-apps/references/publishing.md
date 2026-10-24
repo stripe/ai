@@ -113,7 +113,7 @@ Your app has been uploaded to version 0.0.1.
 | --- | --- | --- |
 | `Invalid manifest` / validation failed | Missing required fields or malformed YAML | Check indentation; ensure `id:`, `version:`, `name:` are present |
 | `Build failed` / TypeScript errors | UI component has type/import errors | Run `pnpm build` locally first to see the exact error |
-| `Version already exists` | Already uploaded this version number | Bump `version` in stripe-app.yaml (e.g. 0.0.1 → 0.0.2) |
+| `Version already exists` | Already uploaded this version number | Bump `version` in stripe-app.yaml (for example, 0.0.1 → 0.0.2) |
 | `Permission denied` / `Not authenticated` | CLI not logged in or wrong account | Run `stripe login` and verify with `stripe config --list` |
 | `connect-src` / CSP error | App calls a URL not declared in content_security_policy | Add the URL to `content_security_policy.connect-src` in stripe-app.yaml |
 | `extensions field required` | Missing `extensions: []` in stripe-app.yaml | Add `extensions: []` even if you have no backend extensions |

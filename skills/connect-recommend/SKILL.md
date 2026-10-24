@@ -95,7 +95,7 @@ Read <references/company-researcher.md> and perform those research steps, using 
 
 The research produces a structured analysis with confidence levels (HIGH/MEDIUM/LOW) for each decision dimension.
 
-**1d. Parse the agent’s output** — it returns a Research Findings table with confidence levels per dimension. Read the decision matrix at <references/decision-matrix.md> and map the findings to a recommended configuration. Then determine pre-fill behavior per dimension:
+**1d. Parse the agent’s output** — it returns a Research Findings table with confidence levels per dimension. Read the decision matrix at <references/decision-matrix.md> and map the findings to a recommended configuration. Then determine prefill behavior per dimension:
 
 - **HIGH confidence**: Auto-fill — don’t ask about this dimension
 - **MEDIUM confidence**: Suggest the inferred value and ask for quick confirmation
@@ -167,7 +167,7 @@ This check MUST run even when the fee was auto-filled with HIGH confidence. The 
 
 Run this AFTER Step 1 (or in parallel if the user said “scan my codebase”). Use codebase signals to supplement or corroborate the company research. **Don’t ask before scanning — just scan.**
 
-1. **Existing Connect config**: Check for `connect-recommend-plan.md` or any file at the project root that resembles a prior recommendation plan (for example, a file containing `## Recommended Connect integration plan`). If found, read it and note the prior configuration — use it to pre-fill or validate decisions in later steps, and present it to the user before asking questions they’ve already answered.
+1. **Existing Connect config**: Check for `connect-recommend-plan.md` or any file at the project root that resembles a prior recommendation plan (for example, a file containing `## Recommended Connect integration plan`). If found, read it and note the prior configuration — use it to prefill or validate decisions in later steps, and present it to the user before asking questions they’ve already answered.
 2. **Existing Stripe integration patterns**: Use Grep to search for Connect-specific patterns already in the codebase:
    - Connected account creation or references (`connected_account`, `account_id`, `stripe_account`)
    - Charge patterns in use (`destination`, `on_behalf_of`, `transfer_data`, `separate_charges`)
@@ -193,7 +193,7 @@ I found an existing Connect recommendation plan at [path].
 
 Options:
 
-- “Use it as a starting point” — pre-fill all decisions from the prior plan, then confirm each with the user in Step 3
+- “Use it as a starting point” — prefill all decisions from the prior plan, then confirm each with the user in Step 3
 - “Start fresh” — ignore the prior plan and run full discovery
 
 Update the checklist:
