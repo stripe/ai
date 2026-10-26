@@ -4,6 +4,7 @@
 
 import {StripeLanguageModel, StripeProviderAccessError} from '../stripe-language-model';
 import type {LanguageModelV2CallOptions} from '@ai-sdk/provider';
+import {NoContentGeneratedError} from '@ai-sdk/provider';
 
 describe('StripeLanguageModel', () => {
   let model: StripeLanguageModel;
@@ -628,5 +629,32 @@ describe('StripeLanguageModel', () => {
       }
     });
   });
-});
 
+  describe('doGenerate with empty choices', () => {
+    const originalFetch = global.fetch;
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    it('should throw NoContentGeneratedError when a 200 response has no choices', async () => {
+      global.fetch = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            choices: [],
+            usage: {prompt_tokens: 5, completion_tokens: 0, total_tokens: 5},
+          }),
+          {status: 200, headers: {'Content-Type': 'application/json'}}
+        )
+      ) as unknown as typeof fetch;
+
+      const options: LanguageModelV2CallOptions = {
+        prompt: [{role: 'user', content: [{type: 'text', text: 'Hello'}]}],
+      };
+
+      await expect(model.doGenerate(options)).rejects.toBeInstanceOf(
+        NoContentGeneratedError
+      );
+    });
+  });
+});
