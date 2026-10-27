@@ -55,6 +55,14 @@ Run this command in your project:
 grok plugin install stripe --trust
 ```
 
+### Neotask
+
+Run this command:
+
+```bash
+neotask construct install stripe
+```
+
 ### Agent Plugins
 
 Installation methods currently vary by client for the new [Agent Plugins](https://agent-plugins.org/) standard, but you can point your client to our package via:
