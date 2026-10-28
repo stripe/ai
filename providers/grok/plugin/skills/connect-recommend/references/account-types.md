@@ -127,13 +127,14 @@ const account = await stripe.v2.core.accounts.create(
     // Required: dashboard: 'express' + losses_collector: 'stripe' (Stripe-managed
     // pricing or platform-managed pricing) is only available on the current Connect
     // preview API version; this call fails on a pinned GA API version.
-    // Replace the placeholder below with the looked-up preview version string.
-    apiVersion: '<current-connect-preview-api-version>',
+    // This was the current preview version when this sample was written. Look up
+    // the latest at https://docs.stripe.com/changelog?preview=true and use it if newer.
+    apiVersion: '2026-09-30.preview',
   },
 );
 ```
 
-This Stripe-managed-pricing configuration (Express dashboard + Stripe-managed pricing + Stripe-managed negative balance liability, with direct charges) is the low-operations default for self-serve SaaS platforms and is currently in public preview, requiring the current Connect preview API version shown above. Never present this sample to the user with the `<current-connect-preview-api-version>` placeholder unchanged; if you can't determine the version, say so and point them to the preview changelog instead. For a self-serve SaaS platform that wants pricing control instead, use the platform-managed-pricing variant: same `dashboard: 'express'`, `losses_collector: 'stripe'`, and preview API version requirement, but set `fees_collector: 'application'` and configure pricing with the [Platform Pricing Tool](https://dashboard.stripe.com/settings/connect/platform_pricing).
+This Stripe-managed-pricing configuration (Express dashboard + Stripe-managed pricing + Stripe-managed negative balance liability, with direct charges) is the low-operations default for self-serve SaaS platforms and is currently in public preview, requiring the current Connect preview API version shown above. The sample's `2026-09-30.preview` was current when written; before writing code, confirm it is still the latest preview version and use the newer one if not. For a self-serve SaaS platform that wants pricing control instead, use the platform-managed-pricing variant: same `dashboard: 'express'`, `losses_collector: 'stripe'`, and preview API version requirement, but set `fees_collector: 'application'` and configure pricing with the [Platform Pricing Tool](https://dashboard.stripe.com/settings/connect/platform_pricing).
 
 **SaaS connected account for established merchants needing independent Stripe operations (direct charges, full dashboard):**
 
