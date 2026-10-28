@@ -127,9 +127,7 @@ const account = await stripe.v2.core.accounts.create(
     // Required: dashboard: 'express' + losses_collector: 'stripe' (Stripe-managed
     // pricing or platform-managed pricing) is only available on the current Connect
     // preview API version; this call fails on a pinned GA API version.
-    // Replace the placeholder below with the exact preview version string you
-    // looked up (see https://docs.stripe.com/changelog?preview=true). Never
-    // output the placeholder itself.
+    // Replace the placeholder below with the looked-up preview version string.
     apiVersion: '<current-connect-preview-api-version>',
   },
 );
