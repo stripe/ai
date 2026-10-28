@@ -99,7 +99,7 @@ const account = await stripe.v2.core.accounts.create({
 
 **Self-serve SaaS connected account (direct charges, Stripe-managed pricing — public preview):**
 
-> **Requires the current Connect preview API version.** `dashboard: 'express'` combined with `losses_collector: 'stripe'` (Stripe-managed pricing or platform-managed pricing) is only available on the current Connect preview API version, not on a pinned GA API version. Check the [preview changelog](https://docs.stripe.com/changelog.md?preview=true) for the exact version string, and pass it explicitly (for example, using the `apiVersion` request option) rather than relying on the platform’s account-level pinned version — otherwise account creation is rejected.
+> **Requires the current Connect preview API version.** `dashboard: 'express'` combined with `losses_collector: 'stripe'` (Stripe-managed pricing or platform-managed pricing) is only available on the current Connect preview API version, not on a pinned GA API version. Before writing code, look up the exact current preview version string with documentation search or the [preview changelog](https://docs.stripe.com/changelog.md?preview=true), then pass it explicitly (for example, using the `apiVersion` request option) rather than relying on the platform’s account-level pinned version — otherwise account creation is rejected.
 
 ```javascript
 const account = await stripe.v2.core.accounts.create(
@@ -126,15 +126,16 @@ const account = await stripe.v2.core.accounts.create(
   {
     // Required: dashboard: 'express' + losses_collector: 'stripe' (Stripe-managed
     // pricing or platform-managed pricing) is only available on the current Connect
-    // preview API version. Look up the exact version at
-    // https://docs.stripe.com/changelog?preview=true — this call fails on a pinned
-    // GA API version.
+    // preview API version; this call fails on a pinned GA API version.
+    // Replace the placeholder below with the exact preview version string you
+    // looked up (see https://docs.stripe.com/changelog?preview=true). Never
+    // output the placeholder itself.
     apiVersion: '<current-connect-preview-api-version>',
   },
 );
 ```
 
-This Stripe-managed-pricing configuration (Express dashboard + Stripe-managed pricing + Stripe-managed negative balance liability, with direct charges) is the low-operations default for self-serve SaaS platforms and is currently in public preview, requiring the current Connect preview API version shown above. For a self-serve SaaS platform that wants pricing control instead, use the platform-managed-pricing variant: same `dashboard: 'express'`, `losses_collector: 'stripe'`, and preview API version requirement, but set `fees_collector: 'application'` and configure pricing with the [Platform Pricing Tool](https://dashboard.stripe.com/settings/connect/platform_pricing).
+This Stripe-managed-pricing configuration (Express dashboard + Stripe-managed pricing + Stripe-managed negative balance liability, with direct charges) is the low-operations default for self-serve SaaS platforms and is currently in public preview, requiring the current Connect preview API version shown above. Never present this sample to the user with the `<current-connect-preview-api-version>` placeholder unchanged; if you can't determine the version, say so and point them to the preview changelog instead. For a self-serve SaaS platform that wants pricing control instead, use the platform-managed-pricing variant: same `dashboard: 'express'`, `losses_collector: 'stripe'`, and preview API version requirement, but set `fees_collector: 'application'` and configure pricing with the [Platform Pricing Tool](https://dashboard.stripe.com/settings/connect/platform_pricing).
 
 **SaaS connected account for established merchants needing independent Stripe operations (direct charges, full dashboard):**
 
