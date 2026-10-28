@@ -23,8 +23,12 @@ class StripeTool(BaseTool):
 
     def _run(self, **kwargs: Any) -> str:
         """Synchronous execution - wraps async call."""
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # No loop in this thread, e.g. a LangGraph or CrewAI worker
+            loop = None
+        if loop is not None:
             # If we're already in an async context, create a new loop
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as pool:
@@ -34,7 +38,7 @@ class StripeTool(BaseTool):
                 )
                 return future.result()
         else:
-            return loop.run_until_complete(
+            return asyncio.run(
                 self.run_tool(self.method, kwargs)
             )
 
