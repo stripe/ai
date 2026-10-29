@@ -1,8 +1,4 @@
 export const CLI_COMMAND_TIMEOUT_MS = 3_000;
 export const PER_TOOL_FEEDBACK_SAMPLE_RATE = 0.001;
-// Keyed by skill name without the `stripe:` prefix.
-export const PER_SKILL_FEEDBACK_SAMPLE_RATES = Object.freeze({
-  metronome: 0.01,
-});
 export const PER_TURN_FEEDBACK_SAMPLE_RATE = 0.01;
 export const TRANSCRIPT_READ_CHUNK_BYTES = 64 * 1024;
