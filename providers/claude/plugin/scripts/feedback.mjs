@@ -81,6 +81,12 @@ export function batchIncludesStripeTool(event) {
   );
 }
 
+export function stripeSkillNamesInBatch(event) {
+  return batchToolCalls(event)
+    .map((call) => getStripeSkillName(call, call.tool_input))
+    .filter((name) => name !== undefined);
+}
+
 export function batchIncludesFailedStripeTool(event) {
   return batchToolCalls(event).some(
     (call) =>

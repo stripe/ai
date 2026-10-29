@@ -334,24 +334,125 @@ test('PostToolBatch defers failed Stripe tools to PostToolUseFailure', () => {
   assert.equal(result.stdout, '');
 });
 
-test('PostToolUseFailure always asks about failed Stripe Skills', () => {
-  const result = runLifecycle(
-    'lifecycle/postToolUseFailure.mjs',
-    {
-      error: 'Skill failed to load',
-      hook_event_name: 'PostToolUseFailure',
-      tool_input: { skill: 'stripe:stripe-docs' },
-      tool_name: 'Skill',
-      tool_use_id: 'toolu_skill',
-    },
-  );
+function fixedRandomEnv(value) {
+  return {
+    NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+      `Math.random = () => ${value}`,
+    )}`,
+  };
+}
 
+function skillCall(skill, toolResponse = 'Skill loaded') {
+  return {
+    tool_input: { skill },
+    tool_name: 'Skill',
+    tool_response: toolResponse,
+    tool_use_id: `toolu_${skill.replace(/\W/g, '_')}`,
+  };
+}
+
+function runPostToolBatch(toolCalls, random) {
+  return runLifecycle(
+    'lifecycle/postToolBatch.mjs',
+    { hook_event_name: 'PostToolBatch', tool_calls: toolCalls },
+    fixedRandomEnv(random),
+  );
+}
+
+function assertBatchFeedback(result) {
   assert.ifError(result.error);
   assert.equal(result.status, 0);
   assert.deepEqual(JSON.parse(result.stdout), {
-    decision: 'block',
-    reason: TOOL_FAILURE_FEEDBACK_MESSAGE,
+    hookSpecificOutput: {
+      additionalContext: PER_BATCH_FEEDBACK_MESSAGE,
+      hookEventName: 'PostToolBatch',
+    },
   });
+}
+
+function assertNoBatchFeedback(result) {
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '');
+}
+
+test('PostToolBatch samples the Metronome skill at its override rate', () => {
+  assertBatchFeedback(runPostToolBatch([skillCall('stripe:metronome')], 0.005));
+  // The override is still probabilistic, with an exclusive upper threshold.
+  assertNoBatchFeedback(
+    runPostToolBatch([skillCall('stripe:metronome')], 0.01),
+  );
+});
+
+test('PostToolBatch keeps the default rate for other Stripe work', () => {
+  assertNoBatchFeedback(
+    runPostToolBatch([skillCall('stripe:stripe-docs')], 0.005),
+  );
+  assertNoBatchFeedback(
+    runPostToolBatch(
+      [
+        {
+          tool_input: { query: 'Checkout' },
+          tool_name: 'mcp__stripe__search_stripe_documentation',
+          tool_response: 'Search results',
+          tool_use_id: 'toolu_stripe',
+        },
+      ],
+      0.005,
+    ),
+  );
+  assertNoBatchFeedback(
+    runPostToolBatch([skillCall('example:metronome')], 0.005),
+  );
+  assertNoBatchFeedback(
+    runPostToolBatch([skillCall('stripe:toString')], 0.005),
+  );
+});
+
+test('PostToolBatch uses the highest applicable rate for mixed batches', () => {
+  assertBatchFeedback(
+    runPostToolBatch(
+      [skillCall('stripe:metronome'), skillCall('stripe:stripe-docs')],
+      0.005,
+    ),
+  );
+  assertBatchFeedback(
+    runPostToolBatch(
+      [skillCall('stripe:stripe-docs'), skillCall('stripe:metronome')],
+      0.005,
+    ),
+  );
+});
+
+test('PostToolBatch defers failed Metronome skills to PostToolUseFailure', () => {
+  assertNoBatchFeedback(
+    runPostToolBatch(
+      [skillCall('stripe:metronome', { is_error: true, error: 'failed' })],
+      0,
+    ),
+  );
+});
+
+test('PostToolUseFailure always asks about failed Stripe Skills', () => {
+  for (const skill of ['stripe:stripe-docs', 'stripe:metronome']) {
+    const result = runLifecycle(
+      'lifecycle/postToolUseFailure.mjs',
+      {
+        error: 'Skill failed to load',
+        hook_event_name: 'PostToolUseFailure',
+        tool_input: { skill },
+        tool_name: 'Skill',
+        tool_use_id: 'toolu_skill',
+      },
+    );
+
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.deepEqual(JSON.parse(result.stdout), {
+      decision: 'block',
+      reason: TOOL_FAILURE_FEEDBACK_MESSAGE,
+    });
+  }
 });
 
 test('PostToolUseFailure always asks about failed Stripe MCP tools', () => {
