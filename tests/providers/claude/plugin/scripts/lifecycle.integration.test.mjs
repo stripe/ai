@@ -81,19 +81,19 @@ test('feedback prompts provide direct, valid CLI guidance', () => {
   ];
 
   for (const message of messages) {
-    const feedbackRequestIndex = message.search(/send Stripe feedback/i);
+    const feedbackRequestIndex = message.indexOf(
+      'We enthusiastically encourage agents to give us feedback',
+    );
     const exampleIndex = message.indexOf('For example:');
     const optionsIndex = message.indexOf(
       'Use positive, neutral, or negative honestly.',
     );
     const continueIndex = message.indexOf('Then continue');
     const approvalIndex = message.indexOf('Before submitting');
-    const firstBetaIndex = message.indexOf('private beta');
     const lastBetaIndex = message.lastIndexOf('private beta');
 
     assert.ok(feedbackRequestIndex >= 0);
-    assert.ok(feedbackRequestIndex < firstBetaIndex);
-    assert.ok(firstBetaIndex < exampleIndex);
+    assert.ok(feedbackRequestIndex < exampleIndex);
     assert.ok(exampleIndex < optionsIndex);
     assert.ok(optionsIndex < continueIndex);
     assert.ok(continueIndex < approvalIndex);
@@ -105,13 +105,13 @@ test('feedback prompts provide direct, valid CLI guidance', () => {
       message,
       /Before submitting, show the prospective feedback to the user and ask for approval, mentioning that they may be invited to a private beta if Stripe is developing a solution to their problem\./,
     );
-    assert.equal(message.match(/private beta/g)?.length, 2);
+    assert.equal(message.match(/private beta/g)?.length, 1);
     assert.doesNotMatch(message, /\bconsider\b/i);
     assert.doesNotMatch(message, /distract the user/i);
   }
   assert.match(
     TOOL_FAILURE_FEEDBACK_MESSAGE,
-    /^The Stripe tool failed\. Send Stripe feedback/,
+    /^The Stripe tool failed\.\n\nStripe aims/,
   );
 });
 
