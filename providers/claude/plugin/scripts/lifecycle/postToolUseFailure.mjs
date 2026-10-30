@@ -7,11 +7,16 @@ import {
 import {
   emitHardSteer,
   getHookArguments,
+  isTelemetryDisabled,
   readHookEvent,
   runHook,
 } from '../hookHelpers.mjs';
 
 await runHook(async () => {
+  if (isTelemetryDisabled()) {
+    return;
+  }
+
   const event = await readHookEvent();
   if (isStripeToolCall(event, getHookArguments(event))) {
     emitHardSteer(TOOL_FAILURE_FEEDBACK_MESSAGE);

@@ -464,6 +464,94 @@ test('PostToolUse ignores unrelated and background Agent work', () => {
   }
 });
 
+test('DISABLE_TELEMETRY and DO_NOT_TRACK suppress skill reporting and feedback suggestions', (t) => {
+  const directory = createBinDirectory(t);
+  const usageLog = join(directory, 'usage.log');
+  writeExecutable(
+    directory,
+    'stripe',
+    `#!/bin/sh
+printf '%s\\n' "$*" >> "$STRIPE_USAGE_LOG"
+exit 0
+`,
+  );
+
+  const sharedEnv = {
+    NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+      'Math.random = () => 0',
+    )}`,
+    PATH: `${directory}${delimiter}${process.env.PATH}`,
+    STRIPE_USAGE_LOG: usageLog,
+  };
+
+  for (const telemetryEnv of [
+    { DISABLE_TELEMETRY: '1' },
+    { DISABLE_TELEMETRY: 'true' },
+    { DO_NOT_TRACK: '1' },
+    { DO_NOT_TRACK: 'true' },
+  ]) {
+    const env = { ...sharedEnv, ...telemetryEnv };
+
+    assertSilentHook(
+      runLifecycle(
+        'lifecycle/postToolUse.mjs',
+        {
+          hook_event_name: 'PostToolUse',
+          tool_input: { skill: 'stripe:stripe-docs' },
+          tool_name: 'Skill',
+        },
+        env,
+      ),
+    );
+    assert.ok(!existsSync(usageLog), 'Skill usage was reported');
+
+    assertSilentHook(
+      runLifecycle(
+        'lifecycle/postToolBatch.mjs',
+        {
+          hook_event_name: 'PostToolBatch',
+          tool_calls: [
+            {
+              tool_input: { query: 'Checkout' },
+              tool_name: 'mcp__stripe__search_stripe_documentation',
+              tool_response: 'Search results',
+              tool_use_id: 'toolu_stripe',
+            },
+          ],
+        },
+        env,
+      ),
+    );
+
+    assertSilentHook(
+      runLifecycle(
+        'lifecycle/postToolUseFailure.mjs',
+        {
+          error: 'Skill failed to load',
+          hook_event_name: 'PostToolUseFailure',
+          tool_input: { skill: 'stripe:stripe-docs' },
+          tool_name: 'Skill',
+          tool_use_id: 'toolu_skill',
+        },
+        env,
+      ),
+    );
+
+    const transcriptPath = writeTranscript(t, 'Help me integrate Stripe');
+    assertSilentHook(
+      runLifecycle(
+        'lifecycle/userPromptSubmit.mjs',
+        {
+          hook_event_name: 'UserPromptSubmit',
+          prompt: 'What should I do next?',
+          transcript_path: transcriptPath,
+        },
+        env,
+      ),
+    );
+  }
+});
+
 test('SessionStart reports missing, outdated, and current CLI states', (t) => {
   const missing = runLifecycle(
     'lifecycle/sessionStart.mjs',

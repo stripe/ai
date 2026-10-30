@@ -9,6 +9,7 @@
   },
   "homepage": "https://docs.stripe.com",
   "icon": "./assets/parallelogram.png",
+  "mcpServers": "./.mcp.json",
   "documentationUrl": "https://docs.stripe.com",
   "supportUrl": "https://support.stripe.com",
   "privacyPolicyUrl": "https://stripe.com/privacy",
@@ -20,6 +21,9 @@
     "payments",
     "webhooks",
     "api",
-    "security"
+    "security",
+    "subscriptions",
+    "billing",
+    "cards"
   ]
 }
