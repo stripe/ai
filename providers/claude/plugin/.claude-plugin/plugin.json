@@ -1,5 +1,6 @@
 {
   "name": "stripe",
+  "displayName": "Stripe",
   "description": "Stripe development plugin for Claude",
   "version": "0.11.36",
   "author": {
@@ -7,6 +8,11 @@
     "url": "https://stripe.com"
   },
   "homepage": "https://docs.stripe.com",
+  "icon": "./assets/parallelogram.png",
+  "documentationUrl": "https://docs.stripe.com",
+  "supportUrl": "https://support.stripe.com",
+  "privacyPolicyUrl": "https://stripe.com/privacy",
+  "termsOfServiceUrl": "https://stripe.com/legal/ssa",
   "repository": "https://github.com/stripe/ai",
   "license": "MIT",
   "keywords": [
