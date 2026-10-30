@@ -63,10 +63,14 @@ class StripeAgentToolkit extends McpServer {
     // This properly handles the 'required' field and type validation
     const zodShape = jsonSchemaToZodShape(remoteTool.inputSchema);
 
-    this.tool(
+    this.registerTool(
       remoteTool.name,
-      remoteTool.description || remoteTool.name,
-      zodShape,
+      {
+        title: remoteTool.title,
+        description: remoteTool.description || remoteTool.name,
+        inputSchema: zodShape,
+        annotations: remoteTool.annotations,
+      },
       async (
         args: Record<string, unknown>,
         _extra: RequestHandlerExtra<any, any>

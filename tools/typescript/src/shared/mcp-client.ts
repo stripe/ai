@@ -1,5 +1,6 @@
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import type {Tool} from '@modelcontextprotocol/sdk/types.js';
 import {AsyncInitializer} from './async-initializer';
 import {VERSION, MCP_SERVER_URL, TOOLKIT_HEADER, MCP_HEADER} from './constants';
 
@@ -14,12 +15,10 @@ export interface McpClientConfig {
 
 export interface McpTool {
   name: string;
+  title?: string;
   description?: string;
-  inputSchema?: {
-    type: string;
-    properties?: Record<string, unknown>;
-    required?: string[];
-  };
+  inputSchema?: Tool['inputSchema'];
+  annotations?: Tool['annotations'];
 }
 
 export interface McpToolCallResult {
@@ -111,7 +110,7 @@ export class StripeMcpClient {
 
       await this.client.connect(this.transport);
       const result = await this.client.listTools();
-      this.tools = result.tools as McpTool[];
+      this.tools = result.tools;
     } catch (error) {
       // Clean up on failure
       this.client = null;
