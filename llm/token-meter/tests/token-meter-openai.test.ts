@@ -3,6 +3,7 @@
  */
 
 import Stripe from 'stripe';
+import {Stream as OpenAIStream} from 'openai/streaming';
 import {createTokenMeter} from '../token-meter';
 import type {MeterConfig} from '../types';
 
@@ -227,6 +228,99 @@ describe('TokenMeter - OpenAI Provider', () => {
   });
 
   describe('Chat Completions - Streaming', () => {
+    it('does not consume the source before the returned stream is read', async () => {
+      const meter = createTokenMeter(TEST_API_KEY, config);
+      let pulls = 0;
+
+      async function* chunks() {
+        pulls += 1;
+        yield {
+          id: 'chatcmpl-lazy',
+          object: 'chat.completion.chunk',
+          created: Date.now(),
+          model: 'gpt-4o-mini',
+          choices: [],
+        };
+      }
+
+      const source = new OpenAIStream(chunks, new AbortController());
+      const wrapped = meter.trackUsageStreamOpenAI(source as any, 'cus_123');
+
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(pulls).toBe(0);
+      expect(wrapped).toBeInstanceOf(OpenAIStream);
+    });
+
+    it('closes the source when the returned stream is abandoned', async () => {
+      const meter = createTokenMeter(TEST_API_KEY, config);
+      let finalized = false;
+      let release!: () => void;
+      const blocked = new Promise<void>(resolve => {
+        release = resolve;
+      });
+
+      async function* chunks() {
+        try {
+          yield {
+            id: 'chatcmpl-cancel',
+            object: 'chat.completion.chunk',
+            created: Date.now(),
+            model: 'gpt-4o-mini',
+            choices: [],
+          };
+          await blocked;
+          yield {
+            id: 'chatcmpl-unused',
+            object: 'chat.completion.chunk',
+            created: Date.now(),
+            model: 'gpt-4o-mini',
+            choices: [],
+          };
+        } finally {
+          finalized = true;
+        }
+      }
+
+      const source = new OpenAIStream(chunks, new AbortController());
+      const wrapped = meter.trackUsageStreamOpenAI(source as any, 'cus_123');
+
+      try {
+        for await (const _chunk of wrapped) {
+          break;
+        }
+        await new Promise(resolve => setImmediate(resolve));
+
+        expect(finalized).toBe(true);
+      } finally {
+        release();
+      }
+    });
+
+    it('propagates a source error once and finalizes the source', async () => {
+      const meter = createTokenMeter(TEST_API_KEY, config);
+      const sourceError = new Error('source failed before the first chunk');
+      let finalized = false;
+
+      async function* chunks(): AsyncGenerator<any> {
+        try {
+          throw sourceError;
+        } finally {
+          finalized = true;
+        }
+      }
+
+      const source = new OpenAIStream(chunks, new AbortController());
+      const wrapped = meter.trackUsageStreamOpenAI(source as any, 'cus_123');
+      const iterator = wrapped[Symbol.asyncIterator]();
+
+      await expect(iterator.next()).rejects.toBe(sourceError);
+      await expect(iterator.next()).resolves.toEqual({done: true, value: undefined});
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(finalized).toBe(true);
+    });
+
     it('should track usage from basic streaming chat', async () => {
       const meter = createTokenMeter(TEST_API_KEY, config);
 
