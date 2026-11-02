@@ -2,7 +2,7 @@
 
 # Stripe AI
 
-This repo is the one-stop shop for building AI-powered products and businesses on top of Stripe.
+This repository contains Stripe agent plugins and skills, and benchmarks for building AI-powered products and businesses on top of Stripe.
 
 The following packages are deprecated and will receive no further updates, including security fixes:
 
