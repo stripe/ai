@@ -1,7 +1,7 @@
 {
   "name": "@stripe/agent-toolkit",
   "version": "0.9.1",
-  "homepage": "https://github.com/stripe/ai",
+  "homepage": "https://docs.stripe.com/mcp",
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf langchain ai-sdk modelcontextprotocol openai",
@@ -39,7 +39,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/stripe/ai"
+    "url": "https://github.com/stripe/ai.git",
+    "directory": "tools/typescript"
   },
   "author": "Stripe <support@stripe.com> (https://stripe.com/)",
   "contributors": [
@@ -101,5 +102,6 @@
     "README.md",
     "VERSION",
     "package.json"
-  ]
+  ],
+  "description": "Stripe Agent Toolkit (deprecated; use Stripe MCP)"
 }

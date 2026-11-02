@@ -1,7 +1,7 @@
 {
   "name": "@stripe/token-meter",
-  "version": "0.1.0",
-  "description": "Generic token metering for AI SDKs with Stripe integration",
+  "version": "0.1.1",
+  "description": "Stripe Token Meter (deprecated; see Stripe Token Billing documentation)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -66,5 +66,11 @@
     "openai": {
       "optional": true
     }
+  },
+  "homepage": "https://docs.stripe.com/billing/token-billing",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stripe/ai.git",
+    "directory": "llm/token-meter"
   }
 }

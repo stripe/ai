@@ -1,7 +1,7 @@
 [project]
 name = "stripe-agent-toolkit"
-version = "0.7.0"
-description = "Stripe Agent Toolkit"
+version = "0.7.1"
+description = "Stripe Agent Toolkit (deprecated; use Stripe MCP)"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -9,6 +9,7 @@ authors = [
 ]
 keywords = ["stripe", "api", "payments", "mcp", "agents"]
 requires-python = ">=3.11"
+classifiers = ["Development Status :: 7 - Inactive"]
 dependencies = [
     "pydantic>=2.0.0",
     "mcp>=1.0.0",
@@ -34,7 +35,7 @@ dev = [
 
 [project.urls]
 "Bug Tracker" = "https://github.com/stripe/ai/issues"
-"Source Code" = "https://github.com/stripe/ai"
+"Source Code" = "https://github.com/stripe/ai/tree/ai-packages-final/tools/python"
 "Documentation" = "https://docs.stripe.com/mcp"
 
 [tool.setuptools.packages.find]
