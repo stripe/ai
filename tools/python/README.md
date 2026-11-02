@@ -29,6 +29,7 @@ available in your [Stripe Dashboard][api-keys]. We strongly recommend using a [R
 ```python
 from stripe_agent_toolkit.openai.toolkit import create_stripe_agent_toolkit
 
+
 async def main():
     toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
     tools = toolkit.get_tools()
@@ -41,13 +42,14 @@ The toolkit works with OpenAI's Agent SDK, LangChain, and CrewAI and can be pass
 ```python
 from agents import Agent
 
+
 async def main():
     toolkit = await create_stripe_agent_toolkit(secret_key="rk_test_...")
 
     stripe_agent = Agent(
         name="Stripe Agent",
         instructions="You are an expert at integrating with Stripe",
-        tools=toolkit.get_tools()
+        tools=toolkit.get_tools(),
     )
     # ... use agent ...
     await toolkit.close()
@@ -66,11 +68,7 @@ In some cases you will want to provide values that serve as defaults when making
 ```python
 toolkit = await create_stripe_agent_toolkit(
     secret_key="rk_test_...",
-    configuration={
-        "context": {
-            "account": "acct_123"
-        }
-    }
+    configuration={"context": {"account": "acct_123"}},
 )
 ```
 
