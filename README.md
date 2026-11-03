@@ -4,9 +4,10 @@
 
 This repo is the one-stop shop for building AI-powered products and businesses on top of Stripe.
 
-The following SDKs are deprecated and will receive no further updates, including security fixes:
+The following packages are deprecated and will receive no further updates, including security fixes:
 
 * `@stripe/agent-toolkit` and `stripe-agent-toolkit`: use native MCP support with [Stripe MCP](https://docs.stripe.com/mcp).
+* `@stripe/mcp`: connect directly to the hosted [Stripe MCP server](https://docs.stripe.com/mcp) using native MCP support.
 * `@stripe/ai-sdk`: see the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing).
 * `@stripe/token-meter`: see the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing).
 

@@ -1,8 +1,8 @@
 {
   "name": "@stripe/mcp",
-  "version": "0.3.3",
-  "homepage": "https://github.com/stripe/ai/tree/main/tools/modelcontextprotocol",
-  "description": "A command line tool for setting up Stripe MCP server",
+  "version": "0.3.4",
+  "homepage": "https://docs.stripe.com/mcp",
+  "description": "Stripe local MCP proxy (deprecated; connect directly to Stripe MCP)",
   "bin": "dist/index.js",
   "files": [
     "dist/**",
@@ -30,7 +30,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/stripe/ai"
+    "url": "https://github.com/stripe/ai.git",
+    "directory": "tools/modelcontextprotocol"
   },
   "keywords": [
     "mcp",

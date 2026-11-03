@@ -2,9 +2,9 @@
 
 Stripe hosts a remote MCP server at `https://mcp.stripe.com`. Use your client or framework's native MCP support and follow the [Stripe MCP documentation](https://docs.stripe.com/mcp).
 
-For clients that need a local proxy, see [`@stripe/mcp`](modelcontextprotocol/README.md).
+The local `@stripe/mcp` proxy is deprecated. Connect directly to the hosted server using native MCP support; see the [migration guide](https://docs.stripe.com/mcp) and [final local proxy source](https://github.com/stripe/ai/tree/ai-packages-final/tools/modelcontextprotocol).
 
-## Retired Agent Toolkit
+## Retired Agent Toolkit and local MCP proxy
 
 `@stripe/agent-toolkit` and `stripe-agent-toolkit` are deprecated and will receive no further updates, including security fixes. Use native MCP support instead.
 

@@ -1,4 +1,4 @@
-# Retiring the Agent Toolkit and LLM packages
+# Retiring the Agent Toolkit, local MCP proxy, and LLM packages
 
 These packages are no longer maintained and will receive no further updates,
 including security fixes. Existing published distributions should remain available
@@ -8,13 +8,15 @@ for reproducibility; do not unpublish, delete, or yank them solely for retiremen
 | --- | --- | --- | --- |
 | `@stripe/agent-toolkit` | `0.9.1` | [Stripe MCP](https://docs.stripe.com/mcp) | [TypeScript](https://github.com/stripe/ai/tree/ai-packages-final/tools/typescript) |
 | `stripe-agent-toolkit` | `0.7.1` | [Stripe MCP](https://docs.stripe.com/mcp) | [Python](https://github.com/stripe/ai/tree/ai-packages-final/tools/python) |
+| `@stripe/mcp` | `0.3.4` | [Hosted Stripe MCP](https://docs.stripe.com/mcp) | [Local MCP proxy](https://github.com/stripe/ai/tree/ai-packages-final/tools/modelcontextprotocol) |
 | `@stripe/ai-sdk` | `0.1.4` | [Token Billing](https://docs.stripe.com/billing/token-billing) | [AI SDK](https://github.com/stripe/ai/tree/ai-packages-final/llm/ai-sdk) |
 | `@stripe/token-meter` | `0.1.1` | [Token Billing](https://docs.stripe.com/billing/token-billing) | [Token Meter](https://github.com/stripe/ai/tree/ai-packages-final/llm/token-meter) |
 
 The `ai-packages-final` tag is created manually in step 2. Its links will resolve
 after that step. Keep it permanently pointed at the reviewed final release commit.
-`@stripe/mcp`, plugins, skills, and benchmarks remain maintained separately. This
-change does not shut down `mcp.stripe.com` or `llm.stripe.com`.
+Plugins, skills, and benchmarks remain maintained separately. The hosted Stripe
+MCP server is maintained separately from this retired local proxy. This change
+does not shut down `mcp.stripe.com` or `llm.stripe.com`.
 
 ## 1. Review and merge the final release preparation PR
 
@@ -25,7 +27,10 @@ changes since the published release rather than assuming identical package conte
 
 For native MCP migration, preserve connected-account context and least-privilege
 permissions, and verify discovery plus a read-only call in a sandbox. MCP replaces
-the toolkit adapters; it does not replace the LLM provider or metering packages.
+the toolkit adapters and the local proxy; it does not replace the LLM provider
+or metering packages. For local proxy users, replace `npx @stripe/mcp`, Docker,
+or desktop-extension configuration with a direct hosted connection. Remove the
+old local configuration only after that connection works.
 
 For Token Billing migration, preserve customer attribution and required usage
 dimensions. Verify the replacement's usage reporting before switching over. Avoid
@@ -44,12 +49,12 @@ commit (which may differ from the branch commit after a squash merge). Set
 ```bash
 git fetch origin main
 FINAL_SHA='<reviewed merged preparation commit SHA>'
-git tag -a ai-packages-final "$FINAL_SHA" -m 'Final source for retired Agent Toolkit and LLM packages'
+git tag -a ai-packages-final "$FINAL_SHA" -m 'Final source for retired Agent Toolkit, local MCP proxy, and LLM packages'
 git push origin refs/tags/ai-packages-final
 ```
 
 Protect `ai-packages-final` against updates and deletion with a GitHub tag ruleset.
-Verify the four source links above. Optionally create a GitHub release explaining
+Verify the five source links above. Optionally create a GitHub release explaining
 the retirement. Record the full SHA so closure notices and npm messages can link
 directly to `https://github.com/stripe/ai/tree/<SHA>/<package-directory>`.
 
@@ -59,8 +64,9 @@ settle those changes before creating the tag.
 ## 3. Publish and verify the final distributions
 
 Use the existing manual GitHub Actions workflows, selecting `ai-packages-final`
-as the ref. Run NPM Release once for each of `./tools/typescript`, `./llm/ai-sdk`,
-and `./llm/token-meter`. Run Python Release once for `stripe-agent-toolkit`.
+as the ref. Run NPM Release once for each of `./tools/typescript`,
+`./tools/modelcontextprotocol`, `./llm/ai-sdk`, and `./llm/token-meter`. Run Python
+Release once for `stripe-agent-toolkit`.
 These actions publish packages and require the appropriate maintainer access;
 they are not performed by merging either PR.
 
@@ -78,8 +84,8 @@ the build frontend explicitly. Inspect each successful release's files and rende
 README/description, migration links, and source links on npm or PyPI.
 
 Do not replace the packages with empty implementations or introduce intentional
-runtime failures. Both LLM packages' README changes require a new npm release to
-appear on their package pages. PyPI description and classifier changes likewise
+runtime failures. Each npm package's README changes require a new release to
+appear on its package page. PyPI description and classifier changes likewise
 require a release.
 
 ## 4. Deprecate npm and archive PyPI
@@ -91,6 +97,7 @@ so the shell does not expand `*`.
 ```bash
 FINAL_SHA='<full SHA of ai-packages-final>'
 npm deprecate '@stripe/agent-toolkit@*' "No longer maintained; no further updates, including security fixes. Use Stripe MCP: https://docs.stripe.com/mcp. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/tools/typescript" --registry=https://registry.npmjs.org/
+npm deprecate '@stripe/mcp@*' "No longer maintained; no further updates, including security fixes. Connect directly to hosted Stripe MCP: https://docs.stripe.com/mcp. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/tools/modelcontextprotocol" --registry=https://registry.npmjs.org/
 npm deprecate '@stripe/ai-sdk@*' "No longer maintained; no further updates, including security fixes. See Stripe Token Billing: https://docs.stripe.com/billing/token-billing. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/llm/ai-sdk" --registry=https://registry.npmjs.org/
 npm deprecate '@stripe/token-meter@*' "No longer maintained; no further updates, including security fixes. See Stripe Token Billing: https://docs.stripe.com/billing/token-billing. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/llm/token-meter" --registry=https://registry.npmjs.org/
 ```
@@ -99,9 +106,11 @@ Verify the latest version and all version notices:
 
 ```bash
 npm view '@stripe/agent-toolkit@latest' version deprecated
+npm view '@stripe/mcp@latest' version deprecated
 npm view '@stripe/ai-sdk@latest' version deprecated
 npm view '@stripe/token-meter@latest' version deprecated
 npm view '@stripe/agent-toolkit@*' version deprecated --json
+npm view '@stripe/mcp@*' version deprecated --json
 npm view '@stripe/ai-sdk@*' version deprecated --json
 npm view '@stripe/token-meter@*' version deprecated --json
 ```
@@ -117,9 +126,11 @@ References: [npm deprecation](https://docs.npmjs.com/cli/v11/commands/npm-deprec
 
 ## 5. Merge the deletion PR and retire publishing access
 
-Only proceed after verifying all four registry notices and the final source tag.
-The deletion PR removes `tools/typescript/`, `tools/python/`, and `llm/`, removes
-their CI/release entries, and retains the retirement notices and this checklist.
+Only proceed after verifying all five registry notices and the final source tag.
+The deletion PR removes `tools/typescript/`, `tools/python/`,
+`tools/modelcontextprotocol/`, and all of `llm/`. It deletes the npm and Python
+release workflows, the package-only CI workflow, and the package Dependabot
+configuration. It retains the retirement notices and this checklist.
 
 The PR is initially based on the preparation branch. After the first PR merges,
 retarget it to `main`. If the first PR was squash-merged, rebase only the deletion
@@ -128,12 +139,19 @@ only the removal stage. Review the resulting diff before merging.
 
 Remove obsolete required CI checks from branch protection. Remove the retired
 packages' npm trusted publishers, PyPI trusted publishers (including any pending
-publishers), and package-specific tokens. Preserve shared credentials needed by
-`@stripe/mcp` or other packages and retain Stripe's ownership of the retired names.
+publishers), and package-specific tokens for all five packages. Preserve any shared
+credentials used outside this retirement and retain Stripe's ownership of the
+retired names.
 Removing workflows from `main` alone does not disable publishing from historical
-refs. Run the retained MCP package checks and remaining repository CI.
+refs. Run the remaining plugin/helper tests and repository CI.
 
-## 6. Close toolkit and LLM issues and PRs
+Review any independently published Docker images and desktop extensions for the
+local proxy and add hosted-MCP migration notices or delist their local-proxy
+listings as appropriate. The source includes a Dockerfile and desktop-extension
+manifest; their external listings are not changed by either PR. Preserve listings
+that connect directly to the maintained hosted MCP server.
+
+## 6. Close toolkit, local MCP proxy, and LLM issues and PRs
 
 Recheck state and scope before closing anything. Keep the history and add a closure
 comment with the appropriate migration and permanent source links. Do not mark
@@ -147,10 +165,13 @@ LLM PR candidates: #519, #509, #500, #464, #433, #380, and #340.
 LLM issue candidates: #592, #432, and #296. PR #342 now falls entirely within
 the combined retirement scope.
 
-Review #584 and #583 separately: their local MCP metadata report points to toolkit
-files, but the retained MCP proxy may need the same fix. Review the permissions
-report #508 explicitly and record that retirement does not repair installed copies.
-Other server authentication, protocol, and tool-behavior reports may remain relevant.
+Local MCP proxy PR candidates: #542, #480, #445, and #379. Review #584 and
+#583 for closure now that the toolkit MCP adapter and local npm proxy are both
+retired. Review #455 and #290 for applicability to the local proxy.
+
+Review the permissions report #508 explicitly and record that retirement does not
+repair installed copies. Reports affecting the hosted MCP server, including OAuth
+and hosted tool behavior, may remain relevant and should be routed to its owners.
 
 Suggested comment, replacing the bracketed links before posting:
 
