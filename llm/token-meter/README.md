@@ -60,7 +60,7 @@ const meter = createTokenMeter(process.env.STRIPE_API_KEY);
 
 // Non-streaming
 const response = await anthropic.messages.create({
-  model: 'claude-3-5-sonnet-20241022',
+  model: 'claude-sonnet-5-5',
   max_tokens: 1024,
   messages: [{ role: 'user', content: 'Hello!' }],
 });
@@ -179,7 +179,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const meter = createTokenMeter(process.env.STRIPE_API_KEY);
 
 const stream = await anthropic.messages.create({
-  model: 'claude-3-5-sonnet-20241022',
+  model: 'claude-sonnet-5-5',
   max_tokens: 1024,
   messages: [{ role: 'user', content: 'Count to 5' }],
   stream: true,

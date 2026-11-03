@@ -28,7 +28,7 @@ const meter = createTokenMeter(STRIPE_API_KEY);
 // Sample 1: Basic Message Completion (non-streaming)
 async function sampleBasicMessage() {
   const response = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'claude-sonnet-5-5',
     max_tokens: 20,
     messages: [
       {role: 'user', content: 'Say "Hello, World!" and nothing else.'},
@@ -45,7 +45,7 @@ async function sampleBasicMessage() {
 // Sample 2: Streaming Message Completion
 async function sampleStreamingMessage() {
   const stream = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'claude-sonnet-5-5',
     max_tokens: 50,
     messages: [
       {role: 'user', content: 'Count from 1 to 5, one number per line.'},
@@ -97,7 +97,7 @@ async function sampleMessageWithTools() {
   ];
 
   const response = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'claude-sonnet-5-5',
     max_tokens: 100,
     messages: [{role: 'user', content: 'What is the weather in New York?'}],
     tools,
@@ -113,7 +113,7 @@ async function sampleMessageWithTools() {
 // Sample 4: Message with System Prompt
 async function sampleMessageWithSystem() {
   const response = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'claude-sonnet-5-5',
     max_tokens: 50,
     system: 'You are a helpful assistant that speaks like a pirate.',
     messages: [{role: 'user', content: 'Tell me about Paris.'}],
@@ -129,7 +129,7 @@ async function sampleMessageWithSystem() {
 // Sample 5: Multi-turn Conversation
 async function sampleConversation() {
   const response = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'claude-sonnet-5-5',
     max_tokens: 50,
     messages: [
       {role: 'user', content: 'What is the capital of France?'},
