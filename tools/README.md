@@ -8,4 +8,6 @@ The local `@stripe/mcp` proxy is deprecated. Connect directly to the hosted serv
 
 `@stripe/agent-toolkit` and `stripe-agent-toolkit` are deprecated and will receive no further updates, including security fixes. Use native MCP support instead.
 
+Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
 The [final TypeScript source](https://github.com/stripe/ai/tree/ai-packages-final/tools/typescript) and [final Python source](https://github.com/stripe/ai/tree/ai-packages-final/tools/python) remain available for reference. See the [retirement steps](../docs/package-retirement.md) for publication and removal sequencing.

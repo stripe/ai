@@ -4,6 +4,8 @@ These packages are no longer maintained and will receive no further updates,
 including security fixes. Existing published distributions should remain available
 for reproducibility; do not unpublish, delete, or yank them solely for retirement.
 
+Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
 | Package | Final version prepared here | Migration | Final source |
 | --- | --- | --- | --- |
 | `@stripe/agent-toolkit` | `0.9.1` | [Stripe MCP](https://docs.stripe.com/mcp) | [TypeScript](https://github.com/stripe/ai/tree/ai-packages-final/tools/typescript) |
@@ -88,10 +90,10 @@ so the shell does not expand `*`.
 
 ```bash
 FINAL_SHA='<full SHA of ai-packages-final>'
-npm deprecate '@stripe/agent-toolkit@*' "No longer maintained; no further updates, including security fixes. Use Stripe MCP: https://docs.stripe.com/mcp. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/tools/typescript" --registry=https://registry.npmjs.org/
-npm deprecate '@stripe/mcp@*' "No longer maintained; no further updates, including security fixes. Connect directly to hosted Stripe MCP: https://docs.stripe.com/mcp. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/tools/modelcontextprotocol" --registry=https://registry.npmjs.org/
-npm deprecate '@stripe/ai-sdk@*' "No longer maintained; no further updates, including security fixes. See Stripe Token Billing: https://docs.stripe.com/billing/token-billing. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/llm/ai-sdk" --registry=https://registry.npmjs.org/
-npm deprecate '@stripe/token-meter@*' "No longer maintained; no further updates, including security fixes. See Stripe Token Billing: https://docs.stripe.com/billing/token-billing. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/llm/token-meter" --registry=https://registry.npmjs.org/
+npm deprecate '@stripe/agent-toolkit@*' "No longer maintained; no further updates, including security fixes. Migration questions: token-billing-team@stripe.com. Use Stripe MCP: https://docs.stripe.com/mcp. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/tools/typescript" --registry=https://registry.npmjs.org/
+npm deprecate '@stripe/mcp@*' "No longer maintained; no further updates, including security fixes. Migration questions: token-billing-team@stripe.com. Connect directly to hosted Stripe MCP: https://docs.stripe.com/mcp. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/tools/modelcontextprotocol" --registry=https://registry.npmjs.org/
+npm deprecate '@stripe/ai-sdk@*' "No longer maintained; no further updates, including security fixes. Migration questions: token-billing-team@stripe.com. See Stripe Token Billing: https://docs.stripe.com/billing/token-billing. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/llm/ai-sdk" --registry=https://registry.npmjs.org/
+npm deprecate '@stripe/token-meter@*' "No longer maintained; no further updates, including security fixes. Migration questions: token-billing-team@stripe.com. See Stripe Token Billing: https://docs.stripe.com/billing/token-billing. Final source: https://github.com/stripe/ai/tree/${FINAL_SHA}/llm/token-meter" --registry=https://registry.npmjs.org/
 ```
 
 Verify the latest version and all version notices:
@@ -169,7 +171,8 @@ Suggested comment, replacing the bracketed links before posting:
 
 > Thanks for the report/contribution. This package has been retired and will receive
 > no further updates, including security fixes. See [migration documentation] and
-> [final source]. Closing because this work targets the retired package.
+> [final source]. Existing users with migration questions can contact
+> token-billing-team@stripe.com. Closing because this work targets the retired package.
 
 Record the final source SHA, registry notices, removal PR, publishing-access cleanup,
 and disposition of relevant reports in the internal retirement/security tracking.

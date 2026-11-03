@@ -11,6 +11,8 @@ The following packages are deprecated and will receive no further updates, inclu
 * `@stripe/ai-sdk`: see the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing).
 * `@stripe/token-meter`: see the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing).
 
+Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
 [Final package source](https://github.com/stripe/ai/tree/ai-packages-final) and [retirement steps](docs/package-retirement.md) are available for reference.
 
 ## Model Context Protocol (MCP)
