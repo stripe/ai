@@ -553,6 +553,11 @@ exit 0
   }
 });
 
+// By default, Windows searches cwd before PATH for a bare executable name.
+// A repository-local stripe.exe or npm.exe could therefore execute attacker
+// code automatically when a hook runs, even with a trusted executable on PATH.
+// Running subprocesses from the plugin root avoids that implicit project lookup.
+// An explicit "." in PATH reproduces this lookup on POSIX for the regression.
 test('CLI hooks ignore executables in the project working directory', (t) => {
   const projectDirectory = createBinDirectory(t);
   const trustedDirectory = createBinDirectory(t);
@@ -583,7 +588,6 @@ fi
   }
 
   const event = { hook_event_name: 'SessionStart', source: 'startup' };
-  // An explicit "." reproduces current-directory lookup on POSIX too.
   const env = {
     PATH: `.${delimiter}${trustedDirectory}`,
     STRIPE_API_KEY: '',
