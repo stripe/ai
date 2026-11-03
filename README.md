@@ -13,7 +13,7 @@ The following packages are deprecated and will receive no further updates, inclu
 
 Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
 
-[Final package source](https://github.com/stripe/ai/tree/ai-packages-final) and [retirement steps](docs/package-retirement.md) are available for reference.
+[Final package source](https://github.com/stripe/ai/tree/ai-packages-final) remains available for reference.
 
 ## Model Context Protocol (MCP)
 
