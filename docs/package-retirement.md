@@ -70,14 +70,6 @@ Release once for `stripe-agent-toolkit`.
 These actions publish packages and require the appropriate maintainer access;
 they are not performed by merging either PR.
 
-Before publishing `@stripe/ai-sdk`, resolve the existing streaming-test failures:
-`should handle errors mid-stream` times out in both
-`provider/tests/stripe-language-model.test.ts` and
-`provider/tests/stripe-language-model-v3.test.ts` on Node 24. These failures also
-reproduce on unchanged `main`; the final documentation release does not fix or
-skip them. The release workflow runs the tests and will block publication until
-they pass. Complete any necessary fix before creating the final tag in step 2.
-
 The workflows build and test before publishing. The Python release now uses
 pytest with pytest-asyncio so its async tests are actually collected, and includes
 the build frontend explicitly. Inspect each successful release's files and rendered

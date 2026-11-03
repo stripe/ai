@@ -5,6 +5,12 @@
 import {StripeLanguageModelV3} from '../stripe-language-model-v3';
 import {StripeProviderAccessError} from '../stripe-language-model';
 import type {LanguageModelV3CallOptions} from '@ai-sdk/provider';
+import {postJsonToApi} from '@ai-sdk/provider-utils';
+
+jest.mock('@ai-sdk/provider-utils', () => {
+  const actual = jest.requireActual('@ai-sdk/provider-utils');
+  return {...actual, postJsonToApi: jest.fn(actual.postJsonToApi)};
+});
 
 describe('StripeLanguageModelV3', () => {
   let model: StripeLanguageModelV3;
@@ -549,6 +555,7 @@ describe('StripeLanguageModelV3', () => {
 
   describe('streaming error conditions', () => {
     it('should handle errors mid-stream', async () => {
+      const streamError = new Error('Stream error occurred');
       const mockStream = new ReadableStream({
         start(controller) {
           controller.enqueue({
@@ -565,38 +572,32 @@ describe('StripeLanguageModelV3', () => {
 
           controller.enqueue({
             success: false,
-            error: new Error('Stream error occurred'),
+            error: streamError,
           });
 
           controller.close();
         },
       });
 
-      jest.mock('@ai-sdk/provider-utils', () => ({
-        postJsonToApi: jest.fn().mockResolvedValue({value: mockStream}),
-      }));
+      jest.mocked(postJsonToApi).mockResolvedValueOnce({value: mockStream});
 
       const options: LanguageModelV3CallOptions = {
         prompt: [{role: 'user', content: [{type: 'text', text: 'Hi'}]}],
       };
 
-      try {
-        const result = await model.doStream(options);
-        const parts: any[] = [];
+      const result = await model.doStream(options);
+      const parts: any[] = [];
 
-        for await (const part of result.stream) {
-          parts.push(part);
-        }
-
-        const textDeltas = parts.filter((p) => p.type === 'text-delta');
-        const errors = parts.filter((p) => p.type === 'error');
-
-        expect(textDeltas.length).toBeGreaterThan(0);
-        expect(errors.length).toBeGreaterThan(0);
-        expect(errors[0].error).toBeDefined();
-      } catch (error) {
-        expect(error).toBeDefined();
+      for await (const part of result.stream) {
+        parts.push(part);
       }
+
+      expect(parts.filter((p) => p.type === 'text-delta')).toEqual([
+        expect.objectContaining({delta: 'Hello '}),
+      ]);
+      expect(parts.filter((p) => p.type === 'error')).toEqual([
+        {type: 'error', error: streamError},
+      ]);
     });
 
     it('should handle abort signal during streaming', async () => {
