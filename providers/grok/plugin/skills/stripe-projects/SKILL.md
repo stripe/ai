@@ -16,8 +16,7 @@ description: >
 allowed-tools:
   - Bash(stripe *)
   - Bash(which stripe)
-  - Bash(brew install stripe/stripe-cli/stripe)
-  - Bash(brew upgrade stripe/stripe-cli/stripe)
+  - Bash(curl -fsSL https://cli.stripe.com/install.sh | sh)
   - Skill
   - Read
 
@@ -37,10 +36,13 @@ Check if the Stripe CLI is available:
 which stripe && stripe --version
 ```
 
-If the CLI is missing or its output says a newer version is required, install or upgrade to the current release:
+If the CLI is missing or its output says a newer version is required, install or upgrade to the current release on macOS or Linux with the install script:
 
-- **macOS (Homebrew):** `brew install stripe/stripe-cli/stripe` (or `brew upgrade stripe/stripe-cli/stripe`)
-- **Other platforms:** Direct the user to https://docs.stripe.com/stripe-cli/install for up-to-date instructions.
+```bash
+curl -fsSL https://cli.stripe.com/install.sh | sh
+```
+
+Follow the installer’s PATH instructions, then run `stripe --version` to verify that the CLI is available before continuing. For other platforms, follow the [installation](https://docs.stripe.com/cli/install) or [upgrade](https://docs.stripe.com/cli/upgrade) instructions.
 
 Then ensure the Projects plugin is installed:
 
