@@ -1,5 +1,9 @@
 # Metering utilities for Vercel AI SDK
 
+> **Deprecated:** This package is no longer maintained and will receive no further updates, including security fixes. See the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing) for integration guidance. [Final source](https://github.com/stripe/ai/tree/ai-packages-final/llm/ai-sdk/meter). Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+The documentation below is retained for historical reference.
+
 The Stripe AI SDK Meter enables automatic token usage tracking and billing for any Vercel AI SDK language model. This wrapper intercepts AI SDK calls and automatically reports usage to Stripe meter events, making it easy to bill customers for their AI consumption.
 
 > This is part of the [`@stripe/ai-sdk`](../README.md) package. See the main README for an overview of all available tools.

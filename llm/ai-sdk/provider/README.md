@@ -1,5 +1,9 @@
 # Stripe AI SDK Provider
 
+> **Deprecated:** This package is no longer maintained and will receive no further updates, including security fixes. See the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing) for integration guidance. [Final source](https://github.com/stripe/ai/tree/ai-packages-final/llm/ai-sdk/provider). Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+The documentation below is retained for historical reference.
+
 The Stripe AI SDK Provider enables seamless integration with leading AI models through Stripe's unified LLM proxy at `llm.stripe.com`. This custom provider for the Vercel AI SDK automatically tracks token usage and integrates with Stripe's billing system, making it easy to monetize AI features in your applications.
 
 > **Note:** This is part of the [`@stripe/ai-sdk`](../README.md) package. See the main README for an overview of all available tools.

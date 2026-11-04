@@ -1,5 +1,9 @@
 # Stripe AI SDK - Provider and metering utilities for Vercel AI SDK
 
+> **Deprecated:** This package is no longer maintained and will receive no further updates, including security fixes. See the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing) for integration guidance. [Final source](https://github.com/stripe/ai/tree/ai-packages-final/llm/ai-sdk). Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+The documentation below is retained for historical reference.
+
 The Stripe AI SDK provides comprehensive tools for integrating AI models with Stripe's billing infrastructure. This unified package includes both a custom Vercel AI SDK provider and metering utilities for tracking token usage across any AI SDK provider.
 
 ## Private preview access required

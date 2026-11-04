@@ -1,5 +1,9 @@
 # Stripe Token Meter
 
+> **Deprecated:** This package is no longer maintained and will receive no further updates, including security fixes. See the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing) for integration guidance. [Final source](https://github.com/stripe/ai/tree/ai-packages-final/llm/token-meter). Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+The documentation below is retained for historical reference.
+
 Generic token metering for native AI SDKs with automatic Stripe billing integration. Track and bill token usage from OpenAI, Anthropic, and Google Gemini without any framework dependencies.
 
 ## Private preview access required

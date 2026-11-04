@@ -2,12 +2,18 @@
 
 # Stripe AI
 
-This repo is the one-stop shop for building AI-powered products and businesses on top of Stripe. 
+This repo is the one-stop shop for building AI-powered products and businesses on top of Stripe.
 
-It contains a collection of SDKs to help you integrate Stripe with LLMs and agent frameworks, including: 
+The following packages are deprecated and will receive no further updates, including security fixes:
 
-* [`@stripe/ai-sdk`](/llm/ai-sdk) - for integrating Stripe's billing infrastructure with Vercel's [`ai`](https://npm.im/ai) and [`@ai-sdk`](https://ai-sdk.dev/) libraries.
-* [`@stripe/token-meter`](/llm/token-meter) - for integrating Stripe's billing infrastructure with native SDKs from OpenAI, Anthropic, and Google Gemini, without any framework dependencies.
+* `@stripe/agent-toolkit` and `stripe-agent-toolkit`: use native MCP support with [Stripe MCP](https://docs.stripe.com/mcp).
+* `@stripe/mcp`: connect directly to the hosted [Stripe MCP server](https://docs.stripe.com/mcp) using native MCP support.
+* `@stripe/ai-sdk`: see the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing).
+* `@stripe/token-meter`: see the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing).
+
+Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+[Final package source](https://github.com/stripe/ai/tree/ai-packages-final) remains available for reference.
 
 ## Model Context Protocol (MCP)
 

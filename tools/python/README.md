@@ -1,5 +1,9 @@
 # Stripe Agent Toolkit - Python
 
+> **Deprecated:** This package is no longer maintained and will receive no further updates, including security fixes. Use your client or framework’s native MCP support to connect to Stripe at `https://mcp.stripe.com`. See the [Stripe MCP documentation](https://docs.stripe.com/mcp). [Final source](https://github.com/stripe/ai/tree/ai-packages-final/tools/python). Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+The documentation below is retained for historical reference.
+
 The Stripe Agent Toolkit library enables popular agent frameworks including OpenAI's Agent SDK, LangChain, and CrewAI to integrate with Stripe APIs through function calling. The
 library is not exhaustive of the entire Stripe API. It is built directly on top
 of the [Stripe Python SDK][python-sdk].

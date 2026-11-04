@@ -1,5 +1,9 @@
 # Stripe Model Context Protocol
 
+> **Deprecated:** The `@stripe/mcp` package is no longer maintained and will receive no further updates, including security fixes. Connect your client directly to the hosted server at `https://mcp.stripe.com` using native MCP support. See the [Stripe MCP documentation](https://docs.stripe.com/mcp) and [final source](https://github.com/stripe/ai/tree/ai-packages-final/tools/modelcontextprotocol). Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+The documentation below is retained for historical reference. The hosted Stripe MCP server remains available; this retirement applies to the local npm proxy and its source in this repository.
+
 The Stripe [Model Context Protocol](https://modelcontextprotocol.com/) server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.
 
 ## Setup

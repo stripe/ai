@@ -1,5 +1,9 @@
 # Stripe Agent Toolkit - TypeScript
 
+> **Deprecated:** This package is no longer maintained and will receive no further updates, including security fixes. Use your client or framework’s native MCP support to connect to Stripe at `https://mcp.stripe.com`. See the [Stripe MCP documentation](https://docs.stripe.com/mcp). [Final source](https://github.com/stripe/ai/tree/ai-packages-final/tools/typescript). Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+The documentation below is retained for historical reference.
+
 The Stripe Agent Toolkit enables popular agent frameworks including LangChain and Vercel's AI SDK to integrate with Stripe APIs through function calling.
 
 ## Installation

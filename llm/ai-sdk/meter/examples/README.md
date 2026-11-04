@@ -1,5 +1,9 @@
 # AI SDK Billing Wrapper Examples
 
+> **Deprecated:** This package is no longer maintained and will receive no further updates, including security fixes. See the current [Stripe Token Billing documentation](https://docs.stripe.com/billing/token-billing) for integration guidance. [Final source](https://github.com/stripe/ai/tree/ai-packages-final/llm/ai-sdk/meter/examples). Existing users with migration questions can contact [token-billing-team@stripe.com](mailto:token-billing-team@stripe.com).
+
+The documentation below is retained for historical reference.
+
 This directory contains examples demonstrating how to use the AI SDK Billing Wrapper to automatically track and report token usage to Stripe for billing purposes when using the Vercel AI SDK.
 
 ## Overview
