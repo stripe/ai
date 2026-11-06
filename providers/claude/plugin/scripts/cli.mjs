@@ -11,6 +11,8 @@ export const CLI_OUTDATED_MESSAGE =
   'A newer Stripe CLI version is available. Updating with `npm i -g @stripe/cli@latest` can provide the latest Stripe integration guidance.';
 
 const commandOptions = {
+  cwd: new URL('../', import.meta.url),
+  shell: false,
   encoding: 'utf8',
   stdio: ['ignore', 'pipe', 'pipe'],
   timeout: CLI_COMMAND_TIMEOUT_MS,

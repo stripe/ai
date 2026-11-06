@@ -48,8 +48,9 @@ function writeTranscript(t, prompt) {
   ]);
 }
 
-function runLifecycle(script, event, env = {}) {
+function runLifecycle(script, event, env = {}, cwd) {
   return spawnSync(process.execPath, [join(SCRIPTS_ROOT, script)], {
+    cwd,
     encoding: 'utf8',
     env: {
       ...process.env,
@@ -550,6 +551,87 @@ exit 0
       ),
     );
   }
+});
+
+// By default, Windows searches cwd before PATH for a bare executable name.
+// A repository-local stripe.exe or npm.exe could therefore execute attacker
+// code automatically when a hook runs, even with a trusted executable on PATH.
+// Running subprocesses from the plugin root avoids that implicit project lookup.
+// An explicit "." in PATH reproduces this lookup on POSIX for the regression.
+test('CLI hooks ignore executables in the project working directory', (t) => {
+  const projectDirectory = createBinDirectory(t);
+  const trustedDirectory = createBinDirectory(t);
+  const untrustedLog = join(projectDirectory, 'untrusted.log');
+  const trustedLog = join(trustedDirectory, 'trusted.log');
+
+  for (const command of ['stripe', 'npm']) {
+    writeExecutable(
+      projectDirectory,
+      command,
+      `#!/bin/sh
+echo "$*" >> "$STRIPE_UNTRUSTED_LOG"
+exit 1
+`,
+    );
+    writeExecutable(
+      trustedDirectory,
+      command,
+      `#!/bin/sh
+pwd >> "$STRIPE_TRUSTED_LOG"
+if [ "$1" = "whoami" ]; then
+  echo '{"authenticated":true}'
+else
+  echo '1.0.0'
+fi
+`,
+    );
+  }
+
+  const event = { hook_event_name: 'SessionStart', source: 'startup' };
+  const env = {
+    PATH: `.${delimiter}${trustedDirectory}`,
+    STRIPE_API_KEY: '',
+    STRIPE_UNTRUSTED_LOG: untrustedLog,
+    STRIPE_TRUSTED_LOG: trustedLog,
+  };
+  const installed = runLifecycle(
+    'lifecycle/sessionStart.mjs',
+    event,
+    env,
+    projectDirectory,
+  );
+  assert.ifError(installed.error);
+  assert.equal(installed.status, 0);
+  assert.ok(!existsSync(untrustedLog), 'A project executable was invoked');
+  assert.equal(installed.stdout, '');
+  assertSilentHook(
+    runLifecycle(
+      'lifecycle/postToolUse.mjs',
+      { tool_name: 'Skill', tool_input: { skill: 'stripe:stripe-docs' } },
+      env,
+      projectDirectory,
+    ),
+  );
+  assert.ok(!existsSync(untrustedLog), 'A project executable was invoked');
+  const pluginRoot = join(SCRIPTS_ROOT, '..');
+  assert.deepEqual(
+    readFileSync(trustedLog, 'utf8').trim().split(/\r?\n/),
+    [pluginRoot, pluginRoot, pluginRoot, pluginRoot],
+  );
+
+  const missing = runLifecycle(
+    'lifecycle/sessionStart.mjs',
+    event,
+    { ...env, PATH: '.' },
+    projectDirectory,
+  );
+  assert.ifError(missing.error);
+  assert.equal(missing.status, 0);
+  assert.ok(!existsSync(untrustedLog), 'A project executable was invoked');
+  assert.equal(
+    JSON.parse(missing.stdout).hookSpecificOutput.additionalContext,
+    CLI_NOT_INSTALLED_MESSAGE,
+  );
 });
 
 test('SessionStart reports missing, outdated, and current CLI states', (t) => {
