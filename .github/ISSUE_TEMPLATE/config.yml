@@ -3,6 +3,8 @@ contact_links:
   - name: Stripe support
     url: https://support.stripe.com/
     about: |
-      Please only file issues here that you believe represent actual bugs or feature requests for the Stripe Agent Tools library.
+      Please only file issues here that you believe represent actual bugs or feature requests for the maintained components in this repository.
+
+      The Agent Toolkit, local MCP proxy, and LLM packages have been retired. For migration guidance, see https://docs.stripe.com/mcp or https://docs.stripe.com/billing/token-billing. Existing users with migration questions can contact token-billing-team@stripe.com.
 
       If you're having general trouble with your Stripe integration, please reach out to support.
