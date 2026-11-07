@@ -5,7 +5,7 @@
 Follow this exact sequence for every new app. Do NOT skip or reorder steps.
 
 ```
-1. stripe plugin install apps && stripe plugin install generate   ← one-time CLI setup
+1. stripe plugin install apps                                   ← one-time CLI setup
 2. stripe generate app <name> && cd <name>                       ← scaffold (NOT `stripe apps create`)
 3. pnpm install                                                   ← install deps
 4. [modify scaffolded files + create missing ones]               ← implement (only add what scaffold doesn't provide)
@@ -28,19 +28,15 @@ Follow this sequence exactly. Deviating from it is the #1 source of confusion wh
 
 ### Step 1 — Prerequisites (one-time setup)
 
-Install the Stripe CLI, then install the required plugins:
+Install the Stripe CLI, then install the Apps plugin:
 
 ```bash
-# Install the apps plugin (creates and manages apps)
 stripe plugin install apps
-
-# Install the generate plugin (scaffolds new apps)
-stripe plugin install generate
 ```
 
-**Plain-language:** “These are tools that let the Stripe CLI create and manage apps. You only need to do this once.”
+**Plain-language:** “This tool lets the Stripe CLI create and manage apps. You only need to do this once.”
 
-Verify your CLI version is 1.25.0 or newer:
+Verify your CLI version is 1.52.0 or newer:
 
 ```bash
 stripe version

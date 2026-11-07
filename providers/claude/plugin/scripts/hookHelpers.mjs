@@ -29,6 +29,14 @@ export function sample(rate, random = Math.random) {
   return random() < rate;
 }
 
+function isTruthyFlag(value) {
+  return value === '1' || /^true$/i.test(value ?? '');
+}
+
+export function isTelemetryDisabled(env = process.env) {
+  return isTruthyFlag(env.DISABLE_TELEMETRY) || isTruthyFlag(env.DO_NOT_TRACK);
+}
+
 export function emitSoftContext(hookEventName, message) {
   process.stdout.write(
     JSON.stringify({

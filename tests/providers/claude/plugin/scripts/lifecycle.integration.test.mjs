@@ -48,8 +48,9 @@ function writeTranscript(t, prompt) {
   ]);
 }
 
-function runLifecycle(script, event, env = {}) {
+function runLifecycle(script, event, env = {}, cwd) {
   return spawnSync(process.execPath, [join(SCRIPTS_ROOT, script)], {
+    cwd,
     encoding: 'utf8',
     env: {
       ...process.env,
@@ -81,19 +82,19 @@ test('feedback prompts provide direct, valid CLI guidance', () => {
   ];
 
   for (const message of messages) {
-    const feedbackRequestIndex = message.search(/send Stripe feedback/i);
+    const feedbackRequestIndex = message.indexOf(
+      'We enthusiastically encourage agents to give us feedback',
+    );
     const exampleIndex = message.indexOf('For example:');
     const optionsIndex = message.indexOf(
       'Use positive, neutral, or negative honestly.',
     );
     const continueIndex = message.indexOf('Then continue');
     const approvalIndex = message.indexOf('Before submitting');
-    const firstBetaIndex = message.indexOf('private beta');
     const lastBetaIndex = message.lastIndexOf('private beta');
 
     assert.ok(feedbackRequestIndex >= 0);
-    assert.ok(feedbackRequestIndex < firstBetaIndex);
-    assert.ok(firstBetaIndex < exampleIndex);
+    assert.ok(feedbackRequestIndex < exampleIndex);
     assert.ok(exampleIndex < optionsIndex);
     assert.ok(optionsIndex < continueIndex);
     assert.ok(continueIndex < approvalIndex);
@@ -105,13 +106,13 @@ test('feedback prompts provide direct, valid CLI guidance', () => {
       message,
       /Before submitting, show the prospective feedback to the user and ask for approval, mentioning that they may be invited to a private beta if Stripe is developing a solution to their problem\./,
     );
-    assert.equal(message.match(/private beta/g)?.length, 2);
+    assert.equal(message.match(/private beta/g)?.length, 1);
     assert.doesNotMatch(message, /\bconsider\b/i);
     assert.doesNotMatch(message, /distract the user/i);
   }
   assert.match(
     TOOL_FAILURE_FEEDBACK_MESSAGE,
-    /^The Stripe tool failed\. Send Stripe feedback/,
+    /^The Stripe tool failed\.\n\nStripe aims/,
   );
 });
 
@@ -462,6 +463,175 @@ test('PostToolUse ignores unrelated and background Agent work', () => {
     assert.equal(result.status, 0);
     assert.equal(result.stdout, '');
   }
+});
+
+test('DISABLE_TELEMETRY and DO_NOT_TRACK suppress skill reporting and feedback suggestions', (t) => {
+  const directory = createBinDirectory(t);
+  const usageLog = join(directory, 'usage.log');
+  writeExecutable(
+    directory,
+    'stripe',
+    `#!/bin/sh
+printf '%s\\n' "$*" >> "$STRIPE_USAGE_LOG"
+exit 0
+`,
+  );
+
+  const sharedEnv = {
+    NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+      'Math.random = () => 0',
+    )}`,
+    PATH: `${directory}${delimiter}${process.env.PATH}`,
+    STRIPE_USAGE_LOG: usageLog,
+  };
+
+  for (const telemetryEnv of [
+    { DISABLE_TELEMETRY: '1' },
+    { DISABLE_TELEMETRY: 'true' },
+    { DO_NOT_TRACK: '1' },
+    { DO_NOT_TRACK: 'true' },
+  ]) {
+    const env = { ...sharedEnv, ...telemetryEnv };
+
+    assertSilentHook(
+      runLifecycle(
+        'lifecycle/postToolUse.mjs',
+        {
+          hook_event_name: 'PostToolUse',
+          tool_input: { skill: 'stripe:stripe-docs' },
+          tool_name: 'Skill',
+        },
+        env,
+      ),
+    );
+    assert.ok(!existsSync(usageLog), 'Skill usage was reported');
+
+    assertSilentHook(
+      runLifecycle(
+        'lifecycle/postToolBatch.mjs',
+        {
+          hook_event_name: 'PostToolBatch',
+          tool_calls: [
+            {
+              tool_input: { query: 'Checkout' },
+              tool_name: 'mcp__stripe__search_stripe_documentation',
+              tool_response: 'Search results',
+              tool_use_id: 'toolu_stripe',
+            },
+          ],
+        },
+        env,
+      ),
+    );
+
+    assertSilentHook(
+      runLifecycle(
+        'lifecycle/postToolUseFailure.mjs',
+        {
+          error: 'Skill failed to load',
+          hook_event_name: 'PostToolUseFailure',
+          tool_input: { skill: 'stripe:stripe-docs' },
+          tool_name: 'Skill',
+          tool_use_id: 'toolu_skill',
+        },
+        env,
+      ),
+    );
+
+    const transcriptPath = writeTranscript(t, 'Help me integrate Stripe');
+    assertSilentHook(
+      runLifecycle(
+        'lifecycle/userPromptSubmit.mjs',
+        {
+          hook_event_name: 'UserPromptSubmit',
+          prompt: 'What should I do next?',
+          transcript_path: transcriptPath,
+        },
+        env,
+      ),
+    );
+  }
+});
+
+// By default, Windows searches cwd before PATH for a bare executable name.
+// A repository-local stripe.exe or npm.exe could therefore execute attacker
+// code automatically when a hook runs, even with a trusted executable on PATH.
+// Running subprocesses from the plugin root avoids that implicit project lookup.
+// An explicit "." in PATH reproduces this lookup on POSIX for the regression.
+test('CLI hooks ignore executables in the project working directory', (t) => {
+  const projectDirectory = createBinDirectory(t);
+  const trustedDirectory = createBinDirectory(t);
+  const untrustedLog = join(projectDirectory, 'untrusted.log');
+  const trustedLog = join(trustedDirectory, 'trusted.log');
+
+  for (const command of ['stripe', 'npm']) {
+    writeExecutable(
+      projectDirectory,
+      command,
+      `#!/bin/sh
+echo "$*" >> "$STRIPE_UNTRUSTED_LOG"
+exit 1
+`,
+    );
+    writeExecutable(
+      trustedDirectory,
+      command,
+      `#!/bin/sh
+pwd >> "$STRIPE_TRUSTED_LOG"
+if [ "$1" = "whoami" ]; then
+  echo '{"authenticated":true}'
+else
+  echo '1.0.0'
+fi
+`,
+    );
+  }
+
+  const event = { hook_event_name: 'SessionStart', source: 'startup' };
+  const env = {
+    PATH: `.${delimiter}${trustedDirectory}`,
+    STRIPE_API_KEY: '',
+    STRIPE_UNTRUSTED_LOG: untrustedLog,
+    STRIPE_TRUSTED_LOG: trustedLog,
+  };
+  const installed = runLifecycle(
+    'lifecycle/sessionStart.mjs',
+    event,
+    env,
+    projectDirectory,
+  );
+  assert.ifError(installed.error);
+  assert.equal(installed.status, 0);
+  assert.ok(!existsSync(untrustedLog), 'A project executable was invoked');
+  assert.equal(installed.stdout, '');
+  assertSilentHook(
+    runLifecycle(
+      'lifecycle/postToolUse.mjs',
+      { tool_name: 'Skill', tool_input: { skill: 'stripe:stripe-docs' } },
+      env,
+      projectDirectory,
+    ),
+  );
+  assert.ok(!existsSync(untrustedLog), 'A project executable was invoked');
+  const pluginRoot = join(SCRIPTS_ROOT, '..');
+  assert.deepEqual(
+    readFileSync(trustedLog, 'utf8').trim().split(/\r?\n/),
+    [pluginRoot, pluginRoot, pluginRoot, pluginRoot],
+  );
+
+  const missing = runLifecycle(
+    'lifecycle/sessionStart.mjs',
+    event,
+    { ...env, PATH: '.' },
+    projectDirectory,
+  );
+  assert.ifError(missing.error);
+  assert.equal(missing.status, 0);
+  assert.ok(!existsSync(untrustedLog), 'A project executable was invoked');
+  assert.equal(
+    JSON.parse(missing.stdout).hookSpecificOutput.additionalContext,
+    CLI_NOT_INSTALLED_MESSAGE,
+  );
 });
 
 test('SessionStart reports missing, outdated, and current CLI states', (t) => {

@@ -12,7 +12,7 @@
 
 If the user has a recurring revenue model (subscriptions, usage-based billing, seat-based pricing), use the Billing APIs to [plan their integration](https://docs.stripe.com/billing/subscriptions/design-an-integration.md) instead of a direct PaymentIntent integration.
 
-Review the [Subscription Use Cases](https://docs.stripe.com/billing/subscriptions/use-cases.md) and [SaaS guide](https://docs.stripe.com/saas.md) to find the right pattern for the user’s pricing model.
+Review the [pricing models](https://docs.stripe.com/products-prices/pricing-models.md) to find the right pattern for the user’s pricing model. For a flat-rate subscription integration with Checkout, follow the [SaaS subscriptions guide](https://docs.stripe.com/get-started/use-cases/saas-subscriptions.md).
 
 ## Recommended frontend pairing
 

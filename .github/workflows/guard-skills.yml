@@ -9,6 +9,7 @@ on:
       - 'providers/cursor/plugin/skills/**'
       - 'providers/grok/plugin/skills/**'
       - 'providers/agent-plugins/plugin/skills/**'
+      - 'providers/antigravity/plugin/skills/**'
 
 jobs:
   block:

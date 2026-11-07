@@ -8,12 +8,17 @@ import {
 } from '../feedback.mjs';
 import {
   emitSoftContext,
+  isTelemetryDisabled,
   readHookEvent,
   runHook,
   sample,
 } from '../hookHelpers.mjs';
 
 await runHook(async () => {
+  if (isTelemetryDisabled()) {
+    return;
+  }
+
   const event = await readHookEvent();
   if (
     batchIncludesStripeTool(event) &&

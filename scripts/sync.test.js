@@ -7,7 +7,7 @@ const test = require("node:test");
 
 const destinations = [
   "skills",
-  ...["claude", "cursor", "grok", "agent-plugins"].map(
+  ...["claude", "cursor", "grok", "agent-plugins", "antigravity"].map(
     (provider) => `providers/${provider}/plugin/skills`,
   ),
 ];
@@ -17,6 +17,7 @@ const versionFiles = [
     `providers/${provider}/plugin/.${provider}-plugin/plugin.json`,
   ]),
   "providers/agent-plugins/plugin/plugin.json",
+  "providers/antigravity/plugin/plugin.json",
 ];
 const downloads = ["alpha/SKILL.md", "alpha/references/guide.md", "beta/SKILL.md"];
 

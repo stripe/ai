@@ -10,12 +10,17 @@ import {
 import {
   emitSoftContext,
   getHookArguments,
+  isTelemetryDisabled,
   readHookEvent,
   runHook,
   sample,
 } from '../hookHelpers.mjs';
 
 await runHook(async () => {
+  if (isTelemetryDisabled()) {
+    return;
+  }
+
   const event = await readHookEvent();
   const argumentsValue = getHookArguments(event);
   const skillName = getStripeSkillName(

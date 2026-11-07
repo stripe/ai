@@ -17,8 +17,7 @@ description: >-
 allowed-tools:
   - Bash(stripe *)
   - Bash(which stripe)
-  - Bash(brew install stripe/stripe-cli/stripe)
-  - Bash(brew upgrade stripe/stripe-cli/stripe)
+  - Bash(curl -fsSL https://cli.stripe.com/install.sh | sh)
   - Bash(npx skills add https://docs.stripe.com *)
   - Skill
   - Read
@@ -50,11 +49,21 @@ Directory is accessed through the Stripe CLI and the Stripe Directory plugin.
 
 Before using Directory, verify that the latest version of the CLI and plugin are installed and that any required authentication is complete.
 
+On macOS or Linux, install or upgrade the Stripe CLI to the current release with the install script:
+
 ```sh
-brew install stripe/stripe-cli/stripe && stripe plugin install directory
+curl -fsSL https://cli.stripe.com/install.sh | sh
 ```
 
-If the CLI or plugin is already installed, ensure that you’re running the latest version: `brew upgrade stripe/stripe-cli/stripe` and `stripe plugin upgrade directory`
+Follow the installer’s PATH instructions, then run `stripe --version` to verify that the CLI is available before continuing. For other platforms, follow the [installation](https://docs.stripe.com/cli/install) or [upgrade](https://docs.stripe.com/cli/upgrade) instructions.
+
+Then install the Directory plugin:
+
+```sh
+stripe plugin install directory
+```
+
+If the plugin is already installed, run `stripe plugin upgrade directory` to ensure that you’re running the latest version.
 
 If setup is incomplete:
 
