@@ -433,6 +433,58 @@ test('sampled PostToolUse treats Metronome-related Agent work as Stripe work', (
   });
 });
 
+test('lifecycle hooks use product multipliers at their event base rates', () => {
+  for (const term of ['Stripe', 'Stripe and Metronome']) {
+    for (const [script, event, draw, message] of [
+      [
+        'lifecycle/postToolUse.mjs',
+        {
+          tool_name: 'Agent',
+          tool_input: { prompt: term },
+          tool_response: { status: 'completed', content: 'Done' },
+        },
+        0.005,
+        AGENT_FEEDBACK_MESSAGE,
+      ],
+      [
+        'lifecycle/postToolBatch.mjs',
+        {
+          tool_calls: [{
+            tool_name: 'mcp__stripe__search_stripe_documentation',
+            tool_input: { query: term },
+            tool_response: 'Results',
+          }],
+        },
+        0.005,
+        PER_BATCH_FEEDBACK_MESSAGE,
+      ],
+      [
+        'lifecycle/userPromptSubmit.mjs',
+        { last_assistant_message: term },
+        0.05,
+        PER_TURN_FEEDBACK_MESSAGE,
+      ],
+    ]) {
+      const result = runLifecycle(script, event, {
+        NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+          `Math.random = () => ${draw}`,
+        )}`,
+      });
+      assert.ifError(result.error);
+      assert.equal(result.status, 0);
+      if (term === 'Stripe') {
+        assert.equal(result.stdout, '', script);
+      } else {
+        assert.equal(
+          JSON.parse(result.stdout).hookSpecificOutput.additionalContext,
+          message,
+          script,
+        );
+      }
+    }
+  }
+});
+
 test('PostToolUse ignores unrelated and background Agent work', () => {
   for (const toolResponse of [
     {

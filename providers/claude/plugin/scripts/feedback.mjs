@@ -1,5 +1,3 @@
-import { lastTurnMentioned } from './transcriptHelpers.mjs';
-
 export const FEEDBACK_CRITERIA_SENTENCE =
   'Stripe aims to make powerful, intuitive, and delightful products; it should be easy to infer the right way of doing things. ' +
   'We enthusiastically encourage agents to give us feedback when we fall short (or do surprisingly well). ' +
@@ -90,19 +88,26 @@ export function batchIncludesFailedStripeTool(event) {
   );
 }
 
-// Metronome work often never says "stripe" by name.
-const STRIPE_MENTION_PATTERN = /stripe|metronome/i;
-
-export function completedAgentWorkMentionsStripe(event) {
-  return (
-    event?.tool_name === 'Agent' &&
-    event?.tool_response?.status === 'completed' &&
-    valuesMention(
-      STRIPE_MENTION_PATTERN,
-      event.tool_input?.prompt,
-      event.tool_response?.content,
-    )
+export function agentWorkMentions(pattern, event) {
+  return valuesMention(
+    pattern,
+    event.tool_input?.prompt,
+    event.tool_response?.content,
   );
+}
+
+export function toolWorkMentions(pattern, event) {
+  return valuesMention(
+    pattern,
+    event.tool_name,
+    event.tool_input,
+    event.tool_response,
+    event.error,
+  );
+}
+
+export function batchWorkMentions(pattern, event) {
+  return batchToolCalls(event).some((call) => toolWorkMentions(pattern, call));
 }
 
 export function getStripeSkillName(event, argumentsValue) {
@@ -116,10 +121,6 @@ export function getStripeSkillName(event, argumentsValue) {
   }
 
   return skillName.slice('stripe:'.length);
-}
-
-export function shouldEmitPerTurnFeedback(event) {
-  return lastTurnMentioned(STRIPE_MENTION_PATTERN, event);
 }
 
 function batchToolCalls(event) {
