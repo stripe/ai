@@ -14,13 +14,13 @@ Stripe Apps supports three authentication methods, configured via `stripe_api_ac
 
 | Auth type | Manifest value | How it works | Best for |
 | --- | --- | --- | --- |
-| Restricted API key (recommended) | `restricted_api_key` | Stripe generates a scoped key at install; merchant provides it to your system | Private apps, simpler integrations, apps that don’t need Connect-style access |
+| Restricted API key (recommended) | `restricted_api_key` | Stripe generates a scoped key at install; merchant provides it to your system | Private apps and integrations where users provide a scoped key |
 | Platform keys | `platform` | Your secret key + `Stripe-Account` header to act on behalf of installers | Public/marketplace apps that need to act across many merchants |
 | OAuth 2.0 | `oauth` | Standard OAuth flow generates access tokens per-account | Apps where merchant must be merchant-of-record |
 
 ### Choosing the right type
 
-**Default to restricted API keys** unless you have a specific reason to use platform keys or OAuth. RAKs are simpler, more secure (scoped permissions), and don’t create a Connect-style relationship.
+**Default to restricted API keys** unless you have a specific reason to use platform keys or OAuth. RAKs provide scoped permissions without using your app account’s key to act on behalf of installing accounts.
 
 Use a different type when:
 
@@ -52,7 +52,7 @@ await stripe.customers.list({}, {
 
 ## OAuth 2.0
 
-Use OAuth when the connected account needs to be the merchant of record for charges, or when you need the merchant’s own Stripe identity on API calls.
+Use OAuth when the installing account needs to be the merchant of record for charges, or when you need the merchant’s own Stripe identity on API calls.
 
 Most apps do NOT need OAuth. Use platform keys unless you specifically need this.
 
@@ -64,7 +64,7 @@ With RAK apps, Stripe generates a restricted key at install time with only the p
 
 Key differences from platform keys:
 
-- No Connect-style relationship is created
+- Each installing account provides its own scoped key
 - Can’t use Connect webhook fanout (each merchant manages their own webhooks)
 - Simpler model for private apps or apps with fewer merchants
 

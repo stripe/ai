@@ -4,6 +4,8 @@
 
 Use these questions to resolve requirements that affect the requested work. Reuse information from the user and existing app, and skip questions that are already answered or don’t apply. Ask one unresolved question at a time, using plain language. If the requirements are clear, proceed without an interview.
 
+The word “connect” doesn’t by itself mean Stripe Connect. If that distinction affects the implementation and the user’s intent is unclear, clarify it before choosing a Connect architecture. Preserve a supplied app name; otherwise name it for its stated purpose without implying a Connect integration.
+
 ### Question 1 — What do you want to do?
 
 ```
@@ -17,7 +19,7 @@ What would you like your app to do? Pick the option that sounds closest:
 
 3. Both — add something to the Dashboard AND react to Stripe events
 
-4. Let merchants connect their Stripe account to my service without sharing API keys
+4. Let other Stripe users install my app so my service can access their account
 
 5. Add custom logic to how Stripe calculates bills or routes payments
    (availability depends on the extension point)
@@ -81,7 +83,7 @@ Who will use this app?
 
 ### Question 3b — Authentication type (only for public apps that need backend access)
 
-If the user chose public/marketplace AND their app needs to access merchant data from a backend, determine the authentication type. Read `authentication.md` for the full comparison — restricted API keys are the recommended default unless the app specifically needs Connect-style access or OAuth.
+If the user chose public/marketplace AND their app needs to access merchant data from a backend, determine the authentication type. Read `authentication.md` for the full comparison — restricted API keys are the recommended default unless the app specifically needs platform keys or OAuth.
 
 For private apps or frontend-only apps, skip this question — restricted API keys or platform keys both work, and RAKs are simpler.
 
@@ -154,7 +156,7 @@ Use these explanations when you need to introduce technical terms after routing:
 | Viewport | Which specific Dashboard page your app appears on |
 | Extension interface | A hook that lets your app change how Stripe processes billing or payments |
 | Platform keys | How your app accesses merchant data when they install it — no manual key-sharing needed |
-| Connected account | A merchant who has installed your app |
+| Installing account | A Stripe account where your app is installed |
 | Permissions | What Stripe data your app is allowed to read or write; must be declared before use |
 | Secret Store | Stripe’s built-in way for your app to save sensitive information like passwords or tokens |
 | stripe-app.yaml | The configuration file that tells Stripe what your app is called, what it needs access to, and where it appears |

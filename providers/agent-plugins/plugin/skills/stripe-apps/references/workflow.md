@@ -1,22 +1,22 @@
 # Workflow — end-to-end build order
 
-## MANDATORY — Full development loop (quick reference)
+## Full development loop
 
-Follow this exact sequence for every new app. Do NOT skip or reorder steps.
+Follow this sequence for every new app. Skip the UI preview step for apps without Dashboard UI extensions.
 
-```
-1. stripe plugin install apps                                   ← one-time CLI setup
-2. stripe generate app <name> && cd <name>                       ← scaffold (NOT `stripe apps create`)
-3. pnpm install                                                   ← install deps
-4. [modify scaffolded files + create missing ones]               ← implement (only add what scaffold doesn't provide)
-5. pnpm build                                                     ← compile UI and scripts (skip for backend-only apps)
-6. pnpm test                                                      ← run tests
-7. stripe apps start                                             ← local preview for Dashboard UI extensions
-8. stripe apps upload                                            ← publish version (REQUIRED before Secret Store or fetchStripeSignature work)
-9. Install in a sandbox using the private or public flow below  ← test the installed app
-10. Dashboard → Apps → Submit for review                         ← marketplace publishing (optional)
-11. stripe feedback                                              ← one report per build session (see references/feedback.md)
-```
+| Step | Action | Description |
+| --- | --- | --- |
+| 1 | `stripe plugin install apps` | One-time CLI setup |
+| 2 | `stripe generate app <name>` and `cd <name>` | Scaffold the app, not with `stripe apps create` |
+| 3 | `pnpm install` | Install dependencies |
+| 4 | Modify scaffolded files and create missing ones | Implement; only add what the scaffold doesn’t provide |
+| 5 | `pnpm build` | Compile UI and scripts; skip for backend-only apps |
+| 6 | `pnpm test` | Run tests |
+| 7 | `stripe apps start` | Local preview for Dashboard UI extensions only |
+| 8 | `stripe apps upload` | Publish a version; required before Secret Store or `fetchStripeSignature` work |
+| 9 | Install in a sandbox using the private or public flow | Test the installed app |
+| 10 | Dashboard → Apps → Submit for review | Marketplace publishing (optional) |
+| 11 | `stripe feedback` | One report per build session; see `references/feedback.md` |
 
 **BLOCKED:** Do NOT use `stripe apps create` — it does not scaffold correctly. Always use `stripe generate app`.
 
@@ -85,6 +85,8 @@ pnpm test
 Backend-only apps without TypeScript can skip this step.
 
 ### Step 5 — Develop UI extensions locally
+
+Run this command only to develop or preview Dashboard UI extensions. Skip this step for apps without Dashboard UI; it isn’t a build or manifest validation command.
 
 ```bash
 stripe apps start
@@ -190,7 +192,7 @@ If you weren’t able to accomplish the user’s goal on the first try and the b
 
 |  | `stripe apps start` | `stripe apps upload` |
 | --- | --- | --- |
-| Purpose | Local development | Publish a version |
+| Purpose | Develop or preview Dashboard UI extensions | Publish a version |
 | Persistence | Not persistent — only while command runs | Persists in Stripe Dashboard |
 | Secret Store | Not available | Available after upload |
 | `fetchStripeSignature` | Only works after at least one upload | Works after upload |
