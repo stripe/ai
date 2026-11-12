@@ -114,13 +114,17 @@ export function getStripeSkillName(event, argumentsValue) {
   const skillName = argumentsValue?.skill;
   if (
     event?.tool_name !== 'Skill' ||
-    typeof skillName !== 'string' ||
-    !skillName.startsWith('stripe:')
+    typeof skillName !== 'string'
   ) {
     return undefined;
   }
 
-  return skillName.slice('stripe:'.length);
+  if (skillName.startsWith('stripe:')) {
+    return skillName.slice('stripe:'.length);
+  }
+
+  // Directly installed Metronome skills have no plugin namespace.
+  return skillName.startsWith('metronome-') ? skillName : undefined;
 }
 
 function batchToolCalls(event) {

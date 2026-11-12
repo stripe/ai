@@ -215,11 +215,12 @@ test('tool identity and skill names qualify without literal mentions in results'
     },
     { tool_name: 'Skill', tool_input: { skill: 'stripe:stripe-docs' } },
     { tool_name: 'Skill', tool_input: { skill: 'stripe:metronome' } },
+    { tool_name: 'Skill', tool_input: { skill: 'metronome-rate-cards' } },
   ]) {
     assert.equal(feedbackSampleRate('PostToolUseFailure', call), 1);
     assert.equal(
       feedbackSampleRate('PostToolBatch', { tool_calls: [call] }),
-      call.tool_input.skill === 'stripe:metronome' ? 0.01 : 0.001,
+      /metronome/.test(call.tool_input.skill) ? 0.01 : 0.001,
     );
   }
 });
