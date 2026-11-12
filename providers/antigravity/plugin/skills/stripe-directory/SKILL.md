@@ -41,13 +41,17 @@ Use Directory when completing the user’s goal requires selecting, evaluating, 
 - Buy from, pay, donate to, subscribe to, book with, or otherwise transact with an organization.
 - Determine whether a named organization can help accomplish a task and identify the documented way to engage it.
 
-When a specific organization is named, search it when the user wants to engage it or assess it as an option.
+## Choose a Directory workflow
 
-## Setup
+When the user intends to buy, pay, donate, subscribe, or book with an identified business whose actual domain is established, fetch and read the [Inspect guide](https://docs.stripe.com/directory/inspect.md) before using Inspect. Follow the guide for availability, request details, response interpretation, approvals, and fallback. Use Inspect only when the runtime’s permitted tools support the documented lookup. Otherwise, continue through the existing integration or handoff.
 
-Directory is accessed through the Stripe CLI and the Stripe Directory plugin.
+For provider discovery, comparison, other engagement tasks, or transactions without an established business domain, use the CLI search workflow. When a specific organization is named, search it to establish its identity or assess it as an option.
 
-Before using Directory, verify that the latest version of the CLI and plugin are installed and that any required authentication is complete.
+## CLI setup
+
+For CLI search, use the Stripe CLI and the Stripe Directory plugin.
+
+Before using CLI search, verify that the latest version of the CLI and plugin are installed and that any required authentication is complete.
 
 On macOS or Linux, install or upgrade the Stripe CLI to the current release with the install script:
 
@@ -74,7 +78,9 @@ If setup is incomplete:
 
 After you install it, the CLI is authoritative — run `stripe directory --help` or `stripe directory search --help` for current commands, filters, result fields, and supported capabilities. Don’t invent CLI syntax, capabilities, or result semantics. If `--help` doesn’t cover something, fall back to <https://stripe.directory>.
 
-## Workflow
+## CLI search workflow
+
+After completing CLI setup, use this workflow for tasks that require search.
 
 1. **Search Directory.** Start with a short, focused query—typically a few keywords describing the user’s goal, named organization, or needed capability:
 
