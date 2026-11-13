@@ -7,7 +7,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { shouldEmitPerTurnFeedback } from '../../../../../providers/claude/plugin/scripts/feedback.mjs';
+import { feedbackSampleRate } from '../../../../../providers/claude/plugin/scripts/feedbackSampling.mjs';
 import { lastTurnMentioned } from '../../../../../providers/claude/plugin/scripts/transcriptHelpers.mjs';
 
 function writeTranscript(t, entries) {
@@ -173,11 +173,11 @@ test('provides per-turn Stripe feedback logic', (t) => {
   ]);
 
   assert.equal(
-    shouldEmitPerTurnFeedback({
+    feedbackSampleRate('UserPromptSubmit', {
       transcript_path: transcriptPath,
       last_assistant_message: 'Done.',
     }),
-    true,
+    0.01,
   );
 });
 
@@ -188,11 +188,11 @@ test('treats Metronome work as Stripe work for per-turn feedback', (t) => {
   ]);
 
   assert.equal(
-    shouldEmitPerTurnFeedback({
+    feedbackSampleRate('UserPromptSubmit', {
       transcript_path: transcriptPath,
       last_assistant_message: 'Done.',
     }),
-    true,
+    0.1,
   );
 });
 

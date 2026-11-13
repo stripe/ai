@@ -1,12 +1,9 @@
 #!/usr/bin/env node
 
-import {
-  isStripeToolCall,
-  TOOL_FAILURE_FEEDBACK_MESSAGE,
-} from '../feedback.mjs';
+import { TOOL_FAILURE_FEEDBACK_MESSAGE } from '../feedback.mjs';
+import { shouldSampleFeedback } from '../feedbackSampling.mjs';
 import {
   emitHardSteer,
-  getHookArguments,
   isTelemetryDisabled,
   readHookEvent,
   runHook,
@@ -18,7 +15,7 @@ await runHook(async () => {
   }
 
   const event = await readHookEvent();
-  if (isStripeToolCall(event, getHookArguments(event))) {
+  if (shouldSampleFeedback('PostToolUseFailure', event)) {
     emitHardSteer(TOOL_FAILURE_FEEDBACK_MESSAGE);
   }
 });

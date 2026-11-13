@@ -191,7 +191,7 @@ test('UserPromptSubmit checks only the immediately preceding turn', (t) => {
   assert.equal(result.stdout, '');
 });
 
-test('Stripe Skill usage is reported with its short name and silent failures', (t) => {
+test('Stripe and direct Metronome Skill usage is reported with silent failures', (t) => {
   const directory = createBinDirectory(t);
   const usageLog = join(directory, 'usage.log');
   writeExecutable(
@@ -205,34 +205,38 @@ exit 1
 `,
   );
 
-  const result = runLifecycle(
-    'lifecycle/postToolUse.mjs',
-    {
-      hook_event_name: 'PostToolUse',
-      tool_input: { skill: 'stripe:stripe-docs' },
-      tool_name: 'Skill',
-    },
-    {
-      NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
-        'Math.random = () => 0',
-      )}`,
-      PATH: `${directory}${delimiter}${process.env.PATH}`,
-      STRIPE_API_KEY: '',
-      STRIPE_USAGE_LOG: usageLog,
-    },
-  );
+  for (const [skill, reportedName] of [
+    ['stripe:stripe-docs', 'stripe-docs'],
+    ['metronome-rate-cards', 'metronome-rate-cards'],
+  ]) {
+    const result = runLifecycle(
+      'lifecycle/postToolUse.mjs',
+      {
+        hook_event_name: 'PostToolUse',
+        tool_input: { skill },
+        tool_name: 'Skill',
+      },
+      {
+        NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+          'Math.random = () => 0',
+        )}`,
+        PATH: `${directory}${delimiter}${process.env.PATH}`,
+        STRIPE_API_KEY: '',
+        STRIPE_USAGE_LOG: usageLog,
+      },
+    );
 
-  assert.ifError(result.error);
-  assert.equal(result.status, 0);
-  assert.equal(result.stderr, '');
-  assert.equal(result.stdout, '');
-  assert.ok(existsSync(usageLog), 'Stripe CLI was not invoked');
-  assert.equal(
-    readFileSync(usageLog, 'utf8').trim(),
-    'agent report_usage --type skill --name stripe-docs',
-  );
-
-  rmSync(usageLog);
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.equal(result.stderr, '');
+    assert.equal(result.stdout, '');
+    assert.ok(existsSync(usageLog), 'Stripe CLI was not invoked');
+    assert.equal(
+      readFileSync(usageLog, 'utf8').trim(),
+      `agent report_usage --type skill --name ${reportedName}`,
+    );
+    rmSync(usageLog);
+  }
   const unrelated = runLifecycle(
     'lifecycle/postToolUse.mjs',
     {
@@ -433,6 +437,58 @@ test('sampled PostToolUse treats Metronome-related Agent work as Stripe work', (
   });
 });
 
+test('lifecycle hooks use product multipliers at their event base rates', () => {
+  for (const term of ['Stripe', 'Stripe and Metronome']) {
+    for (const [script, event, draw, message] of [
+      [
+        'lifecycle/postToolUse.mjs',
+        {
+          tool_name: 'Agent',
+          tool_input: { prompt: term },
+          tool_response: { status: 'completed', content: 'Done' },
+        },
+        0.005,
+        AGENT_FEEDBACK_MESSAGE,
+      ],
+      [
+        'lifecycle/postToolBatch.mjs',
+        {
+          tool_calls: [{
+            tool_name: 'mcp__stripe__search_stripe_documentation',
+            tool_input: { query: term },
+            tool_response: 'Results',
+          }],
+        },
+        0.005,
+        PER_BATCH_FEEDBACK_MESSAGE,
+      ],
+      [
+        'lifecycle/userPromptSubmit.mjs',
+        { last_assistant_message: term },
+        0.05,
+        PER_TURN_FEEDBACK_MESSAGE,
+      ],
+    ]) {
+      const result = runLifecycle(script, event, {
+        NODE_OPTIONS: `--import=data:text/javascript,${encodeURIComponent(
+          `Math.random = () => ${draw}`,
+        )}`,
+      });
+      assert.ifError(result.error);
+      assert.equal(result.status, 0);
+      if (term === 'Stripe') {
+        assert.equal(result.stdout, '', script);
+      } else {
+        assert.equal(
+          JSON.parse(result.stdout).hookSpecificOutput.additionalContext,
+          message,
+          script,
+        );
+      }
+    }
+  }
+});
+
 test('PostToolUse ignores unrelated and background Agent work', () => {
   for (const toolResponse of [
     {
@@ -493,17 +549,19 @@ exit 0
   ]) {
     const env = { ...sharedEnv, ...telemetryEnv };
 
-    assertSilentHook(
-      runLifecycle(
-        'lifecycle/postToolUse.mjs',
-        {
-          hook_event_name: 'PostToolUse',
-          tool_input: { skill: 'stripe:stripe-docs' },
-          tool_name: 'Skill',
-        },
-        env,
-      ),
-    );
+    for (const skill of ['stripe:stripe-docs', 'metronome-rate-cards']) {
+      assertSilentHook(
+        runLifecycle(
+          'lifecycle/postToolUse.mjs',
+          {
+            hook_event_name: 'PostToolUse',
+            tool_input: { skill },
+            tool_name: 'Skill',
+          },
+          env,
+        ),
+      );
+    }
     assert.ok(!existsSync(usageLog), 'Skill usage was reported');
 
     assertSilentHook(
