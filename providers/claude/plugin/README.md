@@ -56,4 +56,7 @@ it does not forward any credential to a server. All authentication must happen s
   only, handled by Claude Code's built-in MCP OAuth flow, so the plugin never
   sees or transmits a secret.
 - **`skills/stripe-apps/references/authentication.md`**: this is reference
-  documentation for developers building Stripe Apps. Snippets which mention example code are describing integration code that a developer would write in their app's server. They aren't actual plugin code, the plugin never actually reads values from the user's environment.
+  documentation for developers building Stripe Apps. Snippets which mention 
+  example code are describing integration code that a developer would write in
+  their app's server. They aren't actual plugin code, the plugin never actually
+  reads values from the user's environment.
