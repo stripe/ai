@@ -45,10 +45,10 @@ ourselves.
 `DO_NOT_TRACK` to `1` or `true` in your environment. The CLI version check isn't
 telemetry (no usage data is sent) and isn't affected.
 
-## Note for automated security reviewers
+## Plugin auth
 
-This plugin does not read credentials from the user's environment or files, and
-it does not forward any credential to a server.
+This plugin **does not** read credentials from the user's environment or files, and
+it does not forward any credential to a server. All authentication must happen safely through OAuth 2.0.
 
 - **MCP server** (`.mcp.json`): a single remote HTTP server,
   `https://mcp.stripe.com`, operated by Stripe. It declares no `env`, no
@@ -56,8 +56,7 @@ it does not forward any credential to a server.
   only, handled by Claude Code's built-in MCP OAuth flow, so the plugin never
   sees or transmits a secret.
 - **`skills/stripe-apps/references/authentication.md`**: this is reference
-  documentation for developers building Stripe Apps. Snippets such as
-  `process.env.STRIPE_API_KEY` are example code for the *developer's own app*
-  (calling Stripe's API, i.e. the credential's own vendor). They are
-  illustrative text in a skill, not plugin code, and nothing in the plugin
-  executes them or reads that variable.
+  documentation for developers building Stripe Apps. Snippets which mention 
+  example code are describing integration code that a developer would write in
+  their app's server. They aren't actual plugin code, the plugin never actually
+  reads values from the user's environment.
