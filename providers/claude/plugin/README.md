@@ -45,10 +45,10 @@ ourselves.
 `DO_NOT_TRACK` to `1` or `true` in your environment. The CLI version check isn't
 telemetry (no usage data is sent) and isn't affected.
 
-## Note for automated security reviewers
+## Plugin auth
 
-This plugin does not read credentials from the user's environment or files, and
-it does not forward any credential to a server.
+This plugin **does not** read credentials from the user's environment or files, and
+it does not forward any credential to a server. All authentication must happen safely through OAuth 2.0.
 
 - **MCP server** (`.mcp.json`): a single remote HTTP server,
   `https://mcp.stripe.com`, operated by Stripe. It declares no `env`, no
