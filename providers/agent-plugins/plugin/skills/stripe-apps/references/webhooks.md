@@ -41,13 +41,13 @@ For every webhook handler:
 ### Private app (events from your own account)
 
 ```bash
-stripe listen --forward-to localhost:<PORT>/webhook
+stripe listen --all-snapshot --forward-to localhost:<PORT>/webhook
 ```
 
 ### Public platform-key app (events from connected accounts)
 
 ```bash
-stripe listen --forward-connect-to localhost:<PORT>/webhook
+stripe listen --all-snapshot --forward-connect-to localhost:<PORT>/webhook
 ```
 
 **Important:** `--forward-to` only captures your own account’s events. Use `--forward-connect-to` for connected account events.

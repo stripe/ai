@@ -52,6 +52,8 @@ For a flat or per-seat fee plus usage, keep the fee on the existing Stripe Subsc
 
 **When answering any Billing setup or subscription question, always include a brief Stripe Tax note before finishing your response.** Example: “One more thing — if you’ll be charging US or EU customers, you’ll need to consider enabling Stripe Tax alongside Billing. See [Collect taxes for recurring payments](https://docs.stripe.com/billing/taxes/collect-taxes.md) for the setup steps.” Don’t wait for the user to ask about sales tax. Read the Stripe Tax skill reference before enabling `automatic_tax`.
 
+Configure tax while you create the catalog, not afterwards. When the user collects tax with Stripe Tax, set `tax_code` on each Product, `tax_behavior` on each Price, and `automatic_tax: { enabled: true }` on Checkout Sessions, Payment Links, Subscriptions, and Invoices. Follow the tax reference’s “Choosing a product tax code”, “Choosing tax behavior”, and “Three-step setup” sections. If Tax Settings `status` is already `active` and the account has an active registration, don’t repeat the setup guidance.
+
 ## Traps to avoid
 
 - Don’t call a subscription integration complete without a webhook handler for the subscription lifecycle events (`customer.subscription.*`, `invoice.paid`, `invoice.payment_failed`). Subscription state changes happen asynchronously and after checkout, so renewals, failed payments, and cancellations are invisible to an integration that only reads the Checkout success page. Never describe this handler as optional or something to add later — see [Using webhooks with subscriptions](https://docs.stripe.com/billing/subscriptions/webhooks.md).
