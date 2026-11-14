@@ -35,7 +35,7 @@ Your app’s API key acts on behalf of a merchant’s account using the `Stripe-
 
 ```javascript
 // Use a restricted API key when possible; fall back to secret key only for platform-key apps
-const stripe = require("stripe")(process.env.STRIPE_API_KEY);
+const stripe = require("stripe")("YOUR_API_KEY");
 
 await stripe.customers.list({}, {
   stripeAccount: "acct_xxxxx", // the merchant's account ID

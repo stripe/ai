@@ -80,9 +80,6 @@ export function reportSkillUsage(skillName, run = spawnSync) {
     skillName,
   ];
 
-  if (process.env.STRIPE_API_KEY) {
-    args.push('--api-key', process.env.STRIPE_API_KEY);
-  }
   try {
     run('stripe', args, silentCommandOptions);
   } catch {
