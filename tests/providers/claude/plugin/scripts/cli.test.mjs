@@ -46,7 +46,12 @@ test('cliLoggedIn treats missing or invalid whoami output as logged out', () => 
 test('guidance CLI checks opt out of telemetry without affecting usage reporting', () => {
   const calls = [];
   const run = (command, args, options) => {
-    calls.push({ command, args, options });
+    calls.push({
+      command,
+      args,
+      options,
+      optOut: process.env.STRIPE_CLI_TELEMETRY_OPTOUT,
+    });
     if (command === 'stripe' && args[0] === '--version') {
       return { status: 0, stdout: 'stripe version 1.0.0' };
     }
@@ -68,10 +73,12 @@ test('guidance CLI checks opt out of telemetry without affecting usage reporting
       ['stripe', 'agent'],
     ],
   );
-  for (const call of calls.slice(0, 2)) {
-    assert.equal(call.options.env.STRIPE_CLI_TELEMETRY_OPTOUT, '1');
-    assert.equal(call.options.env.PATH, process.env.PATH);
+  assert.equal(calls[0].optOut, '1');
+  assert.equal(calls[1].optOut, '1');
+  assert.equal(calls[2].optOut, undefined);
+  assert.equal(calls[3].optOut, undefined);
+  for (const call of calls) {
+    assert.equal(call.options.env, undefined);
   }
-  assert.equal(calls[2].options.env, undefined);
-  assert.equal(calls[3].options.env, undefined);
+  assert.equal(process.env.STRIPE_CLI_TELEMETRY_OPTOUT, undefined);
 });

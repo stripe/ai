@@ -18,10 +18,21 @@ const commandOptions = {
   timeout: CLI_COMMAND_TIMEOUT_MS,
 };
 
-const untrackedCommandOptions = {
-  ...commandOptions,
-  env: { ...process.env, STRIPE_CLI_TELEMETRY_OPTOUT: '1' },
-};
+// The child inherits process.env, so opt out by setting the variable only for
+// the duration of the (synchronous) call, then restore it.
+function runUntracked(run, command, args) {
+  const previous = process.env.STRIPE_CLI_TELEMETRY_OPTOUT;
+  process.env.STRIPE_CLI_TELEMETRY_OPTOUT = '1';
+  try {
+    return run(command, args, commandOptions);
+  } finally {
+    if (previous === undefined) {
+      delete process.env.STRIPE_CLI_TELEMETRY_OPTOUT;
+    } else {
+      process.env.STRIPE_CLI_TELEMETRY_OPTOUT = previous;
+    }
+  }
+}
 
 const silentCommandOptions = {
   ...commandOptions,
@@ -33,7 +44,7 @@ function parseVersion(output) {
 }
 
 function getInstalledCli(run) {
-  const result = run('stripe', ['--version'], untrackedCommandOptions);
+  const result = runUntracked(run, 'stripe', ['--version']);
   return {
     installed: result.error?.code !== 'ENOENT',
     version:
@@ -58,11 +69,11 @@ export function cliInstalled(run = spawnSync) {
 
 export function cliLoggedIn(run = spawnSync) {
   try {
-    const result = run(
-      'stripe',
-      ['whoami', '--format', 'json'],
-      untrackedCommandOptions,
-    );
+    const result = runUntracked(run, 'stripe', [
+      'whoami',
+      '--format',
+      'json',
+    ]);
     const payload = JSON.parse(result.stdout ?? '');
     return payload.authenticated;
   } catch {
