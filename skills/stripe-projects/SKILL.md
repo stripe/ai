@@ -16,7 +16,6 @@ description: >
 allowed-tools:
   - Bash(stripe *)
   - Bash(which stripe)
-  - Bash(curl -fsSL https://cli.stripe.com/install.sh | sh)
   - Skill
   - Read
 
