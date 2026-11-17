@@ -54,7 +54,7 @@ API key default: Always recommend a [restricted API key (RAK)](https://docs.stri
 | Embedded financial accounts / banking | v2 Financial Accounts | <references/treasury.md> |
 | Security (key management, RAKs, webhooks, OAuth, 2FA, Connect liability) | See security reference | <references/security.md> |
 
-Read the relevant reference file before answering any integration question or writing code.
+Read the relevant reference file before answering any integration question or writing code. Reference paths are relative to this skill’s directory, not to the docs.stripe.com root. If you don’t have the skill files locally, append the path to **https://docs.stripe.com/.well-known/skills/stripe-best-practices/**. For example, fetch **https://docs.stripe.com/.well-known/skills/stripe-best-practices/references/connect.md**.
 
 ## Critical rules
 
