@@ -94,6 +94,7 @@ Don’t call other deprecated or outdated API endpoints unless there is a specif
 | Sources API | Deprecated | Setup Intents | [Setup Intents docs](https://docs.stripe.com/api/setup_intents.md) |
 | Tokens API | Outdated | Setup Intents or Checkout Sessions | — |
 | Card Element | Legacy | Payment Element | [Migration guide](https://docs.stripe.com/payments/payment-element/migration.md) |
+| Manually specified `payment_method_types` | Avoid except for Terminal | Dynamic payment methods | [Migration guide](https://docs.stripe.com/payments/payment-methods/dynamic-payment-methods#migrate-to-dynamic-payment-methods) |
 
 ## PCI compliance
 
