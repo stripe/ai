@@ -1,0 +1,42 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.28/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
+  "version": "1.0.0",
+  "id": "1b5721e6-dd32-4a3f-97e2-2fc9cf87261e",
+  "developer": {
+    "name": "Stripe",
+    "websiteUrl": "https://stripe.com",
+    "privacyUrl": "https://stripe.com/privacy",
+    "termsOfUseUrl": "https://stripe.com/legal"
+  },
+  "name": {
+    "short": "Stripe Tools for Copilot",
+    "full": "Stripe Tools for Copilot"
+  },
+  "description": {
+    "short": "Payment processing and financial infrastructure tools",
+    "full": "The Stripe Model Context Protocol server defines a set of tools that AI agents can use to interact with the Stripe API and search its knowledge base (including documentation and support articles)."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#2B579A",
+  "agentSkills": [
+    { "folder": "./skills/" }
+  ],
+  "agentConnectors": [
+    {
+      "id": "Stripe",
+      "displayName": "Stripe MCP Server",
+      "description": "Access your Stripe Data",
+      "toolSource": {
+        "remoteMcpServer": {
+          "mcpServerUrl": "https://mcp.stripe.com",
+        }
+      }
+    }
+  ]
+}
+
+
