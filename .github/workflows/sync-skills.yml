@@ -1,74 +1,33 @@
 name: Sync skills from docs.stripe.com
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # Run daily at 00:00 UTC
-  workflow_dispatch: # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Exact reviewed canary commit
+        required: true
+        type: string
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
-  sync:
+  repository-metadata:
+    if: github.repository == 'stripe/ai' && github.ref == 'refs/heads/assessment/ai-sync-repositories-20261118-5136c291a91a' && github.sha == inputs.expected_sha
     runs-on: ubuntu-latest
-
+    timeout-minutes: 8
+    permissions:
+      contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ inputs.expected_sha }}
           persist-credentials: false
-        
-      - name: Generate GitHub App token
-        id: app-token
-        if: |
-          github.ref == 'refs/heads/main'
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          client-id: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
-          private-key: ${{ secrets.GH_APP_STRIPE_AI_SYNC_PEM }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-contents: write
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
-        with:
-          node-version: '20'
-
-      - name: Run sync script
-        run: node scripts/sync.js
-    
-      - name: Push to Github
-        if: |
-          github.ref == 'refs/heads/main'&&
-          !github.event.repository.fork
-        shell: bash
-        run: |
-          git add \
-            ':(glob)**/skills/**' \
-            .claude-plugin/marketplace.json \
-            .cursor-plugin/marketplace.json \
-            .grok-plugin/marketplace.json \
-            providers/claude/plugin/.claude-plugin/plugin.json \
-            providers/cursor/plugin/.cursor-plugin/plugin.json \
-            providers/grok/plugin/.grok-plugin/plugin.json \
-            providers/agent-plugins/plugin/plugin.json \
-            providers/antigravity/plugin/plugin.json
-
-          # Skip if nothing changed
-          if git diff --staged --quiet; then
-            echo "No changes to commit, skipping."
-            exit 0
-          fi
-
-          # Allow commit to work
-          git config user.name "${{ secrets.GH_APP_STRIPE_AI_SYNC_USER_NAME }}"
-          git config user.email "${{ secrets.GH_APP_STRIPE_AI_SYNC_EMAIL }}"
-
-          # Append a commit with a fix applied
-          git commit -m "sync skills"
-
-          # Authenticate with the GitHub App token and push
-          git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
-          git push origin main
+          node-version: '24'
+      - name: Read exact installation repository metadata
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+          GH_APP_STRIPE_AI_SYNC_CLIENT_ID: ${{ secrets.GH_APP_STRIPE_AI_SYNC_CLIENT_ID }}
+          GH_APP_STRIPE_AI_SYNC_PEM: ${{ secrets.GH_APP_STRIPE_AI_SYNC_PEM }}
+        run: node .github/assessment/ai-sync-repositories.mjs
