@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "type": "command",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/scripts/lifecycle/beforeSubmitPrompt.mjs\""
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/scripts/lifecycle/postToolUse.mjs\"",
+        "matcher": "Task|Subagent|mcp_task"
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "type": "command",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/scripts/lifecycle/postToolUseFailure.mjs\"",
+        "matcher": "Read|MCP:(.*stripe|list_available_accounts_or_orgs|atlas_company_formation)"
+      }
+    ],
+    "sessionStart": [
+      {
+        "type": "command",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/scripts/lifecycle/sessionStart.mjs\""
+      }
+    ]
+  }
+}
