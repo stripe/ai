@@ -16,10 +16,27 @@ description: >
 allowed-tools:
   - Bash(stripe *)
   - Bash(which stripe)
+  - Bash(curl -fsSL https://docs.stripe.com/projects/mcp.md)
   - Skill
   - Read
 
 ---
+
+## Choose MCP or CLI
+
+Before installing or running the CLI, check which workflow supports the task. If Stripe MCP exposes provisioning capabilities, such as `GetV2ProvisioningEligibility`, and supports the task, use its MCP workflow. Inspect the exposed tools without invoking provisioning mutations to detect support. Listing existing provisioned services requires the CLI workflow with `stripe projects status --json`, not MCP.
+
+When both workflows are available and support the task, honor the user’s preference, or use MCP by default. Recommend another available workflow if it better supports the task, while respecting the user’s preference. If their instructions conflict, ask which workflow to use. Select one workflow for the task instead of mixing them or switching because the other is available.
+
+For the MCP workflow, fetch and read the full plaintext or Markdown content from `https://docs.stripe.com/projects/mcp.md` into your context before starting. For example, this command retrieves the Markdown version:
+
+```bash
+curl -fsSL https://docs.stripe.com/projects/mcp.md
+```
+
+Read the whole document, including any additional chunks, without using a summarizer agent or a summary-only fetch. Follow the document’s MCP workflow instead of the CLI instructions that follow.
+
+If MCP isn’t available or doesn’t support the task, use the CLI workflow for tasks it supports. All remaining sections apply only to the CLI workflow, including installation if needed.
 
 ## Stripe Projects — Service Provisioning
 

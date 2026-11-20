@@ -11,7 +11,7 @@ Output MUST include all of these sections:
 - `recipient` configuration for destination or separate charges
 - Charge pattern with 2-3 sentence rationale
 - Seller and provider onboarding flow with onboarding method choice and rationale
-- Dashboard access flow and rationale by access mechanism (`express` login links, `full` direct `dashboard.stripe.com` access, `none` embedded-components-primary interface)
+- Dashboard access flow and rationale by access mechanism (for Accounts v2: `express` and `full` Dashboard Account Links, for Accounts v1: `express` login links and`full` direct `dashboard.stripe.com` access, `none` embedded-components-primary interface)
 - OAuth scope guidance when connecting existing Stripe accounts (only when user mentions OAuth or existing accounts; see compatibility-matrix section 4a)
 - Fee structure with platform fee model, fee-payer recommendation, funds-flow diagram, and stripe.com/pricing link
 - Embedded component recommendations tied to charge-pattern compatibility, with required `notification_banner` and charge-pattern caveats
@@ -54,9 +54,9 @@ Onboarding method: [embedded / Stripe-hosted]
 [Describe the full onboarding flow: sign up, create account, onboarding with the chosen method, Stripe verification, capability status verification, handling ongoing requirements, checking capability status on an ongoing basis. Only enable live transactions when the necessary capabilities are active.]
 
 ### D. Payments dashboard access for {sellerRole}
-- If dashboard=express: explain connected accounts access the Express dashboard through platform-generated Express login links, with embedded components for in-app workflows
-- If dashboard=full: explain connected accounts log in directly at `dashboard.stripe.com`
-- If dashboard=none: explain connected accounts don't use Stripe Dashboard login and embedded components are the primary interface for connected accounts
+- If dashboard=express: explain connected accounts access the Express dashboard through platform-generated Dashboard Account Links (Account Links v2 API, `account_dashboard` use case, with refresh handling), with embedded components for in-app workflows
+- If dashboard=full: explain connected accounts log in directly at `dashboard.stripe.com`, and that the platform can optionally create an account-scoped Dashboard Account Link
+- If dashboard=none: explain connected accounts don't use Stripe Dashboard login and embedded components are the primary interface for connected accounts. Creating a link doesn't enable Dashboard access
 
 ### E. Embedded components
 Recommended [Connect embedded components](https://docs.stripe.com/connect/supported-embedded-components):

@@ -2,7 +2,7 @@
 
 ## Critical rules (never violate)
 
-1. **ALWAYS use Accounts v2 API** (`POST /v2/core/accounts`). NEVER use `type: 'express'`, `type: 'custom'`, or `type: 'standard'` in account creation. NEVER use `stripe.accounts.create({ type: ... })`. These are deprecated v1 patterns.
+1. **ALWAYS use Accounts v2 API** (`POST /v2/core/accounts`). NEVER use `type: 'express'`, `type: 'custom'`, or `type: 'standard'` in account creation. NEVER use `stripe.accounts.create({ type: ... })`. These are deprecated v1 patterns. For a live platform that already has v1 connected accounts, see [Existing v1 platforms](#existing-platforms) for how to adopt v2 incrementally.
 2. **ALWAYS check v2 capability status** before processing. See “Go-live readiness” section below.
 3. **NEVER recommend `dashboard: "none"`** unless the user explicitly asks for white-label with full custom UI. Default to `express` for marketplaces and `full` for SaaS. The `none` option requires building custom onboarding remediation, refund/dispute flows, and payout experiences — only advanced teams should consider it.
 4. **ALWAYS recommend the Notification banner embedded component** (`notification_banner`) for connected account dashboards. It keeps accounts healthy as requirements evolve.
@@ -40,7 +40,7 @@ Configure connected accounts using three independent dimensions:
 - **SaaS platform** → `dashboard: "full"` — full Stripe Dashboard for independent businesses
 - **White-label (advanced only)** → `dashboard: "none"` — platform must build ALL UX including onboarding remediation, disputes, payouts
 
-If dashboard is `express`, provide access through [login links](https://docs.stripe.com/api/accounts/login_link/create.md). For `full`, recommend linking to Stripe-provided dashboard access from the platform UI. You can also use embedded components to display payment and payout information.
+If dashboard is `express`, provide access through Dashboard Account Links: create one with the [Account Links v2 API](https://docs.stripe.com/api/v2/core/account-links/create.md), `use_case.type` set to `account_dashboard`, and `use_case.account_dashboard.refresh_url` set to a URL that creates a new link. Generate a new link for each Open Dashboard action. For `full`, recommend linking to Stripe-provided dashboard access from the platform UI, or, to send a `full` dashboard user to their durable dashboard link, you can also create a Dashboard Account Link. These links don’t bypass Stripe authentication. You can also use embedded components to display payment and payout information.
 
 ### SaaS vs. Marketplace responsibility defaults
 
@@ -156,6 +156,16 @@ Default to embedded onboarding (account_onboarding component or account links). 
 - `dashboard: "full"` with destination or separate charges has limited functionality; prefer `dashboard: "express"` for those charge patterns
 - Express + destination/separate requires platform-run webhook recovery for disputes and transfer reversals
 
+## Existing v1 platforms 
+
+The v2 rules in this reference apply to new integrations and new connected accounts. For a live platform whose connected accounts were created with v1 account types (`type: 'standard'`, `'express'`, or `'custom'`):
+
+- **Don’t recreate accounts**: Accounts v2 endpoints work with existing v1 accounts without changing them, and v1 endpoints work with accounts created through v2. A newly created v1 account might take up to 10 minutes before it’s available to v2 endpoints. It sends a `v2.core.account.created` event when it’s ready.
+- **Migrate in stages**: Use this order: listen for v2 (thin) events on a new endpoint, then move `create` calls to `/v2/core/accounts`, then `update` calls, then `retrieve` calls. Both API versions work during the transition, so you don’t need to switch everything at once. Follow [Use the Accounts v2 API in your existing integration](https://docs.stripe.com/connect/accounts-v2/migrate-integration.md).
+- **Keep charge flows as they are**: Destination charges and direct charges reference the connected account by the same `acct_` ID in either API version. On subscriptions, `application_fee_percent` and `transfer_data[destination]` don’t change. The customer reference changes only when you bill a customer-configured account: pass it as `customer_account` instead of `customer`. See [Create subscriptions with Stripe Billing](https://docs.stripe.com/connect/subscriptions.md).
+- **Some features still require v1**: These include OAuth, the recipient service agreement, and the `treasury` and `card_issuing_*` capabilities. See the limitations section of the migration guide.
+- **Staying on v1 is acceptable**: If the platform doesn’t need v2 features, such as customer-configured accounts or paying the platform from a connected account’s Stripe balance, it can keep its v1 integration. Don’t recommend a rewrite only to replace `type`.
+
 ## Traps to avoid
 
 - Using legacy account types (`type: 'standard'`, `type: 'express'`, `type: 'custom'`) — use v2 dimensions instead
@@ -173,3 +183,4 @@ Default to embedded onboarding (account_onboarding component or account links). 
 - [Interactive platform guide](https://docs.stripe.com/connect/interactive-platform-guide.md) — Step-by-step platform builder.
 - [Design an integration](https://docs.stripe.com/connect/design-an-integration.md) — Detailed risk and responsibility decisions.
 - [Connected account configuration (v2)](https://docs.stripe.com/connect/accounts-v2/connected-account-configuration.md) — Account setup reference.
+- [Use the Accounts v2 API in your existing integration](https://docs.stripe.com/connect/accounts-v2/migrate-integration.md) — Incremental migration for platforms with v1 connected accounts.

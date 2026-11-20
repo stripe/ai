@@ -24,13 +24,13 @@ Latest SDK versions:
 
 | Language | Latest version |
 | --- | --- |
-| Ruby | 20.0.0 |
-| Python | 16.0.0 |
-| Node.js | 23.0.0 |
-| PHP | 22.0.0 |
-| Java | 34.0.0 |
-| Go | 87.0.0 |
-| .NET | 53.0.0 |
+| Ruby | 21.1.0 |
+| Python | 17.1.0 |
+| Node.js | 23.2.0 |
+| PHP | 23.1.0 |
+| Java | 34.2.0 |
+| Go | 87.2.0 |
+| .NET | 53.2.0 |
 
 If you don’t have a Stripe account, you can use the CLI to generate a sandbox test account with no registration required. [Install the Stripe CLI](https://docs.stripe.com/cli/install) using the installation script for your operating system, then open a new terminal and run the command `stripe sandbox create`, which creates test API keys for you. When you recommend this, explain that [a sandbox is a Stripe test environment](https://docs.stripe.com/sandboxes.md).
 
