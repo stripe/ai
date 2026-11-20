@@ -4,22 +4,32 @@ Use this reference for every number on the dashboard. The general rules come fir
 
 ## Overview
 
-The dashboard runs these queries, in this order.
+The dashboard runs these queries, in this order. Read the fields as written, without interpreting them:
 
-| Query | Type | Windows |
-| --- | --- | --- |
-| New customers | SQL | Both, in one request |
-| Successful payments | SQL | Both, in one request |
-| Checkout Sessions | SQL | Both, in one request |
-| Payment volume | SQL | Both, in one request |
-| Average order value | SQL | Both, in one request |
-| Payment volume by country | SQL | Both, in one request. Skipped for windows longer than 31 days |
-| MRR | Metric | Current |
-| ARR | Metric | Current. It has no comparison |
-| MRR comparison | Metric | Comparison. Skipped with no comparison |
-| MRR growth | Metric | Current |
-| MRR growth comparison | Metric | Comparison. Skipped with no comparison |
-| First activity | SQL | Neither. Runs only when the range has no data |
+```json
+[
+  {"id": "new_customers", "type": "sql", "window": "both", "sql": "New customers"},
+  {"id": "successful_payments", "type": "sql", "window": "both", "sql": "Successful payments"},
+  {"id": "checkout_sessions", "type": "sql", "window": "both", "sql": "Checkout Sessions"},
+  {"id": "payment_volume", "type": "sql", "window": "both", "sql": "Payment volume"},
+  {"id": "average_order_value", "type": "sql", "window": "both", "sql": "Average order value"},
+  {"id": "payment_volume_by_country", "type": "sql", "window": "both", "sql": "Payment volume by country", "skip_if_days_over": 31},
+  {"id": "mrr", "type": "metric", "window": "current", "params": {"name": "revenue.mrr", "starts_at": "{CUR_START}", "ends_at": "{CUR_END_INCL}", "granularity": "day", "timezone": "{TZ}"}},
+  {"id": "arr", "type": "metric", "window": "current", "params": {"name": "revenue.arr", "starts_at": "{CUR_START}", "ends_at": "{CUR_END_INCL}", "granularity": "day", "timezone": "{TZ}"}},
+  {"id": "mrr_comparison", "type": "metric", "window": "comparison", "skip_without_comparison": true, "params": {"name": "revenue.mrr", "starts_at": "{CMP_START}", "ends_at": "{CMP_END_INCL}", "granularity": "day", "timezone": "{TZ}"}},
+  {"id": "mrr_growth", "type": "metric", "window": "current", "params": {"name": "revenue_growth.mrr", "starts_at": "{CUR_START}", "ends_at": "{CUR_END_INCL}", "granularity": "day", "timezone": "{TZ}", "group_by": ["change_type"]}},
+  {"id": "mrr_growth_comparison", "type": "metric", "window": "comparison", "skip_without_comparison": true, "params": {"name": "revenue_growth.mrr", "starts_at": "{CMP_START}", "ends_at": "{CMP_END_INCL}", "granularity": "day", "timezone": "{TZ}"}},
+  {"id": "first_activity", "type": "sql", "window": "none", "only_if_no_data": true, "sql": "First activity"}
+]
+```
+
+- **`id`**: The query’s ID in the page’s code, and the key its result is stored under.
+- **`window`**: `both` covers the current and comparison windows in one request. `none` uses neither.
+- **`sql`**: The heading under Queries that holds the query’s SQL. Send that SQL exactly, with the placeholders filled in.
+- **`params`**: The metric request’s `params`, with the placeholders filled in.
+- **`skip_without_comparison`**: Don’t send the query when there’s no comparison.
+- **`skip_if_days_over`**: Don’t send the query when the current window is longer than this many days.
+- **`only_if_no_data`**: Send the query only when the range has no data, as the design reference (`dashboard-design.md`) defines it, and once per account.
 
 ## Placeholders
 
@@ -39,9 +49,9 @@ The comparison must come before the current window, so the SQL’s `CASE` split 
 
 ## Time windows
 
-Both outputs show the same view, unless the user asks for another period.
+Every output shows the same view, unless the user asks for another period.
 
-- **Time zone**: The IANA zone the user named, otherwise the viewer’s own zone: the browser’s `Intl.DateTimeFormat().resolvedOptions().timeZone` in a hosted page, or the system zone in a coding agent. Use Pacific time (`America/Los_Angeles`) only if neither is available. Every result is in this local time zone.
+- **Time zone**: The IANA zone the user named, otherwise the viewer’s own zone. For the queries you run, that’s the zone your session reports for the user, or the system zone where you run on the user’s machine. Use Pacific time (`America/Los_Angeles`) only if neither is available, and say so in the hand-over. For the queries a dashboard runs itself, it’s the browser’s `Intl.DateTimeFormat().resolvedOptions().timeZone`. Every result is in this local time zone.
 - **BFCM**: The 4 days from Black Friday, the day after US Thanksgiving (the fourth Thursday in November), through Cyber Monday.
 - **Default view**: Before this year’s Black Friday, the last 7 complete local days plus today so far, with no comparison. From Black Friday on, this year’s BFCM through today, compared with the previous BFCM, day for day.
 - **Comparison**: One of **None**, **Previous BFCM** (the most recent BFCM that ended before the current window starts), or **Same dates last year**. Choosing another range keeps the chosen comparison. If every comparison query has succeeded, every comparison SQL query has no rows, its Payment volume and MRR are zero on every day, and MRR growth comparison has no movements, the account has no data then: drop the comparison and say so, rather than showing zeros.
@@ -55,8 +65,9 @@ For example, on Nov 13, 2026 in Pacific time, the current window is Fri, Nov 6 �
 ## Running the queries
 
 - **Order**: On first load and on refresh, start the queries in the order they’re listed under Queries. Create the query runs back to back, without waiting for one to finish before the next. In a sandbox (`livemode` false), which allows 1 query run creation per second, send each creation at least 1 second after the previous one. Send the Analytics API metric calls one at a time, each at least 1 second after the previous metric response. Query runs and metric calls don’t wait for each other, and each panel fills as soon as its result arrives.
-- **Skips**: With no comparison, skip every comparison metric query, and give the SQL an empty comparison window. Skip Payment volume by country for windows longer than 31 days.
-- **One fetch**: Share each result across all panels that need it, and never fetch the same data twice. Each query’s name is its ID in the page’s code.
+- **Agent turns**: When you run the queries yourself, count the time between your turns as the wait. In each turn, create the next query run, send the next metric call, and retrieve every query run whose poll is due, all in that same turn. Don’t sleep when the previous turn took longer than 1 second, or longer than the next poll interval. Sleep only for the time that’s still left, and only when nothing else is due.
+- **Skips**: Follow each query’s skip fields in the Overview. With no comparison, give the SQL an empty comparison window.
+- **One fetch**: Share each result across all panels that need it, and never fetch the same data twice.
 - **Limits**: Keep each daily metric window to at most 92 days, and use at most one `group_by` dimension.
 - **Polling**: Poll a pending query run after 2 seconds, then 4, then every 5 seconds, for up to 5 minutes.
 - **Failures**: Treat a call with no response after 60 seconds as a network error, so no query stays pending. Retry a rate limit, network, or server error once after about 2 seconds, holding new calls during a rate-limit wait. Never retry other errors unchanged. Show failures only in the affected panels.
@@ -67,15 +78,15 @@ For example, on Nov 13, 2026 in Pacific time, the current window is Fri, Nov 6 �
 
 Every `stripe_analytics` call takes `stripe_context` and `livemode` from the account, an `intent`, and `params`. In a session signed in with an API key, leave out `stripe_context` and `livemode`.
 
-Before writing any call, check the Stripe tools your session lists and the `stripe_analytics` input schema. This skill expects `stripe_analytics`, with the intents `execute_query_run`, `retrieve_query_run`, and `execute_metric`, and `list_available_accounts_or_orgs`. If the session lists a different tool or intent for the same job, use the listed name everywhere, including the hosted page’s tool declaration, and mention it in the hand-over. If no listed tool runs a metric or a query run, say so and stop, as for missing Stripe tools.
+This skill expects `stripe_analytics`, with the intents `execute_query_run`, `retrieve_query_run`, and `execute_metric`, and `list_available_accounts_or_orgs`. The skill’s first rule already checked `stripe_analytics` and its intents against the session, so don’t read its schema again, or the rest of its description, a long manual that this skill replaces. Look at that one tool’s schema again only if a call fails on an unknown tool, intent, or field. If the session lists a different tool or intent for the same job, use the listed name everywhere, including any tool declaration the output needs, and mention it in the hand-over. If no listed tool runs a metric or a query run, say so and stop, as for missing Stripe tools.
 
 - **Query Runs API SQL**: `"intent": "execute_query_run"` with `"params": {"sql": "…"}`. Poll with `"intent": "retrieve_query_run"` and `"params": {"query_run_id": "qryrun_…"}`, adding `page` and `limit` for later pages. Fill in the placeholders as the Placeholders section describes.
 - **Analytics API metric**: `"intent": "execute_metric"` with the query’s `params`, such as `{"stripe_context": "acct_…", "livemode": true, "intent": "execute_metric", "params": {"name": "revenue.mrr", "starts_at": "2025-11-28T08:00:00Z", "ends_at": "2025-12-02T07:59:59Z", "granularity": "day", "timezone": "America/Los_Angeles"}}`. Fill in the placeholders as the Placeholders section describes. `{TZ}` makes the API bucket each day in local time.
-- **From a hosted page**: Write the tool and intent names you confirmed into one constant at the top of the script, and use only that constant in calls. `const mcp = await claude.use("mcp")` (it can be `null`), then `await mcp.callTool("Stripe", tool, input)`. Read `.payload`, which can be an object or JSON text. A failure rejects. Publish the page first, then declare the same tools, such as `{"mcp": {"servers": [{"server": "Stripe", "tools": ["stripe_analytics", "list_available_accounts_or_orgs"]}]}}`.
+- **From the dashboard**: Only in a dashboard that queries Stripe itself, as the output reference (`dashboard-output.md`) defines it. Write the tool and intent names you confirmed into one constant at the top of the script, and use only that constant in calls. Make the calls the way the output environment’s tools and schemas describe, never from a client’s name.
 
 ### Responses
 
-These are the shapes the tools return as of this skill. Parse responses with these shapes. Anything else is unreadable: show the failed state with **Retry**, never guessed values.
+These are the shapes the tools return as of this skill. Parse responses with these shapes. Anything else is unreadable: show the failed state with **Retry**, never guessed values. If a call succeeds but its response doesn’t match, say in the hand-over that the tool’s response format changed, so it doesn’t read as missing data.
 
 - **Wrapper**: Every `stripe_analytics` response arrives as `{"tooltip": "…", "result": {…}}`. Unwrap `result`, and ignore `tooltip`.
 - **`list_available_accounts_or_orgs`**: `{"accounts": [{"stripe_context": "acct_…", "livemode": true, "name": "…"}]}`.
@@ -98,7 +109,7 @@ Apply these rules in the page’s code, never by estimating in prose:
 
 ## Queries
 
-Run these in this order. Each one covers both windows unless it says otherwise.
+Each heading matches a query in the Overview, which holds the metric requests’ `params`. Each SQL query covers both windows unless it says otherwise.
 
 The Payment volume, Average order value, and Payment volume by country queries share three parts:
 
@@ -186,35 +197,25 @@ SELECT CASE WHEN "payment_intents".created < TIMESTAMP '{CMP_END}' THEN 'compari
 
 Monthly recurring revenue for the current window, by day. The MRR chart plots each day, and its headline is the latest daily bucket, never a sum.
 
-`{"name": "revenue.mrr", "starts_at": "{CUR_START}", "ends_at": "{CUR_END_INCL}", "granularity": "day", "timezone": "{TZ}"}`
-
 ### ARR
 
 Annual recurring revenue for the current window, by day. The ARR chart plots each day, and its headline is the latest daily bucket. It has no comparison.
-
-`{"name": "revenue.arr", "starts_at": "{CUR_START}", "ends_at": "{CUR_END_INCL}", "granularity": "day", "timezone": "{TZ}"}`
 
 ### MRR comparison
 
 MRR for the comparison window. Its latest daily bucket is the MRR headline’s comparison, and its days are the chart’s comparison line.
 
-`{"name": "revenue.mrr", "starts_at": "{CMP_START}", "ends_at": "{CMP_END_INCL}", "granularity": "day", "timezone": "{TZ}"}`
-
 ### MRR growth
 
 MRR movements for the current window, by day and `change_type`. The MRR growth chart plots each day’s net change, the sum of that day’s rows, and its headline is the sum of every row. The MRR movements table maps each row’s `dimensions.change_type` to its category before summing: `MRR_NEW` to “New,” `MRR_EXPANSION` to “Expansion,” `MRR_CONTRACTION` to “Contraction,” `MRR_CHURN` to “Churn,” `MRR_REACTIVATION` to “Reactivation,” and `MRR_FX_ADJUSTMENT` to “FX adjustment.” Render exactly those six rows, in that order, with zero for a category that has no rows, then net movement: the six category totals added once each. Any other `change_type` value makes the result unreadable.
-
-`{"name": "revenue_growth.mrr", "starts_at": "{CUR_START}", "ends_at": "{CUR_END_INCL}", "granularity": "day", "timezone": "{TZ}", "group_by": ["change_type"]}`
 
 ### MRR growth comparison
 
 MRR movements for the comparison window. The MRR growth chart plots each day’s sum as the comparison’s bars. The sum of every row is its comparison value, shown without a percentage change, because either can be negative or zero.
 
-`{"name": "revenue_growth.mrr", "starts_at": "{CMP_START}", "ends_at": "{CMP_END_INCL}", "granularity": "day", "timezone": "{TZ}"}`
-
 ### First activity
 
-The account’s first and latest succeeded payment, customer, or subscription. Run it only when the range has no data, as the design reference (`dashboard-design.md`) defines it, and once per account. A null or missing `first_day` means the account has no activity yet.
+The account’s first and latest succeeded payment, customer, or subscription. A null or missing `first_day` means the account has no activity yet.
 
 ```sql
 -- First and latest succeeded PaymentIntent, customer, or subscription

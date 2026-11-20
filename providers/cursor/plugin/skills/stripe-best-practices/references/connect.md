@@ -52,6 +52,8 @@ If dashboard is `express`, provide access through [login links](https://docs.str
 - Charge pattern: Direct charges (connected account is merchant of record)
 - Code sample: [/connect/saas/tasks/create#code-sample](https://docs.stripe.com/connect/saas/tasks/create.md#code-sample)
 
+**Customer-only accounts**: Setting `dashboard` or `defaults.responsibilities` on an account with only the Customer configuration fails with `unsupported_field_for_configs`. If a later update request adds `configuration.merchant` or requests `stripe_balance.stripe_transfers` for `configuration.recipient`, that request must include `dashboard` and `defaults.responsibilities`. You can’t change them after you set them.
+
 **Marketplace (destination charges):**
 
 - `dashboard: "express"`
