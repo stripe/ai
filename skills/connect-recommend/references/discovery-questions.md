@@ -102,8 +102,8 @@ Consider embedded components as a middle ground for less maintenance.
 
 Dashboard access for sellers or providers:
 
-- Express dashboard: provide sellers an Express login link from `stripe.accounts.createLoginLink(accountId)`.
-- Full Stripe dashboard: direct sellers to log in at [dashboard.stripe.com](https://dashboard.stripe.com).
+- Express dashboard: create a Dashboard Account Link with the [Account Links v2 API](https://docs.stripe.com/api/v2/core/account-links/create.md).
+- Full Stripe dashboard: direct sellers to log in at [dashboard.stripe.com](https://dashboard.stripe.com). The platform can also create a Dashboard Account Link to send a seller to their durable dashboard link.
 - No dashboard: platform uses embedded components or custom UI backed by Stripe API data.
 
 Dashboard selection logic:
