@@ -14,10 +14,12 @@ Don’t ask the user to choose an output, and don’t stop because a hosting too
 
 ## Build the dashboard
 
-1. **Run the queries**: For the account you chose, use the time windows from the queries reference (`queries.md`), and run its queries in its order, with its pacing, polling, and single retry.
-2. **Write the results in**: Write the page with every card, chart, and table from the dashboard design, and embed the results in it. Store each result under its query `id` from the queries reference, with its status (`ok` or `failed`), its rows with amounts and counts as the strings the query returned, its `refreshed_at`, and its request `params` or SQL. Add the account’s name, ID, and mode, the view boundaries, the time zone, the time the last successful query finished, and whether any query failed. Escape stored strings for their HTML context.
-3. **Check it**: Run every check in Check before publishing.
-4. **Publish it**: Create the hosted output, or write the file, with the operation you chose. Replace the loading page instead of creating a second output: write the dashboard over the loading file, without its reload tag, so the open page shows it. Never paste the page’s HTML into the chat.
+The skill’s workflow starts queries before writing any HTML. This section covers the build after queries are running.
+
+1. **Show the loading page (first build only)**: The skill’s step 4 writes the loading page and opens it. Skip this on a refresh — go straight to updating the existing dashboard in place.
+2. **Poll and build in memory**: Poll the queries until every one finishes or fails. While polling, build the full dashboard page in memory: the layout, header, all panel containers, the `@stripe/charts` CDN script, and each panel’s data as its query completes. Print a short status in chat every 2 minutes so the user knows the build is alive — “Still waiting on N queries…” or “All queries complete — finalizing.”
+3. **Save once**: When every query has finished (or failed), save the complete dashboard to the file or hosted output, overwriting the loading page. One save, at the end, with all the numbers in it. Don’t save intermediate states — there is nothing for the open loading page to pick up until the data is ready. Don’t add `<meta http-equiv="refresh">` to the file. A panel whose query succeeded gets its full spec; a panel whose query failed gets the failed state from the design reference.
+4. **Open the finished dashboard**: For HTML files, open the file again (`open` on macOS, `xdg-open` on Linux) so the finished dashboard appears. For hosted output, the update is live. Run every check in Check before publishing. Store the account’s name, ID, mode, view boundaries, time zone, last successful query time, and any failures. Escape stored strings for their HTML context.
 
 Treat the results this way:
 
@@ -27,8 +29,8 @@ Treat the results this way:
 
 Build the page to these limits:
 
-- **Small script**: Aim for about 400 lines. Use one formatter and one bar or line chart function. Don’t build an error classifier, a job registry, or series toggles.
-- **Self-contained**: Draw charts with inline SVG in the page’s own script. Load no remote scripts, fonts, or images.
+- **Small script**: Aim for about 300 lines. Use `StripeCharts.render` for all charts and KPI tiles — don’t write custom SVG chart functions, formatters, or axis logic. The page script handles data wiring, layout, refresh, and sources only.
+- **Self-contained**: Use `@stripe/charts` for all charts and KPI tiles, loaded via npm, CDN, or inline SVG as the design reference’s fallback chain describes. Load no other remote scripts, fonts, or images.
 - **No extra storage**: Don’t add a database, a scheduled task, or a second data file. The results live in the page.
 
 ## Page behavior
@@ -56,7 +58,7 @@ When the user asks, rerun the queries and update the same dashboard, artifact, o
 - **Refresh, same view**: Keep each earlier result until its new one succeeds. Mark a query that fails as failed to refresh, so the page keeps its old values with a failure note.
 - **Different period or time zone**: Rerun every query for the new view. Never keep a result from the previous view.
 
-Then run the checks in Check before publishing again for the values and controls that changed. An HTML file that’s already open keeps showing its old figures, so after you write the file, open it again, or tell the user to reload the page if you can’t.
+Then run the checks in Check before publishing again for the values and controls that changed. An HTML file that’s already open keeps showing its old figures, so after you write the file, open it again so the updated dashboard appears.
 
 ## Check before publishing
 
@@ -64,11 +66,10 @@ Check the filled-in dashboard before you publish, export, or hand it over:
 
 - **Numbers**: Use only successful, complete Stripe results and calculations from those results. Never show failed or unreadable results as zeros. Mark retained values as stale after a failed refresh.
 - **Account**: Show the selected account’s name and ID, and its verified Stripe mode as the dashboard design describes. Check that every result belongs to that account and mode. Never work out the mode from missing metadata.
-- **Period**: Check that the reporting dates, comparison dates, and time zone match the queries. Don’t keep values from another period.
-- **Last refreshed**: Use the last successful retrieval time, not the render or file-write time. When you run the queries, read the clock right after each successful result arrives, and use the latest of those times. A page that queries Stripe itself does the same. Keep source-data freshness separate, and label partial refreshes accurately.
-- **Refresh mode**: Describe only the refresh behavior the output supports. Reloading saved results doesn’t retrieve new Stripe data.
+- **Refresh mode**: Describe only the refresh behavior the output supports. Reloading saved results doesn’t retrieve new Stripe data. Make the refresh button’s label match its action — “Copy refresh request” if it only copies instructions, omitted if no refresh is supported.
 - **Privacy**: Keep credentials, tokens, and customer-identifying data out of the page, embedded data, generated source, files, and URLs.
-- **Refresh button**: Make its label match its action. Use “Copy refresh request” if it only copies instructions. Omit the button if no refresh action is supported.
+
+Don’t launch headless Chrome, Puppeteer, or any browser-based rendering step to verify the dashboard, unless the user asks or requires you to test its frontend changes. Otherwise, the user’s own browser is the only view that matters.
 
 Fix failed checks before publishing. If you can’t verify a check, including the account or mode, explain what’s missing and stop. In a session signed in with an API key, the key sets the mode and no tool reports it: say in the hand-over that the mode is the key’s, without naming one. Apply the same checks to hosted output and HTML files.
 
@@ -76,13 +77,15 @@ Fix failed checks before publishing. If you can’t verify a check, including th
 
 Give the dashboard’s location on its own line: the URL or download that the publishing or export operation returned, or the file’s full path after you confirm the file exists. Never write a URL yourself. Then, in a few short lines:
 
-- The view in plain words, such as “This shows the last 7 days plus today so far, Fri, Nov 6 – Fri, Nov 13, with no comparison. Black Friday is Nov 27. Ask me to compare it with BFCM 2025.”
-- The headline payment volume and its change, from the finished results. If the range has no data, say so, with the account’s first or latest activity and an offer to show the range the design reference’s no-data card gives.
+- The view: the date range and dates, such as “Last 7 days plus today so far, Fri, Nov 6 – Fri, Nov 13, 2026.” Only mention a comparison if one is active — don’t say “with no comparison.” Keep it to what the dashboard actually shows.
+- The headline payment volume, such as “$1,106.71 from 16 successful payments.” Include the change only if a comparison is active — don’t say “no change figure” or explain why there isn’t one. If the range has no data, say so, with the account’s first or latest activity and an offer to show the range the design reference’s no-data card gives.
 - The account’s name, ID, and verified mode. If the connection lists other accounts, say how many, and that the user can ask for another one by name.
-- The time zone, the time of the last successful retrieval, and any failed panels. Say that data runs about 1–3 hours behind, so the numbers aren’t live.
-- How the dashboard refreshes, as built: either “Ask me to refresh it. It doesn’t update on its own,” adding for a file that the user reloads the page afterward, and for hosted output that its pages can’t query Stripe in this client, or, for a page that queries Stripe itself, “The page refreshes when you select Refresh,” and that the client may ask the viewer to allow the Stripe connector.
+- The time zone, the time of the last successful retrieval, and any failed panels.
+- How the dashboard refreshes, as built: either “Ask me to refresh it. It doesn’t update on its own,” adding for hosted output that its pages can’t query Stripe in this client, or, for a page that queries Stripe itself, “The page refreshes when you select Refresh,” and that the client may ask the viewer to allow the Stripe connector.
 - Who can open it, as the host enforces it. A file isn’t a sharing link. Anyone who can open the dashboard or file can read its saved figures without a Stripe connection. In a page that queries Stripe itself, a viewer needs their own Stripe connection with access to the account only to retrieve new data.
 
-For a page that queries Stripe itself, end with one question: “Do you want the page to refresh every 5 minutes while it’s open?” Don’t wait for the answer before handing over. If the user says yes, turn auto-refresh on in the same page, without rerunning the queries. Don’t ask it for any other dashboard, because it can’t refresh on its own.
+For a page that queries Stripe itself, end with one question: “Do you want the page to refresh every 5 minutes while it’s open?” Don’t wait for the answer before handing over. If the user says yes, turn auto-refresh on in the same page, without rerunning the queries.
+
+For any other dashboard, end with: “Would you like me to refresh the data, or add a comparison to the previous BFCM?” Don’t wait for the answer before handing over.
 
 Don’t share the dashboard automatically.
