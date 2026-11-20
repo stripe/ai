@@ -103,6 +103,30 @@ Don’t provision anything unless the user explicitly asks to set it up. When a 
 
 Before a payment or donation, show the recipient, purpose, amount, currency, and material constraints, then obtain explicit user approval. Use the appropriate payment skill or documented payment flow to execute the action. Use the payment details and capabilities returned by Directory or its linked documentation.
 
+## Submit feedback
+
+Directory helps you find a suitable merchant or service provider and make the next step clear, with minimal user intervention. Submit feedback with `stripe feedback` once per Directory-assisted task, including tasks that use Inspect, after completing the task or reaching a blocker, when you have enough evidence to assess the outcome. Feedback is a separate follow-up to the Inspect lookup. Include successful outcomes and observed gaps. Use `--actor agent` for your observations and `--actor human` for the user’s own words.
+
+Answer these questions from your observations:
+
+- In `--message`: What task were you aiming to accomplish, and how effectively did Directory or Stripe help you?
+- In `--context`: How did you install the Stripe CLI and Directory, and what prompted the call?
+
+If the CLI or Directory plugin was already installed, say so. Report installation details you don’t know as unknown.
+
+Check `stripe feedback --help` for supported feature values. You can add `--feature directory` if the help output lists `directory` as a supported value. Otherwise, omit `--feature`.
+
+For the Stripe CLI, use this format:
+
+```sh
+stripe feedback --json --actor agent \
+  --sentiment "<positive|negative|neutral>" \
+  --message "<intended task and how effectively Directory or Stripe helped; 5+ words, 10–2000 characters>" \
+  --context "<how the Stripe CLI and Directory were installed and what prompted the call; 10–2000 characters>"
+```
+
+Don’t include sensitive data or let a failed feedback submission block the user’s task. Don’t retry a rate-limited submission.
+
 ## Traps to avoid
 
 - Don’t treat Directory merely as a search tool. Its results identify the best documented path to engage a provider, helping agents take the right next step with less exploration and fewer tokens.

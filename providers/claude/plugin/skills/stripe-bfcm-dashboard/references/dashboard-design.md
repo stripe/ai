@@ -1,118 +1,275 @@
 # Dashboard design
 
-Use this reference to lay out the dashboard, write its labels, and show its states, in every output. Keep every panel listed here, and don’t add others.
+Layout, labels, and states for every output. Keep every panel listed here and don’t add others.
 
-## Visual style
+## Page style
 
-Match the Stripe Dashboard’s light theme, so the page feels like part of Stripe. Use these values from Stripe’s design system:
+Page background is white `#FFFFFF`. Cards are white with a 1-pixel `var(--sc-color-divider, #D4DEE9)` border and 8-pixel radius — they separate visually because the border is visible on white. Do not use `--sc-color-fill-subtle` (`#F4F7FA`) for the page background.
 
-| Role | Value |
-| --- | --- |
-| Page background | `#F4F7FA` |
-| Card background | `#FFFFFF`, with a 1-pixel `#D4DEE9` border and an 8-pixel corner radius |
-| Gridlines and dividers | `#ECF1F6` |
-| Primary text | `#1A2C44` |
-| Secondary text | `#3C4F69` |
-| Current window, buttons, and links | `#533AFD` |
-| Comparison window | `#7D8BA4` |
-| Increase | `#217005` |
-| Decrease | `#C0123C` |
+Use `--sc-*` tokens from `@stripe/charts` for non-chart elements so everything shares one theme:
 
-- **Type**: The system font stack `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`. Use tabular numerals (`font-variant-numeric: tabular-nums`) for every value, a large semibold size for headline values, and secondary text for context. Use sentence case for every heading, label, and table row, and never uppercase text or `text-transform: uppercase`.
-- **Color use**: Use the current and comparison colors consistently in every panel. Always pair an increase or decrease with an arrow or sign, so a change doesn’t rely on color alone.
-- **Quiet panels**: No gradients, shadows heavier than a hairline, or decorative images. Don’t load fonts or images from other hosts.
+```css
+body { background: #FFFFFF; color: var(--sc-color-text-primary, #1A2C44); }
+.card { background: var(--sc-color-surface, #FFFFFF); border: 1px solid var(--sc-color-divider, #D4DEE9); border-radius: 8px; }
+.secondary { color: var(--sc-color-text-secondary, #3C4F69); }
+.increase { color: var(--sc-color-good, #217005); }
+.decrease { color: var(--sc-color-bad, #C0123C); }
+.accent { color: #533AFD; }
+```
 
-Show only the text, labels, and controls this reference names. Don’t add hints, captions, footnotes, or helper text.
+`#533AFD` is for buttons, links, and country bars — not chart series. The copy icon uses secondary text color. Use sentence case everywhere — never `text-transform: uppercase`.
 
-Lay the page out as a grid, at most about 1,200 pixels wide and centered, with the header across the full width. In each section, put the cards in one row with `grid-template-columns: repeat(auto-fit, minmax(160px, 1fr))`, so they share the width evenly at equal heights, then the charts and tables two to a row, side by side, with a last odd panel taking half the row. Below about 700 pixels, stack charts and tables in one column. Charts resize with their container. Size every panel to its content: no fixed or minimum heights, so no panel has empty space below its content. Panels in a row share the height of the tallest one.
+## Layout
 
-Order the sections from the top:
+A grid, at most ~1,200 pixels wide and centered. KPI tiles four to a row with `grid-template-columns: repeat(auto-fit, minmax(160px, 1fr))`. Charts and tables two to a row; a last odd panel takes half the row. Below ~700 pixels, stack in one column. KPI tile cards should be compact — constrain their height so the sparkline stays small (about 120–140px total card height). Use `align-items: stretch` on the KPI grid row so every tile in a row matches the tallest one, including an empty tile with no sparkline, within that height cap.
+
+Section order:
 
 1. Header.
-2. **Recurring revenue**: the MRR chart beside the MRR growth chart, then the MRR movements table beside the ARR chart.
-3. **Growth**: new customers, successful payments, Checkout Sessions, and checkout conversion cards.
-4. **Payments**: the payment volume and average order value charts, then the country table.
+2. **Recurring revenue**: MRR chart beside MRR growth chart, then MRR movements table beside ARR chart.
+3. **Growth**: new customers, successful payments, Checkout Sessions, and checkout conversion tiles.
+4. **Payments**: payment volume and average order value charts, then the country table.
 
 ## Header
 
-The header orients the viewer before any number. “Stripe BFCM Dashboard” is its only heading. Lay it out in three left-aligned rows:
+Three left-aligned rows:
 
-1. **Title row**: The title “Stripe BFCM Dashboard.” **Show sources** and **Refresh** on the right.
-2. **Account row**, in secondary text: the account.
-3. **Date row**: the date range control, then the refresh status in secondary text.
+1. **Title**: “Stripe BFCM Dashboard.” **Show sources** and **Refresh** on the right.
+2. **Account**: name and ID in secondary text, with a “Sandbox” badge when `livemode` is false. Style the badge amber: border `#E8C48A`, background `#FFF6E5`, text `#8A5A00`. Show no badge in live mode.
+3. **Date row**: date range control on the left, then refresh status right-aligned in secondary text. Don’t show the timezone (e.g. “America/Los_Angeles”) in the header — it’s used internally for queries but not displayed.
 
-Style **Show sources**, **Refresh**, and the date range pills alike: 32 pixels high, a 1-pixel `#D4DEE9` border, a 6-pixel corner radius, a white background, and 14-pixel type.
+Style buttons and date pills alike: 32px high, 1-pixel `var(--sc-color-divider)` border, 6-pixel radius, white background, 14-pixel type.
 
-Keep the header to these items:
-
-- The title “Stripe BFCM Dashboard.”
-- The Stripe account’s name and ID, with a “Sandbox” badge when `livemode` is false. Show no mode badge in live mode, because “Live” reads as real-time data.
-- **Show sources**, described in Sources, and a refresh button. In a dashboard that queries Stripe itself, as the output reference (`dashboard-output.md`) defines it, **Refresh** queries Stripe again. In any other dashboard, use the button the output reference describes, or none. While any refresh runs, manual or automatic, it reads “Refreshing…” with a 14-pixel spinner before the text, in `#533AFD` text on a `#F5F3FF` background with a `#533AFD` border, and is disabled, so during a refresh from **Refresh** it’s clear why the date range pills are disabled too. There’s no account picker: the dashboard shows only the connected account.
-- In a dashboard that queries Stripe itself, the date range control: two filter pills, each with a muted label, its value in primary text, and a small ▾, such as **Date range · Last 7 days** and **Compare · None**. A pill opens a popover with the presets or comparison options from the queries reference (`queries.md`), by name only. **Custom** shows two date inputs inside the popover and no other text: limit their range with the inputs’ `min` and `max`, not a hint. Its pill then reads “Nov 6 – Nov 12.” Position the popover over the page, 4 pixels below its pill, as a white card with a hairline border and an 8-pixel corner radius, so the layout never moves. Choosing an option applies it and closes the popover; for **Custom**, after both dates form a valid range. Choosing the option that’s already applied only closes the popover, and **Custom** opens with the current dates filled in. Make every control a `type="button"` with no `<form>`, so no click or **Enter** reloads the page. **Escape** or a click outside closes it. Keep both pills disabled until every first-load query has succeeded or failed, and while a refresh from **Refresh** runs: a disabled pill opens nothing. Auto-refresh leaves them enabled. Keep each popover hidden until its pill opens it, so no empty popover shows. In any other dashboard, show the pills’ values as text instead.
-- The refresh status, from successful queries, never the time the page was drawn. After every query of a load or refresh has succeeded, “Last refreshed: Nov 13, 2026, 9:41 AM PST,” the time the last of them succeeded, with the selected time zone’s abbreviation. If any failed, “Partially refreshed: Nov 13, 2026, 9:41 AM PST · 2 panels failed,” so a partial load never reads as complete. Before the first load finishes, show nothing. Source-data freshness and errors stay in the sources.
-- If you dropped the comparison for lack of data, “No data for BFCM 2025 on this account” after the refresh status, naming that comparison.
+- **Refresh** (dashboard that queries Stripe itself): reruns queries. While running, reads “Refreshing…” with a spinner, `#533AFD` text on `#F5F3FF` background, disabled. In any other dashboard, use the copy-refresh button from the output reference, or none.
+- **Date range** (dashboard that queries Stripe itself): two pills — **Date range · Last 7 days** and **Compare · None** — each opens a popover with presets from the queries reference. **Custom** shows two date inputs. Disabled until first load completes and during manual refresh. In a file dashboard, show one static pill with the range label and dates (e.g. **Last 7 days · Nov 13 – Nov 19**) — styled the same but not clickable, no popover, no Compare pill.
+- **Refresh status**: Show just the time when the refresh happened today — “Last refreshed: 9:41 AM PST”. Include the date only when it was a different day — “Last refreshed: Nov 13, 9:41 AM PST”. “Partially refreshed: 9:41 AM PST · 2 panels failed” if any failed. Nothing before first load.
+- If comparison was dropped for lack of data: “No data for BFCM 2025 on this account.”
 
 ## Panels
 
-Panels have no buttons or links, except **Retry** on a failed panel and the copy icon in the sources. Each card shows its title and its value in large type, plus its change when there’s a comparison, and nothing else: no dates, definitions, or notes on why a value is missing. Put that context in the sources. Show a genuine zero as zero and a missing value as a dash. In the bottom-right corner of each chart and table, show how long ago its data was updated, from its current-window result’s `refreshed_at`, in 12-pixel secondary text, as the Stripe Dashboard does: “Updated just now,” “Updated 1 minute ago,” “Updated 3 hours ago,” or “Updated 2 days ago.” Work it out when the panel is drawn, and update it every minute. Every value comes from the calculations in the queries reference (`queries.md`).
+Every chart and KPI tile is rendered by `StripeCharts.render`. The page card is the frame — one card container per panel. Strip the library’s own card styling so there’s no double border:
 
-- **Comparisons**: Name the comparison in every change, legend, and tooltip, such as “↑ 12% per day vs. BFCM 2025 ($4,210)” or “BFCM 2025,” never “before” or “previous.” Without a comparison, leave out changes, comparison values, and comparison lines and bars. Include the year in every date outside the current year.
-- **ARR chart**: Titled “ARR,” drawn like the MRR chart, with no comparison line or change.
-- **MRR growth chart**: Titled “MRR growth,” with the net MRR change as its headline, signed, such as “+$1,234.00,” and the comparison’s net change, such as “vs. BFCM 2025 (+$980.00).” Grouped bars of each day’s net MRR change for both windows, by day of the window, with negative days below a zero line and exact signed amounts and both actual dates in the tooltip. Use bars, because each day is a change, not a level.
-- **MRR chart**: Titled “MRR,” with its headline value and change. Lines for both windows, aligned by day of the window, with exact formatted amounts and dates in the tooltip. Use lines, not bars, because each point is a value on that day, not a flow. Don’t start the y-axis at zero if that flattens the change.
-- **MRR movements**: A table of the six movement categories, then the net movement, for the current window only. The MRR growth comparison request has no `change_type` breakdown, so the table has no comparison column or change.
-- **New customers, Successful payments, and Checkout Sessions**: Each card shows its count in large type, the change with an arrow, and the comparison count.
-- **Checkout conversion**: The rate as a percentage, its change, and the comparison rate.
-- **Average order value chart**: Titled “Average order value,” with its headline value, the change, and the comparison value, or a dash when there’s none. Lines for both windows by day of the window, with a gap on a day with no value.
-- **Payment volume chart**: Titled “Payment volume,” with its headline value, the change, and the comparison value. Grouped bars by day of the window for windows of 14 days or fewer, lines for longer windows, with exact formatted amounts and both actual dates in the tooltip. After a complete result, a day with no rows is zero, as the queries reference says, so draw it as zero, not a gap.
-- **Payment volume by country**: Rows for each named country with a proportional bar, the current amount, and the comparison amount with its change. Show a dash where the comparison has no row, and show a null or empty country as “No country value.” Show this table only for windows of 31 days or fewer.
+```css
+.card .sc-root, .card .sc-root.sc-tile {
+  border: none; padding: 0; background: none; border-radius: 0; box-shadow: none;
+}
+```
+
+Let stripe-charts render the title — pass `title` in the spec and don’t add a separate heading outside the chart `<div>`. To keep the title visible in sources view, add a hidden heading in the card container (e.g. `<h3 class="panel-title" style="display:none">…</h3>`) that sources mode shows when it swaps content. Below the chart `<div>`, add an “Updated X ago” line in 12-pixel secondary text, from the result’s `refreshed_at`, updated every minute. In chart and table cards, pin that line to the bottom of the card (`display: flex; flex-direction: column` on the card, `margin-top: auto` on the line), so it lines up across a row. Leave the line out of an empty panel. Hide this line in sources view — only show it in chart view.
+
+Panel data rules:
+
+- **Comparisons**: Name the comparison everywhere — “↑ 12% per day vs. BFCM 2025 ($4,210)”, never “before” or “previous.” Without a comparison, omit changes and comparison series.
+- **MRR, ARR**: Latest daily value, not a sum. ARR has no comparison.
+- **MRR growth**: Net MRR change as headline (signed, e.g. “+$1,234.00”). Grouped bars of daily net change. Negative days go below zero.
+- **MRR movements**: A table (not a chart) of six categories — New, Expansion, Contraction, Churn, Reactivation, FX adjustment — then net movement. Current window only, no comparison.
+- **New customers, Successful payments, Checkout Sessions**: Count tiles (`chart.type: 'kpi'`). Use `basis: 'total'`.
+- **Checkout conversion**: `sessions_succeeded / sessions_loaded` as a percentage. Use `basis: 'custom'`.
+- **Payment volume**: Bars for ≤14 days, lines for longer. A day with no rows is zero, not a gap.
+- **Average order value**: Line chart. Plot every day in the window. A day with no payments is `y: null` (gap in the line). Headline is window amount / window count with `basis: 'custom'`.
+- **Payment volume by country**: A table (not a chart) — top 10 countries by current amount, with proportional bars in accent `#533AFD`, current and comparison amounts. Only for windows ≤31 days.
 
 ## States
 
-| State | What to show |
+| State | What to use |
 | --- | --- |
-| Loading | Before the first results are in, the loading screen from the skill’s step 3, where the output can show one. After that, a small spinner in each card, chart, and table that’s waiting. Draw no axes, zeros, or empty charts until its result arrives. |
-| No data | Always show the cards, with their zeros or dashes. A chart or table with no rows in the current window shows the empty state in place of its chart or rows, never a flat line or empty axes: centered, a 44-pixel `#F4F7FA` circle holding a 20-pixel bar-chart icon in `#3C4F69`, then “No data yet” and “Data will appear when activity is recorded.” on two lines in 14-pixel `#3C4F69` type. Never hide a panel whose query is pending or failed. |
-| No data for the range | See below. |
-| Refreshing | During a refresh from **Refresh**, each chart and table that’s waiting shows the small loading spinner in place of its content until its new result arrives, at its current size so the layout doesn’t move. Cards keep their prior values. During auto-refresh, every panel keeps its prior values until new results arrive, with no spinners or placeholders. |
-| Failed | “Couldn’t load this panel.” with a **Retry** button, in the affected panels only. |
+| Loading | stripe-charts: `{loading: true}` shows a skeleton. Update with `handle.update(fullSpec)` when data arrives. |
+| Empty | As **Empty panels** below describes: stripe-charts’ empty state for charts, custom HTML for KPI tiles and tables. |
+| Refreshing (manual) | stripe-charts: `handle.update({...spec, loading: true})` for charts and tables. KPI tiles: keep prior spec. |
+| Refreshing (auto) | Keep prior spec in all panels — no loading states. |
+| Failed | Custom HTML (stripe-charts has no error state): hide the chart `<div>`, show “Couldn’t load this panel.” with a **Retry** button in the card container. On retry success, hide the error, show the chart `<div>`, and call `handle.update(fullSpec)`. |
+
+### Empty panels
+
+A panel is empty only when it has no value to show, such as a rate or average with a zero denominator. A count or amount of zero is a value: show 0, not the empty state.
+
+- **Charts**: stripe-charts’ own empty state: one series with empty data, `series: [{label: '…', data: []}]`, and `emptyMessage: 'No data yet'`. Add nothing to it.
+- **Tables**: keep the title and show “No data yet” in secondary text.
+- **KPI tiles**: stripe-charts ignores `emptyMessage` on KPI tiles, so render the title with `StripeCharts.render`, `chart.type: 'kpi'`, and `series: [{label: '…', data: []}]`, then add below it a muted em dash (`—`) where the value goes, in 28-pixel semibold secondary text, and one line saying why the tile is empty, in 14-pixel primary text. Don’t repeat the window’s dates: the header already shows them. Checkout conversion’s reason is “No checkout sessions.”
+
+A panel pulses only while its query is still pending. After its result arrives (success or failure), the pulse stops. After all queries are done, no panel should pulse. Don’t add `<meta http-equiv="refresh">` to the file — the dashboard is saved once with all results, so there are no progressive updates to pick up.
 
 ### No data for the range
 
-When every current-window query has succeeded with no rows or only zero values, and there are no movements, the range has no data, often because the account is new. Don’t draw zero panels, which read as a flat result. Keep the header, so the date pills still work, and replace the three sections with one card, about 240 pixels high, with the empty state’s circle and icon above centered text. Its title is **No data for this time range**, followed by “Acme (acct_…, Sandbox) has no payments, customers, or subscriptions from Fri, Nov 6 – Fri, Nov 13, 2026.” Then one line from First activity, from the queries reference:
+When every current-window query succeeds with no rows or only zeros: keep the header, replace all sections with one centered card (~240px high):
 
-- **No activity yet**: “This account has no payments, customers, or subscriptions yet. The dashboard fills in as they arrive.” In a sandbox, add “Create test payments to try it.”
-- **First activity after the range**: “This account’s first activity is on Mon, Sep 14, 2026.” Add a **Show since Sep 14** button that sets a custom range from that day through today. If that is longer than 92 days, the range is the first 92 days from that day instead, and the button reads **Show Sep 14 – Dec 14**.
-- **Latest activity before the range**: “This account’s latest activity is on Thu, Oct 2, 2026.” Add a **Show Sep 3 – Oct 2** button for the 30 days ending that day.
-- **Otherwise, or if First activity fails**: “Try a longer range from **Date range**.”
+**No data for this time range** — “Acme (acct_…, Sandbox) has no payments, customers, or subscriptions from Fri, Nov 6 – Fri, Nov 13, 2026.”
 
-A dashboard that can’t query Stripe itself shows the same card without buttons, and the hand-over offers the range instead.
+Then one line based on First activity query:
+
+- **No activity yet**: “This account has no payments, customers, or subscriptions yet.” In sandbox, add “Create test payments to try it.”
+- **First activity after range**: “First activity is on Mon, Sep 14, 2026.” Add **Show since Sep 14** button (capped at 92 days).
+- **Latest activity before range**: “Latest activity is on Thu, Oct 2, 2026.” Add **Show Sep 3 – Oct 2** button (30 days ending that day).
+- **Otherwise**: “Try a longer range from **Date range**.”
+
+A dashboard that can’t query Stripe shows this card without buttons.
 
 ## Sources
 
-**Show sources** switches every card, chart, and table to its source together, and reads **Hide sources** while it’s on. Each panel keeps its size and its title, shown once at the top, and shows the source below the title in place of the rest of its content, scrolling inside the panel if it’s longer, so the layout never moves.
+**Show sources** toggles every panel to show its source in place of its content. In sources mode, hide the chart `<div>` and show the hidden `.panel-title` heading so the title stays visible. Each panel keeps its size.
 
-A source lists only the requests that produced the panel’s value, each in its own block:
+Each source block shows:
 
-- **A direct value**, such as Payment volume or MRR, shows the one request that produced it. A SQL query covers both windows in one request. Don’t list the account lookup, MRR or other metadata, a request that wasn’t sent, or a second fetch of the same data. Panels that share a result show the same request.
-- **A derived value or a comparison** lists each request behind it, such as the current and comparison MRR growth requests for the MRR growth chart, and no others.
-- **A failed attempt** appears as an error detail under its request, such as “Attempt 1 failed: rate limited. Retried,” not as another source. A failed panel shows its failed request with the error.
+1. **One-sentence description** of what the metric measures, in secondary text above the code area:
 
-Each block shows:
+| Panel | Description |
+| --- | --- |
+| Payment volume | Succeeded payment intent volume, or attributed line-item volume for product or price queries. |
+| Average order value | Average succeeded payment amount, or average line-item amount for product or price queries. |
+| New customers | Count of customers created, by day. |
+| Successful payments | Count of succeeded PaymentIntents, by day. |
+| Checkout Sessions | Checkout sessions whose payment page was initialized, and those that completed successfully. |
+| Payment volume by country | Succeeded payment intent volume grouped by country. |
+| MRR | Monthly recurring revenue from active and past-due subscriptions. |
+| ARR | Annual recurring revenue from active and past-due subscriptions. |
+| MRR growth | Net change in MRR over time. |
+| MRR movements | Net change in MRR over time, broken down by change type. |
+| Checkout conversion | Succeeded session count divided by initiated session count for each aggregate bucket, in basis points. |
 
-- No heading, label, or note that repeats the panel’s title or names its metric, because the title already does. Only a comparison request’s block starts with a heading, “Comparison.” Never label a request with a letter or number.
-- The endpoint that ran: `POST /v2/data/analytics/metric_query` for metrics, or `POST /v2/data/query_runs` for query runs.
-- What it sent, in a monospace block: the metric request’s `params` as JSON, or the query run’s SQL. In the block’s top-right corner, show a 16-pixel clipboard icon button, labeled “Copy” for screen readers and in its tooltip, that copies the block’s exact text and shows a check mark for 2 seconds. Show it only while sources are on. If the clipboard isn’t available, select the block’s text instead, so the user can copy it.
-- Whether the request is stale or failed. Don’t repeat when the data was last updated: charts and tables show it on the panel.
-- Notes that explain the value, which panels leave out: what it counts, such as “Succeeded payments, as requested. Not net or recognized revenue,” for payment volume, “Checkout and Elements payments only” for average order value, “Latest daily value, not a sum” for MRR and ARR, “Sessions whose payment page loaded, Checkout and Elements only” for Checkout Sessions, and why a value is a dash, such as “No comparison for these dates.”
+1. **The request** — the endpoint (`POST /v2/data/analytics/metric_query` or `POST /v2/data/query_runs`) and the params or SQL. Pretty-print JSON params (indented, one key per line) and format SQL with line breaks and indentation for readability. Show the code area with a gray background and rounded corners. In the top-right corner of the code area, a 16-pixel clipboard icon inside a 32-pixel button (no text label). When selected, copy the code text, swap the icon to a check mark, and show “Copied” for 4 seconds, then restore. If the clipboard isn’t available, select the text instead.
 
-Don’t show API keys, OAuth tokens, response IDs, raw rows, or customer data.
+2. **Status** — whether stale or failed, if applicable.
+
+Don’t show API keys, tokens, response IDs, raw rows, or customer data.
 
 ## Charts
 
-Draw charts with inline SVG and load no remote scripts. Keep charts simple: bars or lines, axes, a legend, and a tooltip. Don’t add series toggles, zooming, or sorting. Match the Stripe Dashboard’s charts:
+Use `@stripe/charts` for every chart and KPI tile. Try loading in this order:
 
-- **Panel**: The title in 14-pixel primary text, the headline value in large semibold type under it, then the chart, about 180 pixels high, then the last-updated line.
-- **Y-axis**: On the right, with 3 to 5 labels at round values and a light gridline at each, in 12-pixel secondary text. Use compact amounts, such as “$2K,” “−$10K,” and “$1.10M,” with as many decimals as it takes for every label to differ. Start flows, such as payment volume, at zero, and include zero when a series goes negative.
-- **X-axis**: A hairline baseline with 3 or 4 evenly spaced date labels, such as “Nov 1,” “Nov 8,” and “Nov 15,” including the first day.
-- **Marks**: Lines are 2 pixels wide, with no point markers, and bars have 2-pixel rounded tops. A tooltip on hover shows the exact amount and date.
+### 1. npm (preferred, when available)
+
+If the output is a project with a package manager:
+
+```bash
+npm install @stripe/charts
+```
+
+```js
+import {render} from '@stripe/charts';
+render(el, spec);
+```
+
+If install fails (package not yet published), fall through to CDN.
+
+### 2. CDN (default for HTML files and artifacts)
+
+```html
+<div id="sc-fallback" style="display:none;text-align:center;padding:40px;color:#3C4F69">
+  Charts couldn't load — check your connection and reload the page.
+</div>
+<script src="https://cdn.jsdelivr.net/gh/stripe/charts@0.0.1-preview.1/dist/stripe-charts.min.js"
+  onerror="document.getElementById('sc-fallback').style.display='block'"></script>
+```
+
+Works in browsers (local HTML), Claude artifacts, ChatGPT Sites, and Cursor. May not work in sandboxed environments (Codex containers) or offline.
+
+### 3. Inline SVG (last resort)
+
+Use when the environment blocks both npm and CDN. Build charts with one reusable `drawChart(el, spec)` function using inline SVG:
+
+- **Line charts**: 2px stroke, no point markers. First palette color for primary, `#95A4BA` dashed for comparison.
+- **Bar charts**: Grouped side by side, 2px rounded tops.
+- **KPI tiles**: Title in 14px, value in 28px semibold, change with arrow below.
+- **Y-axis**: Right side, 3–5 labels, compact format (“$2K”), light gridlines.
+- **X-axis**: Hairline baseline, 3–4 date labels.
+- **Tooltip**: On hover, show exact value and date.
+- **Empty / loading**: Center “No data yet” text, or the **Empty panels** KPI layout for tiles / pulse animation on placeholder.
+
+Note limitations (no sparklines, no incomplete-day markers, no accessibility) in the hand-over.
+
+### Which path was chosen
+
+Don’t mention the chart library in the hand-over unless the user asks. If they do, say “@stripe/charts (npm)”, “@stripe/charts (CDN)”, or “inline SVG (simplified).”
+
+### stripe-charts API and series colors
+
+`StripeCharts.render(element, spec)` returns a handle with `update(spec)` and `destroy()`.
+
+**Do not set `color` on any series.** Let the library assign its palette. With one primary series per chart, every chart gets purple `#9966FF`. The full palette in order: purple `#9966FF`, blue `#0055BC`, cyan `#00A1C2`, orange `#ED6804`, magenta `#B3063D`, dark green `#1C5A0D`, pink `#FA4A67`, brown `#922700`, green `#3DA00B`. Comparison series are gray `#95A4BA`.
+
+### Examples
+
+**Payment volume** — currency bar chart with comparison:
+
+```js
+StripeCharts.render(el, {
+  version: 1,
+  title: 'Payment volume',
+  format: {style: 'currency', currency: 'usd', unit: 'minor'},
+  kpi: {value: 984200, basis: 'total', comparisonValue: 870100},
+  chart: {
+    type: 'bar', stacking: 'grouped',
+    axes: {y: {notation: 'compact'}},
+    incomplete: {from: '2026-11-13', message: 'Partial day'},
+  },
+  series: [
+    {label: 'BFCM 2026', data: [{x: '2026-11-27', y: 312000}, ...]},
+    {label: 'BFCM 2025', comparison: true, data: [{x: '2025-11-28', y: 290100}, ...]},
+  ],
+});
+```
+
+**MRR** — line chart, headline is latest value:
+
+```js
+StripeCharts.render(el, {
+  version: 1,
+  title: 'MRR',
+  format: {style: 'currency', currency: 'usd', unit: 'minor'},
+  kpi: {value: 1250000, basis: 'latest', comparisonValue: 1180000},
+  chart: {type: 'line', axes: {y: {notation: 'compact'}}},
+  series: [
+    {label: 'Current', data: [...]},
+    {label: 'BFCM 2025', comparison: true, data: [...]},
+  ],
+});
+```
+
+**KPI tile** — count with sparkline:
+
+```js
+StripeCharts.render(el, {
+  version: 1,
+  title: 'New customers',
+  format: {style: 'number', maximumFractionDigits: 0},
+  kpi: {value: 847, basis: 'total', comparisonValue: 612},
+  chart: {type: 'kpi'},
+  series: [{label: 'New customers', data: [{x: '2026-11-06', y: 120}, ...]}],
+});
+```
+
+**Average order value** — line chart, null gaps for days with no payments:
+
+```js
+StripeCharts.render(el, {
+  version: 1,
+  title: 'Average order value',
+  format: {style: 'currency', currency: 'usd', unit: 'minor'},
+  kpi: {value: 4500, basis: 'custom'},
+  chart: {type: 'line', axes: {y: {notation: 'compact'}}},
+  series: [{label: 'AOV', data: [{x: '2026-11-12', y: 4500}, {x: '2026-11-13', y: null}, ...]}],
+});
+```
+
+**Loading → populated**:
+
+```js
+const handle = StripeCharts.render(el, {version: 1, title: 'Payment volume', loading: true});
+handle.update({version: 1, title: 'Payment volume', format: {...}, series: [...]});
+```
+
+### Panel-to-chart mapping
+
+| Panel | `chart.type` | `format.style` | `kpi.basis` |
+| --- | --- | --- | --- |
+| Payment volume | `bar` (≤14d) or `line` | `currency` | `total` |
+| MRR | `line` | `currency` | `latest` |
+| ARR | `line` | `currency` | `latest` |
+| MRR growth | `bar` grouped | `currency` | `total` |
+| Average order value | `line` | `currency` | `custom` |
+| New customers | `kpi` | `number` | `total` |
+| Successful payments | `kpi` | `number` | `total` |
+| Checkout Sessions | `kpi` | `number` | `total` |
+| Checkout conversion | `kpi` | `percent`, `unit: 'ratio'` | `custom` |
+
+Comparison series use `comparison: true` and align by position (index), not date. When the window includes today, set `chart.incomplete.from` to today’s date. All Stripe amounts are minor units — always set `unit: 'minor'`.
