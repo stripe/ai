@@ -1,6 +1,6 @@
 # Dashboard design
 
-Use this reference to lay out the dashboard, write its labels, and show its states, in both the hosted dashboard and the live local dashboard. Keep every panel listed here, and don’t add others.
+Use this reference to lay out the dashboard, write its labels, and show its states, in every output. Keep every panel listed here, and don’t add others.
 
 ## Visual style
 
@@ -47,8 +47,8 @@ Keep the header to these items:
 
 - The title “Stripe BFCM Dashboard.”
 - The Stripe account’s name and ID, with a “Sandbox” badge when `livemode` is false. Show no mode badge in live mode, because “Live” reads as real-time data.
-- **Show sources**, described in Sources, and a **Refresh** button that queries Stripe again, or in the local dashboard, hands the refresh to the agent. While any refresh runs, manual or automatic, it reads “Refreshing…” with a 14-pixel spinner before the text, in `#533AFD` text on a `#F5F3FF` background with a `#533AFD` border, and is disabled, so during a refresh from **Refresh** it’s clear why the date range pills are disabled too. There’s no account picker: the dashboard shows only the connected account.
-- In the hosted dashboard, the date range control: two filter pills, each with a muted label, its value in primary text, and a small ▾, such as **Date range · Last 7 days** and **Compare · None**. A pill opens a popover with the presets or comparison options from the queries reference (`queries.md`), by name only. **Custom** shows two date inputs inside the popover and no other text: limit their range with the inputs’ `min` and `max`, not a hint. Its pill then reads “Nov 6 – Nov 12.” Position the popover over the page, 4 pixels below its pill, as a white card with a hairline border and an 8-pixel corner radius, so the layout never moves. Choosing an option applies it and closes the popover; for **Custom**, after both dates form a valid range. Choosing the option that’s already applied only closes the popover, and **Custom** opens with the current dates filled in. Make every control a `type="button"` with no `<form>`, so no click or **Enter** reloads the page. **Escape** or a click outside closes it. Keep both pills disabled until every first-load query has succeeded or failed, and while a refresh from **Refresh** runs: a disabled pill opens nothing. Auto-refresh leaves them enabled. Keep each popover hidden until its pill opens it, so no empty popover shows. In the local dashboard, show the pills’ values as text instead.
+- **Show sources**, described in Sources, and a refresh button. In a dashboard that queries Stripe itself, as the output reference (`dashboard-output.md`) defines it, **Refresh** queries Stripe again. In any other dashboard, use the button the output reference describes, or none. While any refresh runs, manual or automatic, it reads “Refreshing…” with a 14-pixel spinner before the text, in `#533AFD` text on a `#F5F3FF` background with a `#533AFD` border, and is disabled, so during a refresh from **Refresh** it’s clear why the date range pills are disabled too. There’s no account picker: the dashboard shows only the connected account.
+- In a dashboard that queries Stripe itself, the date range control: two filter pills, each with a muted label, its value in primary text, and a small ▾, such as **Date range · Last 7 days** and **Compare · None**. A pill opens a popover with the presets or comparison options from the queries reference (`queries.md`), by name only. **Custom** shows two date inputs inside the popover and no other text: limit their range with the inputs’ `min` and `max`, not a hint. Its pill then reads “Nov 6 – Nov 12.” Position the popover over the page, 4 pixels below its pill, as a white card with a hairline border and an 8-pixel corner radius, so the layout never moves. Choosing an option applies it and closes the popover; for **Custom**, after both dates form a valid range. Choosing the option that’s already applied only closes the popover, and **Custom** opens with the current dates filled in. Make every control a `type="button"` with no `<form>`, so no click or **Enter** reloads the page. **Escape** or a click outside closes it. Keep both pills disabled until every first-load query has succeeded or failed, and while a refresh from **Refresh** runs: a disabled pill opens nothing. Auto-refresh leaves them enabled. Keep each popover hidden until its pill opens it, so no empty popover shows. In any other dashboard, show the pills’ values as text instead.
 - The refresh status, from successful queries, never the time the page was drawn. After every query of a load or refresh has succeeded, “Last refreshed: Nov 13, 2026, 9:41 AM PST,” the time the last of them succeeded, with the selected time zone’s abbreviation. If any failed, “Partially refreshed: Nov 13, 2026, 9:41 AM PST · 2 panels failed,” so a partial load never reads as complete. Before the first load finishes, show nothing. Source-data freshness and errors stay in the sources.
 - If you dropped the comparison for lack of data, “No data for BFCM 2025 on this account” after the refresh status, naming that comparison.
 
@@ -60,18 +60,18 @@ Panels have no buttons or links, except **Retry** on a failed panel and the copy
 - **ARR chart**: Titled “ARR,” drawn like the MRR chart, with no comparison line or change.
 - **MRR growth chart**: Titled “MRR growth,” with the net MRR change as its headline, signed, such as “+$1,234.00,” and the comparison’s net change, such as “vs. BFCM 2025 (+$980.00).” Grouped bars of each day’s net MRR change for both windows, by day of the window, with negative days below a zero line and exact signed amounts and both actual dates in the tooltip. Use bars, because each day is a change, not a level.
 - **MRR chart**: Titled “MRR,” with its headline value and change. Lines for both windows, aligned by day of the window, with exact formatted amounts and dates in the tooltip. Use lines, not bars, because each point is a value on that day, not a flow. Don’t start the y-axis at zero if that flattens the change.
-- **MRR movements**: A table of the six movement categories, then the net movement.
+- **MRR movements**: A table of the six movement categories, then the net movement, for the current window only. The MRR growth comparison request has no `change_type` breakdown, so the table has no comparison column or change.
 - **New customers, Successful payments, and Checkout Sessions**: Each card shows its count in large type, the change with an arrow, and the comparison count.
 - **Checkout conversion**: The rate as a percentage, its change, and the comparison rate.
 - **Average order value chart**: Titled “Average order value,” with its headline value, the change, and the comparison value, or a dash when there’s none. Lines for both windows by day of the window, with a gap on a day with no value.
-- **Payment volume chart**: Titled “Payment volume,” with its headline value, the change, and the comparison value. Grouped bars by day of the window for windows of 14 days or fewer, lines for longer windows, with exact formatted amounts and both actual dates in the tooltip. Show a missing day as a gap, not a zero.
+- **Payment volume chart**: Titled “Payment volume,” with its headline value, the change, and the comparison value. Grouped bars by day of the window for windows of 14 days or fewer, lines for longer windows, with exact formatted amounts and both actual dates in the tooltip. After a complete result, a day with no rows is zero, as the queries reference says, so draw it as zero, not a gap.
 - **Payment volume by country**: Rows for each named country with a proportional bar, the current amount, and the comparison amount with its change. Show a dash where the comparison has no row, and show a null or empty country as “No country value.” Show this table only for windows of 31 days or fewer.
 
 ## States
 
 | State | What to show |
 | --- | --- |
-| Loading | On the hosted page’s first load, the loading screen until every query has succeeded or failed. After that, and in the local page, a small spinner in each card, chart, and table that’s waiting. Draw no axes, zeros, or empty charts until its result arrives. |
+| Loading | Before the first results are in, the loading screen from the skill’s step 3, where the output can show one. After that, a small spinner in each card, chart, and table that’s waiting. Draw no axes, zeros, or empty charts until its result arrives. |
 | No data | Always show the cards, with their zeros or dashes. A chart or table with no rows in the current window shows the empty state in place of its chart or rows, never a flat line or empty axes: centered, a 44-pixel `#F4F7FA` circle holding a 20-pixel bar-chart icon in `#3C4F69`, then “No data yet” and “Data will appear when activity is recorded.” on two lines in 14-pixel `#3C4F69` type. Never hide a panel whose query is pending or failed. |
 | No data for the range | See below. |
 | Refreshing | During a refresh from **Refresh**, each chart and table that’s waiting shows the small loading spinner in place of its content until its new result arrives, at its current size so the layout doesn’t move. Cards keep their prior values. During auto-refresh, every panel keeps its prior values until new results arrive, with no spinners or placeholders. |
@@ -86,7 +86,7 @@ When every current-window query has succeeded with no rows or only zero values, 
 - **Latest activity before the range**: “This account’s latest activity is on Thu, Oct 2, 2026.” Add a **Show Sep 3 – Oct 2** button for the 30 days ending that day.
 - **Otherwise, or if First activity fails**: “Try a longer range from **Date range**.”
 
-The local page shows the same card without buttons, and the hand-over offers the range instead.
+A dashboard that can’t query Stripe itself shows the same card without buttons, and the hand-over offers the range instead.
 
 ## Sources
 
