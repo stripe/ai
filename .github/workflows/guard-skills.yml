@@ -10,6 +10,7 @@ on:
       - 'providers/grok/plugin/skills/**'
       - 'providers/agent-plugins/plugin/skills/**'
       - 'providers/antigravity/plugin/skills/**'
+      - 'providers/gemini/plugin/skills/**'
 
 jobs:
   block:
