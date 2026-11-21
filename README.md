@@ -25,7 +25,7 @@ You can also [build autonomous agents](https://docs.stripe.com/mcp#agents) with 
 
 [Agent skills](https://agentskills.io/home) are instructions that agents can use to build faster and more accurately. Stripe offers a collection of skills that help your agents use the latest best practices when building with Stripe.
 
-If you use one of these popular agent harnesses, we recommend installing the official Stripe plugins, which include additional agent tools and update automatically.
+If you use one of these popular agent harnesses, we recommend installing the official Stripe plugins, which include additional agent tools.
 
 ### Claude Code
 
@@ -66,6 +66,10 @@ grok plugin install stripe --trust
 Installation methods currently vary by client for the new [Agent Plugins](https://agent-plugins.org/) standard, but you can point your client to our package via:
 - Git URL: `https://github.com/stripe/ai`
 - Subdirectory: [`providers/agent-plugins/plugin/`](/providers/agent-plugins/plugin).
+
+### Gemini
+
+Google distributes the Stripe plugin through the Gemini Marketplace.
 
 
 ## Manual installation

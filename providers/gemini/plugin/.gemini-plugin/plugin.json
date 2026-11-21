@@ -1,0 +1,35 @@
+{
+  "name": "stripe",
+  "displayName": "Stripe",
+  "version": "0.1.0",
+  "description": "Stripe plugin for Gemini and Gemini Agent with skills for Stripe integrations, best practices, and a remote MCP server configuration.",
+  "author": {
+    "name": "Stripe",
+    "url": "https://stripe.com"
+  },
+  "repository": "https://github.com/stripe/ai",
+  "homepage": "https://docs.stripe.com",
+  "license": "MIT",
+  "keywords": [
+    "stripe",
+    "payments",
+    "subscriptions",
+    "webhooks",
+    "api",
+    "security"
+  ],
+  "skills": [
+    "./skills/connect-recommend/SKILL.md",
+    "./skills/connect-required-verification-information/SKILL.md",
+    "./skills/metronome/SKILL.md",
+    "./skills/stripe-apps/SKILL.md",
+    "./skills/stripe-best-practices/SKILL.md",
+    "./skills/stripe-bfcm-dashboard/SKILL.md",
+    "./skills/stripe-directory/SKILL.md",
+    "./skills/stripe-docs/SKILL.md",
+    "./skills/stripe-implementation-planner/SKILL.md",
+    "./skills/stripe-pay/SKILL.md",
+    "./skills/stripe-projects/SKILL.md"
+  ],
+  "mcpServers": "./.mcp.json"
+}

@@ -44,6 +44,7 @@ const PLUGIN_SKILLS_DIRS = [
   path.join(__dirname, "../providers/grok/plugin/skills"),
   path.join(__dirname, "../providers/agent-plugins/plugin/skills"),
   path.join(__dirname, "../providers/antigravity/plugin/skills"),
+  path.join(__dirname, "../providers/gemini/plugin/skills"),
 ];
 const ALL_OUTPUT_DIRS = [SKILLS_DIR, ...PLUGIN_SKILLS_DIRS];
 
@@ -56,6 +57,7 @@ const VERSION_FILES = [
   path.join(__dirname, "../providers/grok/plugin/.grok-plugin/plugin.json"),
   path.join(__dirname, "../providers/agent-plugins/plugin/plugin.json"),
   path.join(__dirname, "../providers/antigravity/plugin/plugin.json"),
+  path.join(__dirname, "../providers/gemini/plugin/.gemini-plugin/plugin.json"),
 ];
 
 const bumpVersion = (version, type) => {
@@ -64,7 +66,7 @@ const bumpVersion = (version, type) => {
   return `${major}.${minor}.${patch + 1}`;
 };
 
-const updateVersionFile = async (filePath, bumpType) => {
+const updateVersionFile = async (filePath, bumpType, skills) => {
   const raw = await fs.readFile(filePath, "utf8");
   const content = JSON.parse(raw);
   if (content.version) {
@@ -74,6 +76,10 @@ const updateVersionFile = async (filePath, bumpType) => {
     for (const plugin of content.plugins) {
       if (plugin.version) plugin.version = bumpVersion(plugin.version, bumpType);
     }
+  }
+  // These provider packages contain the full synced skill set.
+  if (Array.isArray(content.skills)) {
+    content.skills = skills.map(({ name }) => `./skills/${name}/SKILL.md`).sort();
   }
   await fs.writeFile(filePath, JSON.stringify(content, null, 2) + "\n", "utf8");
   console.log(`  Bumped version in: ${path.relative(REPO_ROOT, filePath)}`);
@@ -143,7 +149,7 @@ const run = async () => {
     const bumpType = added || deleted ? "minor" : "patch";
     console.log(`Skills changed (type: ${bumpType}), bumping plugin versions`);
     for (const versionFile of VERSION_FILES) {
-      await updateVersionFile(versionFile, bumpType);
+      await updateVersionFile(versionFile, bumpType, skills);
     }
   } else {
     console.log("No skill changes detected, skipping version bump");
