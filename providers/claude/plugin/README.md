@@ -14,8 +14,6 @@ Stripe's skills are updated often by the relevant product teams; some examples a
 - **`stripe-best-practices`** — integration decisions: environments, API choice
   (Checkout Sessions vs. PaymentIntents), Connect setup, billing, tax, Treasury,
   and security.
-- **`upgrade-stripe`** — upgrades API versions, webhook endpoints, server-side
-  SDKs, Stripe.js, and mobile SDKs without drifting onto an older pin.
 - **`metronome`** — usage-based billing on Metronome: event ingestion,
   contracts/rate cards, invoicing, credits/commits, and syncing to Stripe
   Billing.
@@ -29,19 +27,19 @@ review Stripe Apps and Dashboard extensions), and **`stripe-projects`**
 
 ## Telemetry
 
-Two things get reported to Stripe:
+By default, the plugin reports skill usage and can prompt for feedback:
 
-1. **Skill usage events.** Every skill invocation sends its name, so we know
-   what's actually getting used. This is unconditional.
-2. **Feedback prompts.** Rarely, and only when relevant (e.g. after a failed
-   Stripe tool call), we ask the agent for feedback. It always shows you the
-   draft and asks for approval before sending anything.
+1. **Skill usage events:** When Claude Code invokes a Stripe skill, the plugin
+   sends the skill name to Stripe.
+2. **Feedback prompts:** The plugin sometimes prompts the agent to draft
+   feedback, for example after a failed Stripe tool call. The agent shows you
+   the draft and asks for approval before sending it.
 
 Separately, at session start we check for a newer Stripe CLI version and, if
 found, suggest the agent recommend installing it. We never install anything
 ourselves.
 
-**To disable the two telemetry items above**, set `DISABLE_TELEMETRY` or
+**To turn off skill usage events and feedback prompts**, set `DISABLE_TELEMETRY` or
 `DO_NOT_TRACK` to `1` or `true` in your environment. The CLI version check isn't
 telemetry (no usage data is sent) and isn't affected.
 
