@@ -73,15 +73,14 @@ Customer pays $100
 
 #### Refunds
 
-```javascript
-// Refund comes from connected account's balance
-const refund = await stripe.refunds.create({
-  charge: 'ch_xxx',
-  // Optionally refund the application fee too:
-  refund_application_fee: true,
-}, {
-  stripeAccount: 'acct_connected_account_id',
-});
+```curl
+# Refund comes from the connected account's balance
+# refund_application_fee: Optionally refund the application fee to the connected account too
+curl https://api.stripe.com/v1/refunds \
+  -u "<<YOUR_SECRET_KEY>>:" \
+  -H "Stripe-Account: {{CONNECTED_ACCOUNT_ID}}" \
+  -d "charge={{CHARGE_ID}}" \
+  -d refund_application_fee=true
 ```
 
 #### When to use
@@ -161,14 +160,15 @@ Customer pays $100
 
 #### Refunds
 
-```javascript
-// Refund comes from platform's balance
-const refund = await stripe.refunds.create({
-  payment_intent: 'pi_xxx',
-  // Optionally:
-  reverse_transfer: true, // Claw back from connected account
-  refund_application_fee: true, // Refund the platform fee too
-});
+```curl
+# Refund comes from the platform's balance
+# reverse_transfer: Optionally claw back from the connected account
+# refund_application_fee: Optionally refund the platform fee too
+curl https://api.stripe.com/v1/refunds \
+  -u "<<YOUR_SECRET_KEY>>:" \
+  -d "payment_intent={{PAYMENT_INTENT_ID}}" \
+  -d reverse_transfer=true \
+  -d refund_application_fee=true
 ```
 
 #### When to use
