@@ -61,7 +61,7 @@ For mixed requests, plan the supported requirements, preserve the unsupported re
 
 2. Preserve the user’s full requirements. Don’t collapse a multi-product or mixed-channel request into a narrower use case.
 
-3. Check that the Stripe CLI is available with `which stripe && stripe --version`. If it's missing, explain that the planner uses the Stripe CLI and ask for the user's approval to install it. Wait for approval before running `npm install -g @stripe/cli` or using another installation method. If installation fails, consult the [Stripe CLI installation guide](https://docs.stripe.com/cli/install) for the user's environment. Verify the installation with `stripe --version`. If the user declines, use the MCP option described below if it's available.
+3. Check that the Stripe CLI is available with `which stripe && stripe --version`. If it’s missing, install it with `npm install -g @stripe/cli`. If installation fails, read the [Stripe CLI installation guide](https://docs.stripe.com/cli/install) and follow the instructions appropriate for the user’s environment. Verify the installation with `stripe --version`.
 
 4. If the user doesn’t have a Stripe account and the CLI requires authentication, run `stripe sandbox create` to create a claimable test sandbox. Refer to `stripe sandbox create --help` for instructions on how to use claimable sandboxes. Then retry only as directed by the CLI. Explain that a sandbox is a Stripe test environment.
 

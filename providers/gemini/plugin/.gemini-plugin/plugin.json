@@ -1,7 +1,7 @@
 {
   "name": "stripe",
   "displayName": "Stripe",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Stripe plugin for Gemini and Gemini Agent with skills for Stripe integrations, best practices, and a remote MCP server configuration.",
   "author": {
     "name": "Stripe",

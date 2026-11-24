@@ -119,8 +119,8 @@ Dashboard selection logic:
   - Destination charges pattern
   - User wants a lightweight dashboard for sellers
   - Cobranding benefit is desired
-  - **SaaS with direct charges, self-serve or low-operations needs** — Express is now the default (Stripe-managed pricing + Stripe-managed negative balance liability; or platform-managed pricing + Stripe-managed negative balance liability). Disclose that these direct-charge Express + Stripe-managed-negative-balance-liability configurations are in public preview.
-- **SaaS-with-payments rule:** SaaS, direct charges, and Stripe-managed responsibilities no longer automatically imply full dashboard. Default to `dashboard: "express"` (Stripe-managed or platform-managed pricing, public preview) for self-serve or low-operations SaaS platforms. Use `dashboard: "full"` only when the merchant needs independent access, apps, or full payment operations beyond what Express provides.
+  - **SaaS with direct charges, self-serve or low-operations needs** — Express is now the default (Stripe-managed pricing + Stripe-managed negative balance liability; or platform-managed pricing + Stripe-managed negative balance liability). These direct-charge Express + Stripe-managed-negative-balance-liability configurations are generally available.
+- **SaaS-with-payments rule:** SaaS, direct charges, and Stripe-managed responsibilities no longer automatically imply full dashboard. Default to `dashboard: "express"` (Stripe-managed or platform-managed pricing) for self-serve or low-operations SaaS platforms. Use `dashboard: "full"` only when the merchant needs independent access, apps, or full payment operations beyond what Express provides.
 - **`dashboard: "none"`** when white-label or fully embedded control is required.
 
 Non-technical user language (“not tech savvy”) is a supporting signal, not a standalone override. It should reinforce a marketplace recommendation (`dashboard: "express"`), but it doesn’t override the full Dashboard when established merchants need to access Stripe directly, install Stripe apps, or manage payments, refunds, and payouts without relying on the platform’s UI.

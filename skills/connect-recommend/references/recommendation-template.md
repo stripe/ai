@@ -146,15 +146,14 @@ When `losses_collector: application` (platform owns loss liability), emphasize t
 
 **Radar requirement for Managed Risk:** Whenever a recommendation includes `losses_collector: "stripe"` (Express with Stripe-managed pricing, Express with platform-managed pricing, or full/Stripe/Stripe SaaS), explicitly recommend enabling Radar for Platforms alongside it. Managed Risk’s loss-protection model assumes Radar is active to catch transaction-level fraud; don’t present Managed Risk as replacing the need for Radar.
 
-### Public-preview disclosure
+### Express with Stripe-managed negative balance liability
 
-When the final recommendation is `dashboard: "express"` + `fees_collector: "stripe"` + `losses_collector: "stripe"` (Stripe-managed pricing, direct charges) or `dashboard: "express"` + `fees_collector: "application"` + `losses_collector: "stripe"` (platform-managed pricing, direct charges), include in the recommendation output:
+For direct charges with `dashboard: "express"` and `losses_collector: "stripe"`, with either Stripe-managed pricing (`fees_collector: "stripe"`) or platform-managed pricing (`fees_collector: "application"`):
 
-- A concise public-preview disclosure stating that this Express + Stripe-managed-negative-balance-liability direct-charge configuration is in public preview.
-- A statement that this configuration requires using the current Connect preview API version (not the platform’s pinned GA API version), with a link to the [preview changelog](https://docs.stripe.com/changelog.md?preview=true) so the user can confirm the exact version before implementing.
-- A note that this configuration is only available for newly onboarded connected accounts — see “Migration limitation” below.
+- Treat the configuration as generally available. Don’t require a public-preview disclosure or a preview API version. Use a supporting GA API version, such as `2026-11-18.endive`. Verify support and upgrade integrations that use older pinned versions.
+- Include a note that this configuration is only available for newly onboarded connected accounts. See “Migration limitation”.
 
-Keep the disclosure to two or three sentences total.
+Keep these notes to two or three sentences total.
 
 ### Migration limitation
 
