@@ -15,12 +15,12 @@ description: >-
 
 Build the “Stripe BFCM Dashboard” from a fixed layout and a fixed set of queries. It’s a starting point: the user can follow up to add metrics or change the style. The dashboard shows recurring revenue, growth, and payments for a time window, with an optional comparison, using [Analytics API](https://docs.stripe.com/data/metrics.md) metrics and [Query Runs API](https://docs.stripe.com/data/api/queries.md) SQL through the Stripe MCP server or connector.
 
-The dashboard needs the Stripe MCP server or connector, signed in to the Stripe account it shows, with access to the Analytics API and the Query Runs API. It assumes the connection signed in through Stripe (OAuth), which can list accounts and choose one. A session signed in with an API key is limited to that key’s account and mode, and works only for a dashboard that the agent fills, not one that queries Stripe itself. If the Stripe tools are missing, blocked, or need sign-in, say so in one line with the fix, such as connecting the [Stripe MCP server](https://docs.stripe.com/mcp.md#manual) and signing in, and stop. Don’t produce an empty dashboard.
+The dashboard needs the Stripe MCP server or connector, signed in to the Stripe account it shows, with access to the Analytics API and the Query Runs API. It assumes the connection signed in through Stripe (OAuth), which can list accounts and choose one. A session signed in with an API key is limited to that key’s account and mode, and works only for a dashboard that the agent fills, not one that queries Stripe itself. If the Stripe tools are missing, blocked, or need sign-in, say so in one line with the fix, such as connecting the [Stripe MCP server](https://docs.stripe.com/mcp.md#manual) and signing in, and stop.
 
 ## Rules
 
-- **Check the Stripe tools, then start queries fast**: Before anything else, confirm that this session lists `stripe_analytics` with the intents `execute_query_run`, `retrieve_query_run`, and `execute_metric`. If you can’t see its intents, look up that one tool’s input schema, never the whole Stripe server, and read only its intent names. If the tool or an intent is missing, tell the user which one, with the fix, and stop. Otherwise, choose the account and read the references in step 2, kick off every query in step 3, and show the loading page in step 4 — queries first, page second.
-- **Start building, and don’t prompt the user**: The layout, metrics, queries, and defaults are fixed. Don’t ask which metrics, period, time zone, output, or account to use, or for a key or account ID. Start as soon as the user invokes the skill. The only question is the auto-refresh one in the hand-over. If the user asks something while you build, answer in a few lines and keep building in the same turn.
+- **Check the Stripe tools, then start queries fast**: Before anything else, confirm that this session lists `stripe_analytics` with the intents `execute_query_run`, `retrieve_query_run`, and `execute_metric`. If you can’t see its intents, look up that one tool’s input schema and read only its intent names. If the tool or an intent is missing, tell the user which one, with the fix, and stop. Otherwise, choose the account and read the references in step 2, kick off every query in step 3, and show the loading page in step 4 — queries first, page second.
+- **Start building, and don’t prompt the user**: The layout, metrics, queries, and defaults are fixed. Start as soon as the user invokes the skill. The only question is the auto-refresh one in the hand-over. If the user asks something while you build, answer in a few lines and keep building in the same turn.
 - **Stripe MCP only, read-only**: Query Stripe only through the Stripe MCP server or connector, never with an API key, the Stripe CLI, or a server you build. Query one account, chosen in step 2, in every request, with no silent switch.
 - **Exact numbers**: Use only the queries and response shapes in the references. Preserve integer precision and currency minor units. Never invent values, show unreadable results as values, or substitute other data products.
 - **Keep secrets and customer data out of every output**: Never put keys or tokens in chat, browser code, artifacts, or logs, and never export MCP tokens. Query only counts and amounts. Never select, show, store, or log customer names, emails, or other customer fields.
@@ -31,7 +31,7 @@ The dashboard needs the Stripe MCP server or connector, signed in to the Stripe 
 
 ### Step 1: Choose the output
 
-Choose from the tools this session already lists, not from the client’s name, and without reading a file. If a listed tool can create a hosted dashboard, page, or artifact, such as a Claude artifact or ChatGPT Site, and update it later, use it, and name the output `stripe-bfcm-dashboard` where the tool takes a name. Prefer a hosted output whose pages can call the Stripe connector, because that dashboard can refresh itself. You check that in step 4, after the loading page is published. CLI-based agents (Claude Code, Cursor, Codex) typically have no hosted page tool — go straight to the HTML file and don’t spend time searching for one. Otherwise, or if the user asked for a file, use one HTML file, `stripe-bfcm-dashboard.html` in the working directory. If that name is taken by a file you didn’t create, pick another name that starts with `stripe-bfcm-dashboard` instead of asking. **Choose the output** in <references/dashboard-output.md> has the rest, which you read in step 2.
+Choose from the tools this session already lists, not from the client’s name, and without reading a file. If a listed tool can create a hosted dashboard, page, or artifact, such as a Claude artifact or ChatGPT Site, and update it later, use it, and name the output `stripe-bfcm-dashboard` where the tool takes a name. Prefer a hosted output whose pages can call the Stripe connector, because that dashboard can refresh itself. You check that in step 4, after the loading page is published. CLI-based agents (Claude Code, Cursor, Codex) typically have no hosted page tool — go straight to the HTML file. Otherwise, or if the user asked for a file, use one HTML file, `stripe-bfcm-dashboard.html` in the working directory. If that name is taken by a file you didn’t create, pick another name that starts with `stripe-bfcm-dashboard` instead of asking. **Choose the output** in <references/dashboard-output.md> has the rest, which you read in step 2.
 
 ### Step 2: Choose the account and read the references
 
@@ -47,7 +47,7 @@ Start every query from <references/queries.md> before writing any HTML. Create t
 
 ### Step 4: Show the loading page
 
-While the queries run, write the loading page and open it in the user’s default browser (`open` on macOS, `xdg-open` on Linux). Do not add `<meta http-equiv=”refresh”>` — there is only one save after this, and the browser already has the file open. Writing the file needs no git command: a repository, or an untracked path in one, isn’t a reason to wait. If you can’t open the file, say in one line that you’re building the dashboard and that it can take up to 10 minutes, and continue.
+While the queries run, write the loading page and open it in the user’s default browser (`open` on macOS, `xdg-open` on Linux). There is only one save after this, and the browser already has the file open. Writing the file needs no git command: a repository, or an untracked path in one, isn’t a reason to wait. If you can’t open the file, say in one line that you’re building the dashboard and that it can take up to 10 minutes, and continue.
 
 Write the loading page in HTML and CSS only, in about 30 lines. Fill the viewport with the page background `#F4F7FA`, and center one narrow column (about 520 pixels) horizontally and vertically using flexbox (`display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh`), with all items centered:
 
@@ -65,6 +65,10 @@ Poll the queries until every one finishes. Print a short status in chat every 2 
 ### Step 6: Hand over
 
 Follow **Hand over** in <references/dashboard-output.md>. Describe only the location, account, mode, view, and refresh behavior you verified.
+
+## Testing
+
+The user’s browser is the verification step. Open the dashboard in the browser and let the user review it visually. Run automated browser tests only when the user asks.
 
 ## Reference files
 
