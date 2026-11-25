@@ -10,14 +10,14 @@ The skill’s step 1 makes this choice from the listed tools, before the loading
 2. **Prefer hosted output**: If a listed tool can create a hosted dashboard, page, or artifact, such as a Claude artifact, that holds the complete dashboard, with every panel and its inline script, and can update it later, use it.
 3. **Otherwise, write one HTML file**: If no listed tool can do that, the user asked for a file, or creating or updating the hosted output fails, write the dashboard as one self-contained HTML file, `stripe-bfcm-dashboard.html` in the working directory. Export or attach it if a listed tool can. Never overwrite a file you didn’t create: pick another name that starts with `stripe-bfcm-dashboard` instead of asking.
 
-Don’t ask the user to choose an output, and don’t stop because a hosting tool is missing.
+Proceed with the best available output; fall through to an HTML file when no hosting tool is listed.
 
 ## Build the dashboard
 
 The skill’s workflow starts queries before writing any HTML. This section covers the build after queries are running.
 
 1. **Show the loading page (first build only)**: The skill’s step 4 writes the loading page and opens it. Skip this on a refresh — go straight to updating the existing dashboard in place.
-2. **Poll and build in memory**: Poll the queries until every one finishes or fails. While polling, build the full dashboard page in memory: the layout, header, all panel containers, the `@stripe/charts` CDN script, and each panel’s data as its query completes. Print a short status in chat every 2 minutes so the user knows the build is alive — “Still waiting on N queries…” or “All queries complete — finalizing.”
+2. **Poll and build in memory**: Poll the queries until every one finishes or fails. While polling, build the full dashboard page in memory: the layout, header, all panel containers, the `@stripe/charts` script (via the design reference’s fallback chain), and each panel’s data as its query completes. Print a short status in chat every 2 minutes so the user knows the build is alive — “Still waiting on N queries…” or “All queries complete — finalizing.”
 3. **Save once**: When every query has finished (or failed), save the complete dashboard to the file or hosted output, overwriting the loading page. One save, at the end, with all the numbers in it. Don’t save intermediate states — there is nothing for the open loading page to pick up until the data is ready. Don’t add `<meta http-equiv="refresh">` to the file. A panel whose query succeeded gets its full spec; a panel whose query failed gets the failed state from the design reference.
 4. **Open the finished dashboard**: For HTML files, open the file again (`open` on macOS, `xdg-open` on Linux) so the finished dashboard appears. For hosted output, the update is live. Run every check in Check before publishing. Store the account’s name, ID, mode, view boundaries, time zone, last successful query time, and any failures. Escape stored strings for their HTML context.
 
@@ -29,13 +29,13 @@ Treat the results this way:
 
 Build the page to these limits:
 
-- **Small script**: Aim for about 300 lines. Use `StripeCharts.render` for all charts and KPI tiles — don’t write custom SVG chart functions, formatters, or axis logic. The page script handles data wiring, layout, refresh, and sources only.
-- **Self-contained**: Use `@stripe/charts` for all charts and KPI tiles, loaded via npm, CDN, or inline SVG as the design reference’s fallback chain describes. Load no other remote scripts, fonts, or images.
+- **Small script**: Aim for about 300 lines. When `@stripe/charts` is available, use `StripeCharts.render` for all charts and KPI tiles — the page script handles data wiring, layout, refresh, and sources only. With inline SVG, follow the design reference’s inline SVG specs.
+- **One page, one dependency**: Use `@stripe/charts` for all charts and KPI tiles, loaded via npm, CDN, or inline SVG as the design reference’s fallback chain describes. Load no other remote scripts, fonts, or images.
 - **No extra storage**: Don’t add a database, a scheduled task, or a second data file. The results live in the page.
 
 ## Page behavior
 
-- **Open with results**: The page draws every panel from its embedded results when it opens, and makes no network requests. It computes totals, changes, and averages with the queries reference’s calculations, and shows the stored view’s dates, time zone, and refresh status, never the day or time zone it’s opened in.
+- **Open with results**: On initial load, the page draws every panel from the query results the agent embedded — it loads `@stripe/charts` for rendering but makes no Stripe API calls. It computes totals, changes, and averages with the queries reference’s calculations, and shows the stored view’s dates, time zone, and refresh status.
 - **Agent refresh**: The page can’t query Stripe itself unless the output environment says so, because your Stripe connection belongs to you, not to the browser. Its button reads **Copy refresh request**, copies “Refresh my Stripe BFCM Dashboard” to the clipboard, and reads “Copied. Paste it to your agent” for 4 seconds. If the clipboard isn’t available, it shows that text selected instead. If the viewer has no way to send you that request, leave the button out. The date range shows as text, as the dashboard design describes.
 - **Page refresh**: For hosted output, check whether its pages can call the Stripe connector, and how. Read the hosting tool’s description and schema. If the session lists a tool that describes what the host’s pages can do, such as `describe_capabilities` in Claude, call it once, asking about the connector directly and passing the loading page’s ID where the tool takes one. If pages can call the connector, build a page that queries Stripe itself, as the next section describes. Use **Agent refresh** only when they can’t, when the output is a file, or in a session signed in with an API key, which can’t list accounts for the page’s account check.
 
@@ -69,8 +69,6 @@ Check the filled-in dashboard before you publish, export, or hand it over:
 - **Refresh mode**: Describe only the refresh behavior the output supports. Reloading saved results doesn’t retrieve new Stripe data. Make the refresh button’s label match its action — “Copy refresh request” if it only copies instructions, omitted if no refresh is supported.
 - **Privacy**: Keep credentials, tokens, and customer-identifying data out of the page, embedded data, generated source, files, and URLs.
 
-Don’t launch headless Chrome, Puppeteer, or any browser-based rendering step to verify the dashboard, unless the user asks or requires you to test its frontend changes. Otherwise, the user’s own browser is the only view that matters.
-
 Fix failed checks before publishing. If you can’t verify a check, including the account or mode, explain what’s missing and stop. In a session signed in with an API key, the key sets the mode and no tool reports it: say in the hand-over that the mode is the key’s, without naming one. Apply the same checks to hosted output and HTML files.
 
 ## Hand over
@@ -87,5 +85,3 @@ Give the dashboard’s location on its own line: the URL or download that the pu
 For a page that queries Stripe itself, end with one question: “Do you want the page to refresh every 5 minutes while it’s open?” Don’t wait for the answer before handing over. If the user says yes, turn auto-refresh on in the same page, without rerunning the queries.
 
 For any other dashboard, end with: “Would you like me to refresh the data, or add a comparison to the previous BFCM?” Don’t wait for the answer before handing over.
-
-Don’t share the dashboard automatically.

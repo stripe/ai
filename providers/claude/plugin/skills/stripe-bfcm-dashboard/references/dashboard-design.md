@@ -1,10 +1,10 @@
 # Dashboard design
 
-Layout, labels, and states for every output. Keep every panel listed here and don’t add others.
+Layout, labels, and states for every output. Keep every panel listed here; this is the complete set.
 
 ## Page style
 
-Page background is white `#FFFFFF`. Cards are white with a 1-pixel `var(--sc-color-divider, #D4DEE9)` border and 8-pixel radius — they separate visually because the border is visible on white. Do not use `--sc-color-fill-subtle` (`#F4F7FA`) for the page background.
+Page background is white `#FFFFFF`. Cards are white with a 1-pixel `var(--sc-color-divider, #D4DEE9)` border and 8-pixel radius — they separate visually because the border is visible on white.
 
 Use `--sc-*` tokens from `@stripe/charts` for non-chart elements so everything shares one theme:
 
@@ -17,7 +17,7 @@ body { background: #FFFFFF; color: var(--sc-color-text-primary, #1A2C44); }
 .accent { color: #533AFD; }
 ```
 
-`#533AFD` is for buttons, links, and country bars — not chart series. The copy icon uses secondary text color. Use sentence case everywhere — never `text-transform: uppercase`.
+`#533AFD` is for buttons, links, and country bars — not chart series. The copy icon uses secondary text color. Use sentence case everywhere.
 
 ## Layout
 
@@ -47,7 +47,7 @@ Style buttons and date pills alike: 32px high, 1-pixel `var(--sc-color-divider)`
 
 ## Panels
 
-Every chart and KPI tile is rendered by `StripeCharts.render`. The page card is the frame — one card container per panel. Strip the library’s own card styling so there’s no double border:
+When `@stripe/charts` is available (npm or CDN), every chart and KPI tile is rendered by `StripeCharts.render`. When using inline SVG as the last resort, follow the inline SVG specs in Charts below instead. The page card is the frame — one card container per panel. Strip the library’s own card styling so there’s no double border:
 
 ```css
 .card .sc-root, .card .sc-root.sc-tile {
@@ -55,13 +55,13 @@ Every chart and KPI tile is rendered by `StripeCharts.render`. The page card is 
 }
 ```
 
-Let stripe-charts render the title — pass `title` in the spec and don’t add a separate heading outside the chart `<div>`. To keep the title visible in sources view, add a hidden heading in the card container (e.g. `<h3 class="panel-title" style="display:none">…</h3>`) that sources mode shows when it swaps content. Below the chart `<div>`, add an “Updated X ago” line in 12-pixel secondary text, from the result’s `refreshed_at`, updated every minute. In chart and table cards, pin that line to the bottom of the card (`display: flex; flex-direction: column` on the card, `margin-top: auto` on the line), so it lines up across a row. Leave the line out of an empty panel. Hide this line in sources view — only show it in chart view.
+Let stripe-charts render the title — pass `title` in the spec. To keep the title visible in sources view, add a hidden heading in the card container (e.g. `<h3 class="panel-title" style="display:none">…</h3>`) that sources mode shows when it swaps content. Below the chart `<div>`, add an “Updated X ago” line in 12-pixel secondary text, from the result’s `refreshed_at`, updated every minute. In chart and table cards, pin that line to the bottom of the card (`display: flex; flex-direction: column` on the card, `margin-top: auto` on the line), so it lines up across a row. Leave the line out of an empty panel. Hide this line in sources view — only show it in chart view.
 
 Panel data rules:
 
 - **Comparisons**: Name the comparison everywhere — “↑ 12% per day vs. BFCM 2025 ($4,210)”, never “before” or “previous.” Without a comparison, omit changes and comparison series.
 - **MRR, ARR**: Latest daily value, not a sum. ARR has no comparison.
-- **MRR growth**: Net MRR change as headline (signed, e.g. “+$1,234.00”). Grouped bars of daily net change. Negative days go below zero.
+- **MRR growth**: Net MRR change as headline — prepend “+” for positive values in the headline text (e.g. “+$1,234.00”); negative values already show “−”. Grouped bars of daily net change. Negative days go below zero.
 - **MRR movements**: A table (not a chart) of six categories — New, Expansion, Contraction, Churn, Reactivation, FX adjustment — then net movement. Current window only, no comparison.
 - **New customers, Successful payments, Checkout Sessions**: Count tiles (`chart.type: 'kpi'`). Use `basis: 'total'`.
 - **Checkout conversion**: `sessions_succeeded / sessions_loaded` as a percentage. Use `basis: 'custom'`.
@@ -87,7 +87,7 @@ A panel is empty only when it has no value to show, such as a rate or average wi
 - **Tables**: keep the title and show “No data yet” in secondary text.
 - **KPI tiles**: stripe-charts ignores `emptyMessage` on KPI tiles, so render the title with `StripeCharts.render`, `chart.type: 'kpi'`, and `series: [{label: '…', data: []}]`, then add below it a muted em dash (`—`) where the value goes, in 28-pixel semibold secondary text, and one line saying why the tile is empty, in 14-pixel primary text. Don’t repeat the window’s dates: the header already shows them. Checkout conversion’s reason is “No checkout sessions.”
 
-A panel pulses only while its query is still pending. After its result arrives (success or failure), the pulse stops. After all queries are done, no panel should pulse. Don’t add `<meta http-equiv="refresh">` to the file — the dashboard is saved once with all results, so there are no progressive updates to pick up.
+A panel pulses only while its query is still pending. After its result arrives (success or failure), the pulse stops. After all queries are done, no panel should pulse.
 
 ### No data for the range
 
@@ -176,10 +176,6 @@ Use when the environment blocks both npm and CDN. Build charts with one reusable
 - **Empty / loading**: Center “No data yet” text, or the **Empty panels** KPI layout for tiles / pulse animation on placeholder.
 
 Note limitations (no sparklines, no incomplete-day markers, no accessibility) in the hand-over.
-
-### Which path was chosen
-
-Don’t mention the chart library in the hand-over unless the user asks. If they do, say “@stripe/charts (npm)”, “@stripe/charts (CDN)”, or “inline SVG (simplified).”
 
 ### stripe-charts API and series colors
 
@@ -272,4 +268,4 @@ handle.update({version: 1, title: 'Payment volume', format: {...}, series: [...]
 | Checkout Sessions | `kpi` | `number` | `total` |
 | Checkout conversion | `kpi` | `percent`, `unit: 'ratio'` | `custom` |
 
-Comparison series use `comparison: true` and align by position (index), not date. When the window includes today, set `chart.incomplete.from` to today’s date. All Stripe amounts are minor units — always set `unit: 'minor'`.
+Comparison series use `comparison: true` and align by position (index), not date. When the window includes today, set `chart.incomplete.from` to today’s date. All Stripe amounts are minor units — always set `unit: 'minor'`. Use `stacking: 'grouped'` only on bar charts — omit it when the chart type is `line`.

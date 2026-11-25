@@ -21,6 +21,30 @@ allowed-tools:
 
 ---
 
+## Choose a workflow
+
+Stripe offers two separate provisioning interfaces:
+
+- **Provisioning** uses the `PostV2Provisioning*` and `GetV2Provisioning*` tools. It can be a better fit for remote deployments where the user doesn’t want to handle provider secret values. Supported deployments reference provisioned resources instead of passing secret values to the agent.
+- **Stripe Projects** uses the `stripe projects` commands. It can be a better fit for local development, where the CLI can write environment variables to the local workspace.
+
+Before choosing, check whether Stripe MCP is connected with the provisioning tools needed for the task, and whether the Stripe CLI and Projects plugin are installed. Check availability without provisioning resources or installing software.
+
+If both workflows are available and support the task, follow the user’s preference. If they haven’t stated one, recommend the workflow that fits their setup, or default to provisioning if neither is a better fit. If setup is needed, explain it before proceeding. Don’t mix workflows or switch if the only reason for switching is because the other one is available.
+
+For the MCP workflow, reference the provisioning documentation:
+
+**https://docs.stripe.com/projects/mcp.md**
+
+Relevant sections cover:
+
+- Onboarding: connecting Stripe MCP, selecting an account, and checking eligibility
+- Supported operations, request fields, and response states
+- Provider configuration, environment variables, and supported export mappings
+- Bundle limits, artifact upload requirements, and deployment and domain restrictions
+
+If no workflow is selected and MCP is unavailable or unsupported, use CLI for tasks it supports. All remaining sections apply only to CLI, including installation if needed.
+
 ## Stripe Projects — Service Provisioning
 
 Provision third-party services (databases, auth, hosting, analytics, caching, AI, observability) and retrieve API keys/tokens using the Stripe Projects CLI plugin.

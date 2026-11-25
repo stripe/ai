@@ -328,6 +328,8 @@ Transform the API response into one or more human-readable tables in your own re
          - `payment_limit_time`
          - `payout_limit_amount`
          - `payout_limit_time`
+         - `settlement_reserve_limit_amount`
+         - `settlement_reserve_limit_time`
        - Then use the verified limit fields to generate the `if not verified` message(s):
          - `verified_capability_limit_amount`
          - `verified_capability_limit_time`
@@ -335,9 +337,12 @@ Transform the API response into one or more human-readable tables in your own re
          - `verified_payment_limit_time`
          - `verified_payout_limit_amount`
          - `verified_payout_limit_time`
+         - `verified_settlement_reserve_limit_amount`
+         - `verified_settlement_reserve_limit_time`
        - If any limit amount or limit time is `<= 0`, treat that impact as immediate
        - If both a time limit and an amount limit exist for the same impact, join them with `or`
-       - Group impacts with identical thresholds into a single sentence, for example `Capability, payments, and payouts will be paused immediately if not provided.`
+       - Group only pause impacts with identical thresholds into a single sentence, for example `Capability, payments, and payouts will be paused immediately if not provided.`
+       - For settlement-reserve limits, use a separate sentence: `Incoming payments will be held in a settlement reserve {when} if not {condition}.` Use `provided` for unverified limits and `verified` for verified limits. Treat limits of zero or less as immediate, and join time and amount thresholds with `or`. A settlement reserve alone doesn’t pause payouts. Keep any independent payout-pause consequence separate.
        - If both `if not provided` and `if not verified` text exist, render the `if not provided` sentence(s) first and then the `if not verified` sentence(s); prefix the first `if not verified` sentence with `Also,`
        - If neither set of limits is present, render `—`
 4. If two sections share the same row-definition family, they still remain separate tables. For example, `representative` and `owners` both use the `person` row-definition family, but they render as separate `Representative` and `Owners` tables because they’re different sections.
